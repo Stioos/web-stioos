@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { create } from "zustand";
-import { useAppStore } from "@/lib/store";
 import { resolveRedirect, type LoginRole } from "@/lib/auth";
 import { pushWithRescue } from "@/lib/safe-nav";
+import { useCurrentUser, signOutCurrent } from "@/hooks/use-current-user";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,17 +94,7 @@ export function LoginDrawer() {
 function DrawerBody({ onDone }: { onDone: () => void }) {
   const router = useRouter();
   const { toast } = useToast();
-
-  const marketLogin = useAppStore((s) => s.marketLogin);
-  const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
-  const quickLogin = useAppStore((s) => s.quickLogin);
-  const signUp = useAppStore((s) => s.signUp);
-  const currentUser = useAppStore((s) =>
-    s.users.find((u) => u.id === s.currentUserId) ?? null
-  );
-  const currentAdmin = useAppStore((s) =>
-    s.admins.find((a) => a.id === s.currentAdminId) ?? null
-  );
+  const { user, admin, kind, refresh } = useCurrentUser();
 
   // Remembered email — read after hydration without setState.
   const rememberedEmail = useSyncExternalStore(
@@ -124,11 +114,12 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
   const [creating, setCreating] = useState(false);
   const [quickBusy, setQuickBusy] = useState<string | null>(null);
   const [resetting, setResetting] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   // NOTE: the Sheet unmounts its content on close, so this body remounts
   // fresh on every open — no state reset effects needed.
 
-  const finishSignIn = (role: LoginRole, name: string) => {
+  const finishSignIn = (role: LoginRole, name: string, next?: string | null) => {
     toast({
       title: `Welcome back, ${name}`,
       description:
@@ -137,7 +128,7 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
           : "Opening your workspace…",
     });
     onDone();
-    pushWithRescue(router, resolveRedirect(null, role));
+    pushWithRescue(router, resolveRedirect(next ?? null, role));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,33 +139,40 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
       return;
     }
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 700));
 
-    const result = marketLogin(email, password);
-    if (!result.ok) {
-      const base = result.error ?? "Unable to sign in.";
-      const hint = base.startsWith("No ")
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      const data = (await res.json().catch(() => ({}))) as
+        | { ok: true; role: "buyer" | "admin"; user?: { name: string }; admin?: { name: string } }
+        | { ok?: false; error?: string };
+
+      if (res.ok && data.ok && data.role) {
+        if (remember) {
+          window.localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
+        } else {
+          window.localStorage.removeItem(REMEMBER_KEY);
+        }
+        await refresh();
+        const name = data.role === "buyer" ? data.user?.name ?? "there" : data.admin?.name ?? "there";
+        finishSignIn(data.role as LoginRole, name);
+        return;
+      }
+
+      const base = data.error ?? "Unable to sign in.";
+      const hint = base.toLowerCase().startsWith("no ")
         ? " Demo accounts: buyer@stioos.com (Buyer) or aarav@stioos.com (Super Admin) — password demo1234."
         : "";
       setError(base + hint);
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    if (remember) {
-      window.localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
-    } else {
-      window.localStorage.removeItem(REMEMBER_KEY);
-    }
-
-    const state = useAppStore.getState();
-    const lower = email.trim().toLowerCase();
-    const marketUser = state.users.find((u) => u.email.toLowerCase() === lower);
-    const adminUser = state.admins.find((a) => a.email.toLowerCase() === lower);
-    const name = marketUser?.name ?? adminUser?.name ?? "there";
-    const role: LoginRole =
-      result.role ?? ((marketUser?.role ?? "member") as LoginRole);
-    finishSignIn(role, name);
   };
 
   // Recovery path — earlier iterations of the demo wiped saved accounts;
@@ -191,58 +189,98 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
       return;
     }
     setCreating(true);
-    await new Promise((r) => setTimeout(r, 400));
-    const localPart = email.trim().split("@")[0] ?? "there";
-    const name = localPart
-      .replace(/[._-]+/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase())
-      .trim() || "New User";
-    const result = signUp({
-      name,
-      email,
-      password,
-      role: "buyer",
-    });
-    setCreating(false);
-    if (!result.ok) {
-      setError(result.error ?? "Could not create the account.");
-      return;
+    try {
+      const localPart = email.trim().split("@")[0] ?? "there";
+      const name = localPart
+        .replace(/[._-]+/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase())
+        .trim() || "New User";
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ name, email: email.trim(), password }),
+      });
+      const data = (await res.json().catch(() => ({}))) as
+        | { ok: true; user: { name: string } }
+        | { ok?: false; error?: string };
+      if (res.ok && data.ok && data.user) {
+        await refresh();
+        finishSignIn("buyer", data.user.name || name);
+        return;
+      }
+      setError(data.error ?? "Could not create the account.");
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setCreating(false);
     }
-    finishSignIn("buyer", name);
   };
 
   const handleQuickBuyerLogin = async () => {
     setQuickBusy("usr-mkt-buyer");
-    await new Promise((r) => setTimeout(r, 400));
-    const result = quickMarketLogin("usr-mkt-buyer");
-    if (!result.ok) {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: "buyer@stioos.com", password: "demo1234" }),
+      });
+      const data = (await res.json().catch(() => ({}))) as
+        | { ok: true; role: "buyer" | "admin"; user?: { name: string } }
+        | { ok?: false; error?: string };
+      if (res.ok && data.ok && data.role === "buyer") {
+        await refresh();
+        finishSignIn("buyer", data.user?.name ?? "there");
+        return;
+      }
+      toast({
+        title: "Demo account unavailable",
+        description: data.error ?? "Could not sign in to this demo account. Please try again.",
+        variant: "destructive",
+      });
+    } catch {
       toast({
         title: "Demo account unavailable",
         description: "Could not sign in to this demo account. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setQuickBusy(null);
-      return;
     }
-    const user = useAppStore.getState().users.find((u) => u.id === "usr-mkt-buyer");
-    finishSignIn(result.role ?? "buyer", user?.name ?? "there");
   };
 
   const handleQuickAdminLogin = async () => {
     setQuickBusy("adm-001");
-    await new Promise((r) => setTimeout(r, 400));
-    const admin = useAppStore.getState().admins.find((a) => a.id === "adm-001");
-    if (!admin) {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ email: "aarav@stioos.com", password: "demo1234" }),
+      });
+      const data = (await res.json().catch(() => ({}))) as
+        | { ok: true; role: "buyer" | "admin"; admin?: { name: string } }
+        | { ok?: false; error?: string };
+      if (res.ok && data.ok && data.role === "admin") {
+        await refresh();
+        finishSignIn("member", data.admin?.name ?? "there");
+        return;
+      }
+      toast({
+        title: "Demo account unavailable",
+        description: data.error ?? "Could not sign in to the admin demo. Please try again.",
+        variant: "destructive",
+      });
+    } catch {
       toast({
         title: "Demo account unavailable",
         description: "Could not sign in to the admin demo. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setQuickBusy(null);
-      return;
     }
-    quickLogin("adm-001");
-    finishSignIn("member", admin.name);
   };
 
   const handleResetDemoData = () => {
@@ -264,9 +302,17 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
     setTimeout(() => window.location.reload(), 400);
   };
 
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    await signOutCurrent();
+    await refresh();
+    setSigningOut(false);
+    toast({ title: "Signed out", description: "Your session has ended." });
+  };
+
   // ── Already signed in → session panel instead of the form. ──
-  if (currentUser || currentAdmin) {
-    const who = currentUser ?? currentAdmin;
+  if (kind === "buyer" || kind === "admin") {
+    const who = kind === "buyer" ? user : admin;
     const initials = (who?.name ?? "?")
       .split(" ")
       .map((p) => p[0])
@@ -299,7 +345,7 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
             {who?.name} · {who?.email}
           </p>
           <p className="mt-0.5 text-xs capitalize text-muted-foreground">
-            {currentUser ? `${currentUser.role} workspace` : "Super Admin workspace"}
+            {kind === "buyer" ? `${user?.role ?? "buyer"} workspace` : "Super Admin workspace"}
           </p>
 
           <Button
@@ -308,8 +354,8 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
               onDone();
               pushWithRescue(
                 router,
-                currentUser
-                  ? resolveRedirect(null, currentUser.role as LoginRole)
+                kind === "buyer"
+                  ? resolveRedirect(null, (user?.role as LoginRole) ?? "buyer")
                   : resolveRedirect(null, "member")
               );
             }}
@@ -319,15 +365,12 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
           <Button
             variant="outline"
             className="mt-3 h-11 w-full rounded-xl"
-            onClick={() => {
-              if (currentUser) {
-                useAppStore.getState().marketLogout();
-              } else {
-                useAppStore.getState().logout();
-              }
-              toast({ title: "Signed out", description: "Your session has ended." });
-            }}
+            disabled={signingOut}
+            onClick={handleSignOut}
           >
+            {signingOut ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : null}
             Sign out of this device
           </Button>
           <button
@@ -462,7 +505,10 @@ function DrawerBody({ onDone }: { onDone: () => void }) {
           )}
         </Button>
 
-        {!submitting && error && error.startsWith("No account found") && (
+        {!submitting &&
+          error &&
+          error.toLowerCase().startsWith("no ") &&
+          !creating && (
           <Button
             type="button"
             variant="outline"

@@ -1,8 +1,8 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// ============================================================
+// STIOOS GLOBAL — Prisma schema (SQLite)
+// Real backend for the marketplace + admin & buyer dashboards.
+// Array/object fields use Json (stored as TEXT on SQLite).
+// ============================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +13,358 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+// ---------- Sessions (cookie auth) ----------
+
+model Session {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+  token     String   @unique
+  kind      String   // "buyer" | "admin"
+  userId    String   // -> User.id or AdminUser.id
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  userAgent String?
+
+  @@index([userId])
 }
 
-model Post {
+// ---------- People: buyers ----------
+
+model User {
   id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+  name      String
+  email     String   @unique
+  password  String   // hashed (bcrypt)
+  company   String   @default("")
+  phone     String   @default("")
+  country   String   @default("")
+  status    String   @default("active") // active|inactive|suspended
+  role      String   @default("buyer") // buyer|member
+  inquiriesCount Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  lastActive DateTime?
+
+  // buyer registration capture
+  registrationType   String? // professional|company
+  accountType        String?
+  profession         String?
+  companySize        String?
+  phoneCountry       String?
+  intent             String?
+  intentTimeline     String?
+  registrationSource String?
+
+  // relations
+  requests  MarketRequest[]
+  orders    MarketOrder[]
+  threads   MarketThread[]
+  wishlist  Wishlist[]
+  inquiries Inquiry[]
+}
+
+// ---------- People: admins ----------
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String   // hashed (bcrypt)
+  phone     String   @default("")
+  roleId    String   @default("role-super-admin")
+  status    String   @default("active") // active|inactive|suspended
+  title     String   @default("")
+  lastActive DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  avatarInitials String?
+
+  role Role @relation(fields: [roleId], references: [id])
+}
+
+model Role {
+  id          String @id @default(cuid())
+  name        String
+  slug        String @unique
+  description String @default("")
+  permissions Json   // PermissionMatrix
+  isSystem    Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  admins AdminUser[]
+}
+
+// ---------- Catalog ----------
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  icon        String   @default("")
+  tagline     String   @default("")
+  description String   @default("")
+  status      String   @default("active") // active|disabled
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  subcategories Subcategory[]
+  services      Service[]
+}
+
+model Subcategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String
+  categoryId  String
+  description String   @default("")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  services  Service[]
+
+  @@unique([slug, categoryId])
+  @@index([categoryId])
+}
+
+model Service {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  categoryId       String
+  subcategoryId    String
+  shortDescription String   @default("")
+  fullDescription  String   @default("")
+  tags             Json // string[]
+  industries       Json // string[]
+  deliveryType     String   @default("project") // project|subscription|retainer|on_demand|self_serve
+  timeline         String   @default("")
+  rating           Float    @default(0)
+  reviews          Int      @default(0)
+  popularity       Int      @default(0)
+  featured         Boolean  @default(false)
+  status           String   @default("published") // draft|published|archived
+  accent           String   @default("")
+  icon             String   @default("")
+  problemsSolved   Json // string[]
+  capabilities     Json // string[]
+  deliverables     Json // string[]
+  process          Json // ServiceProcessStep[]
+  technologies     Json // string[]
+  faqs             Json // ServiceFaq[]
+  metaTitle        String?
+  metaDescription  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdBy        String   @default("system")
+
+  category    Category    @relation(fields: [categoryId], references: [id])
+  subcategory Subcategory @relation(fields: [subcategoryId], references: [id])
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([status])
+  @@index([featured])
+}
+
+model Industry {
+  id            String  @id @default(cuid())
+  name          String
+  slug          String  @unique
+  icon          String  @default("")
+  description   String  @default("")
+  servicesCount Int     @default(0)
+  status        String  @default("active")
+}
+
+model Insight {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  category    String   @default("")
+  excerpt     String   @default("")
+  content     String   @default("")
+  author      String   @default("")
+  readTime    String   @default("")
+  publishedAt DateTime @default(now())
+  status      String   @default("published") // published|draft
+  accent      String   @default("")
+}
+
+model Resource {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  type        String   @default("guide") // guide|whitepaper|checklist|case_study|template
+  description String   @default("")
+  fileFormat  String   @default("")
+  size        String   @default("")
+  downloads   Int      @default(0)
+  publishedAt DateTime @default(now())
+  status      String   @default("published")
+  accent      String   @default("")
+}
+
+model FaqItem {
+  id       String @id @default(cuid())
+  question String
+  answer   String @default("")
+  category String @default("")
+  status   String @default("published")
+  order    Int    @default(0)
+}
+
+// ---------- Engagement / lead capture (CTA target) ----------
+
+model Inquiry {
+  id           String   @id @default(cuid())
+  name         String
+  email        String
+  company      String   @default("")
+  phone        String   @default("")
+  type         String   // quote|service_request|contact|consultation
+  serviceId    String?
+  serviceName  String?
+  requirements String   @default("")
+  budgetRange  String   @default("")
+  timeline     String   @default("")
+  status       String   @default("new") // new|in_progress|contacted|closed
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  buyerId      String?
+
+  buyer User? @relation(fields: [buyerId], references: [id])
+
+  @@index([status])
+  @@index([type])
+}
+
+// ---------- Marketplace transactions ----------
+
+model MarketRequest {
+  id            String   @id @default(cuid())
+  buyerId       String
+  buyerName     String
+  buyerCompany  String   @default("")
+  categoryId    String
+  categoryName  String
+  title         String
+  details       String   @default("")
+  budgetRange   String   @default("")
+  timeline      String   @default("")
+  status        String   @default("open") // open|in_review|in_progress|fulfilled|rejected|closed
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  kind          String   @default("service") // service|train-to-hire|hire-to-train|talent-sourcing|end-to-end-staffing|post-a-job
+  reference     String   @unique // REQ-XXXXX
+  meta          Json // Record<string,string>
+  statusHistory Json // RequestStatusEvent[]
+  quotedAmount  Float?
+  orderId       String?  @unique
+
+  buyer User?          @relation(fields: [buyerId], references: [id])
+  order MarketOrder?   @relation(fields: [orderId], references: [id])
+
+  @@index([buyerId])
+  @@index([status])
+  @@index([kind])
+}
+
+model MarketOrder {
+  id           String   @id @default(cuid())
+  serviceId    String
+  serviceSlug  String
+  serviceName  String
+  serviceIcon  String   @default("")
+  buyerId      String
+  buyerName    String
+  buyerCompany String   @default("")
+  amount       Float    @default(0)
+  status       String   @default("pending") // pending|in_progress|delivered|completed|cancelled
+  deliveryType String   @default("project")
+  placedAt     DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  requirements String?
+
+  buyer    User           @relation(fields: [buyerId], references: [id])
+  request  MarketRequest?
+
+  @@index([buyerId])
+  @@index([status])
+}
+
+model MarketThread {
+  id           String   @id @default(cuid())
+  serviceId    String
+  serviceSlug  String
+  serviceName  String
+  serviceIcon  String   @default("")
+  buyerId      String
+  buyerName    String
+  teamId       String   @default("team-stioos")
+  teamName     String   @default("STIOOS Delivery Team")
+  createdAt    DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+
+  buyer    User           @relation(fields: [buyerId], references: [id])
+  messages MarketMessage[]
+
+  @@index([buyerId])
+}
+
+model MarketMessage {
+  id         String   @id @default(cuid())
+  threadId   String
+  senderId   String
+  senderName String
+  senderRole String   // buyer|team
+  body       String
+  sentAt     DateTime @default(now())
+
+  thread MarketThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
+}
+
+model Wishlist {
+  id          String   @id @default(cuid())
+  userId      String
+  serviceSlug String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceSlug])
+  @@index([userId])
+}
+
+// ---------- System ----------
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // service_request|contact_inquiry|admin_created|service_published|content_updated|system
+  title     String
+  message   String   @default("")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  actor       String
+  action      String
+  module      String
+  target      String   @default("")
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  @@index([module])
+}
+
+// ---------- Settings (singletons, keyed by fixed id) ----------
+
+model Setting {
+  id    String @id // fixed key e.g. "brand", "marketplace", "homepage", "security"
+  value Json
 }

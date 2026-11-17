@@ -1,11 +1,23 @@
-"use client";
-
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { getCurrentAdmin } from "@/lib/auth-server";
+import { listCategories, listSubcategories } from "@/lib/api/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { ServiceForm } from "@/components/admin/service-form";
 
-export default function NewServicePage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewServicePage() {
+  const admin = await getCurrentAdmin();
+  if (!admin) {
+    redirect("/auth/login?next=/admin/services/new");
+    return;
+  }
+  const [categories, subcategories] = await Promise.all([
+    listCategories(),
+    listSubcategories(),
+  ]);
   return (
     <div>
       <PageHeader
@@ -21,7 +33,11 @@ export default function NewServicePage() {
           </nav>
         }
       />
-      <ServiceForm mode="create" />
+      <ServiceForm
+        mode="create"
+        categories={categories}
+        subcategories={subcategories}
+      />
     </div>
   );
 }

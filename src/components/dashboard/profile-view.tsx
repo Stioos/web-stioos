@@ -1,34 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Building2, Globe2, Loader2, Mail, Package, Phone, Save } from "lucide-react";
-import { useAppStore, useCurrentUser } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { SectionCard } from "@/components/dashboard/shared";
+import { useToast } from "@/hooks/use-toast";
+import type { User } from "@/types";
+
+export interface ProfileViewProps {
+  user: User;
+  stats: { orders: number; threads: number; wishlist: number };
+}
 
 /**
- * Buyer profile view: identity card, editable details form and account stats.
+ * Buyer profile view — identity card, editable details form, and account
+ * stats. The server fetches the user record (via `getUserById`) and the
+ * counts (`listBuyerOrders`, `listBuyerThreads`, wishlist length) once
+ * per render; saving the form PATCHes `/api/profile` and calls
+ * `router.refresh()` so the server query re-runs and the header / sidebar
+ * reflect the new name.
  */
-export function ProfileView({ role }: { role: "buyer" }) {
-  const user = useCurrentUser();
-  const orders = useAppStore((s) => s.orders);
-  const threads = useAppStore((s) => s.threads);
-  const wishlist = useAppStore((s) => s.wishlist);
-  const updateMarketProfile = useAppStore((s) => s.updateMarketProfile);
-
-  const [name, setName] = useState(user?.name ?? "");
-  const [company, setCompany] = useState(user?.company ?? "");
-  const [phone, setPhone] = useState(user?.phone ?? "");
-  const [country, setCountry] = useState(user?.country ?? "");
+export function ProfileView({ user, stats }: ProfileViewProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [name, setName] = useState(user.name);
+  const [company, setCompany] = useState(user.company);
+  const [phone, setPhone] = useState(user.phone);
+  const [country, setCountry] = useState(user.country);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!user) return null;
 
   const initials =
     user.name
@@ -38,9 +44,6 @@ export function ProfileView({ role }: { role: "buyer" }) {
       .join("")
       .toUpperCase() || "?";
 
-  const myOrdersCount = orders.filter((o) => o.buyerId === user.id).length;
-  const myThreadsCount = threads.filter((t) => t.buyerId === user.id).length;
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -49,20 +52,41 @@ export function ProfileView({ role }: { role: "buyer" }) {
       return;
     }
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 500));
-    updateMarketProfile({
-      name: name.trim(),
-      company: company.trim(),
-      phone: phone.trim(),
-      country: country.trim(),
-    });
-    setSaving(false);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          name: name.trim(),
+          company: company.trim(),
+          phone: phone.trim(),
+          country: country.trim(),
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as
+        | { ok?: true; error?: string }
+        | { ok?: false; error?: string };
+      if (res.ok && (data as { ok?: boolean }).ok !== false) {
+        toast({
+          title: "Profile updated",
+          description: "Your changes are live across the marketplace.",
+        });
+        router.refresh();
+        return;
+      }
+      setError(data.error ?? "Could not save your changes.");
+    } catch {
+      setError("Network error — please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const stats = [
-    { label: "Orders placed", value: myOrdersCount },
-    { label: "Saved services", value: wishlist.length },
-    { label: "Conversations", value: myThreadsCount },
+  const statCards = [
+    { label: "Orders placed", value: stats.orders },
+    { label: "Saved services", value: stats.wishlist },
+    { label: "Conversations", value: stats.threads },
   ];
 
   return (
@@ -119,7 +143,7 @@ export function ProfileView({ role }: { role: "buyer" }) {
           <Separator className="my-5" />
 
           <div className="grid grid-cols-3 gap-2 text-center">
-            {stats.map((stat) => (
+            {statCards.map((stat) => (
               <div key={stat.label} className="rounded-lg bg-muted/60 px-2 py-3">
                 <p className="text-lg font-bold tracking-tight text-foreground">{stat.value}</p>
                 <p className="mt-0.5 text-[10px] font-medium uppercase leading-tight tracking-wide text-muted-foreground">
@@ -138,7 +162,10 @@ export function ProfileView({ role }: { role: "buyer" }) {
         >
           <form onSubmit={handleSave} className="space-y-4" noValidate>
             {error && (
-              <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive" role="alert">
+              <p
+                className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive"
+                role="alert"
+              >
                 {error}
               </p>
             )}
@@ -166,7 +193,10 @@ export function ProfileView({ role }: { role: "buyer" }) {
               <div className="space-y-2">
                 <Label htmlFor="profile-phone">Phone</Label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                  <Phone
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   <Input
                     id="profile-phone"
                     type="tel"

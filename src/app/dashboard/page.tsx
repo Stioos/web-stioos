@@ -1,42 +1,30 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAppStore, useCurrentAdmin, useCurrentUser } from "@/lib/store";
-import { useHydrated } from "@/lib/use-hydrated";
-import { replaceWithRescue } from "@/lib/safe-nav";
+import { redirect } from "next/navigation";
+import { getCurrentSession } from "@/lib/auth-server";
 import { DashboardSkeleton } from "@/components/dashboard/require-role";
 
+export const dynamic = "force-dynamic";
+
 /**
- * Dashboard entry point — routes the signed-in identity to the right
- * workspace once the persisted store has rehydrated:
- * buyer / marketplace member → /dashboard/buyer ·
- * admin-only session → /admin · signed-out → login with next=/dashboard.
+ * Dashboard entry point — server-side role router.
+ *
+ * - Admin session → `/admin`.
+ * - Buyer session → `/dashboard/buyer`.
+ * - Signed-out → `/auth/login?next=/dashboard`.
+ *
+ * `redirect()` throws during render so the skeleton below is never
+ * actually committed to the DOM — it satisfies the type checker and
+ * keeps a tiny escape hatch in case `redirect` ever no-ops.
  */
-export default function DashboardIndexPage() {
-  const router = useRouter();
-  const hydrated = useHydrated();
-  const user = useCurrentUser();
-  const currentAdminId = useAppStore((s) => s.currentAdminId);
-  const admins = useAppStore((s) => s.admins);
-  const admin = useCurrentAdmin();
-
-  useEffect(() => {
-    if (!hydrated) return;
-    // Platform staff wins ties: with a legacy blob holding both sessions
-    // (pre-v14 storage), an explicit Super Admin session must never be
-    // hijacked into the buyer workspace.
-    const adminSession = admin ?? admins.find((a) => a.id === currentAdminId);
-    if (adminSession) {
-      replaceWithRescue(router, "/admin");
-      return;
-    }
-    if (user) {
-      replaceWithRescue(router, "/dashboard/buyer");
-      return;
-    }
-    replaceWithRescue(router, "/auth/login?next=%2Fdashboard");
-  }, [hydrated, user, admin, admins, currentAdminId, router]);
-
+export default async function DashboardIndexPage() {
+  const session = await getCurrentSession();
+  if (!session) {
+    redirect("/auth/login?next=/dashboard");
+    return <DashboardSkeleton />;
+  }
+  if (session.kind === "admin") {
+    redirect("/admin");
+    return <DashboardSkeleton />;
+  }
+  redirect("/dashboard/buyer");
   return <DashboardSkeleton />;
 }

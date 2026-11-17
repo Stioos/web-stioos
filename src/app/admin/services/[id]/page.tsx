@@ -1,34 +1,36 @@
-"use client";
-
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { ChevronRight, SearchX } from "lucide-react";
+import { redirect } from "next/navigation";
 import { format } from "date-fns";
-import { useAppStore } from "@/lib/store";
-import { useHydrated } from "@/lib/use-hydrated";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronRight, SearchX } from "lucide-react";
+import { getCurrentAdmin } from "@/lib/auth-server";
+import {
+  getServiceById,
+  listCategories,
+  listSubcategories,
+} from "@/lib/api/queries";
 import { PageHeader } from "@/components/shared/page-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ServiceForm } from "@/components/admin/service-form";
 
-export default function EditServicePage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const id = params?.id ?? "";
-  const hydrated = useHydrated();
-  const service = useAppStore((s) => s.services.find((x) => x.id === id));
+export const dynamic = "force-dynamic";
 
-  if (!hydrated) {
-    return (
-      <div>
-        <Skeleton className="mb-6 h-9 w-80" />
-        <div className="space-y-4">
-          <Skeleton className="h-14 w-full rounded-lg" />
-          <Skeleton className="h-[420px] w-full rounded-lg" />
-        </div>
-      </div>
-    );
+export default async function EditServicePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const admin = await getCurrentAdmin();
+  if (!admin) {
+    redirect("/auth/login?next=/admin/services");
+    return;
   }
+  const { id } = await params;
+
+  const [service, categories, subcategories] = await Promise.all([
+    getServiceById(id),
+    listCategories(),
+    listSubcategories(),
+  ]);
 
   if (!service) {
     return (
@@ -38,7 +40,7 @@ export default function EditServicePage() {
           icon={SearchX}
           title="Service not found"
           description="This service may have been deleted or the link is out of date."
-          action={{ label: "Back to Services", onClick: () => router.push("/admin/services") }}
+          action={{ label: "Back to Services", href: "/admin/services" }}
         />
       </div>
     );
@@ -59,7 +61,13 @@ export default function EditServicePage() {
           </nav>
         }
       />
-      <ServiceForm mode="edit" initial={service} key={service.id} />
+      <ServiceForm
+        mode="edit"
+        initial={service}
+        categories={categories}
+        subcategories={subcategories}
+        key={service.id}
+      />
     </div>
   );
 }

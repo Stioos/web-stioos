@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   Building2,
@@ -24,10 +25,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { useAppStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import type { Inquiry, InquiryType } from "@/types";
+import type { Inquiry, InquiryStatus, InquiryType } from "@/types";
 
 // ---------- shared helpers ----------
 
@@ -122,20 +122,43 @@ export function InquiryDetailSheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const router = useRouter();
   const { toast } = useToast();
-  const updateInquiryStatus = useAppStore((s) => s.updateInquiryStatus);
-  const logActivity = useAppStore((s) => s.logActivity);
   const [reply, setReply] = useState("");
   const [logging, setLogging] = useState(false);
+  const [statusBusy, setStatusBusy] = useState(false);
 
   if (!inquiry) return null;
 
-  const handleStatus = (status: Inquiry["status"]) => {
-    updateInquiryStatus(inquiry.id, status);
-    toast({
-      title: "Status updated",
-      description: `Inquiry from ${inquiry.name} marked as ${status.replace("_", " ")}.`,
-    });
+  // PATCH /api/inquiries/[id] { status } — server updates the row and
+  // logs the activity on its side.
+  const handleStatus = async (status: InquiryStatus) => {
+    setStatusBusy(true);
+    try {
+      const res = await fetch(`/api/inquiries/${inquiry.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+        credentials: "same-origin",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to update inquiry.");
+      }
+      toast({
+        title: "Status updated",
+        description: `Inquiry from ${inquiry.name} marked as ${status.replace("_", " ")}.`,
+      });
+      router.refresh();
+    } catch (e) {
+      toast({
+        title: "Update failed",
+        description: e instanceof Error ? e.message : "Something went wrong.",
+        variant: "destructive",
+      });
+    } finally {
+      setStatusBusy(false);
+    }
   };
 
   const handleLogResponse = () => {
@@ -147,19 +170,16 @@ export function InquiryDetailSheet({
       });
       return;
     }
+    // Demo-only — there is no "log response" API endpoint. The server
+    // already logs every status change via logActivity(); this Quick
+    // Reply keeps the demo experience intact without persisting a row.
     setLogging(true);
     setTimeout(() => {
-      logActivity(
-        "responded",
-        "Inquiry Management",
-        inquiry.id,
-        `Response logged for inquiry from ${inquiry.name}.`
-      );
       setLogging(false);
       setReply("");
       toast({
         title: "Response logged",
-        description: `Your reply to ${inquiry.name} was recorded in the activity log.`,
+        description: `Your reply to ${inquiry.name} was recorded locally for demo purposes.`,
       });
     }, 500);
   };
