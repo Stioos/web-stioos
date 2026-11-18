@@ -1,5 +1,6 @@
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
+import { LinkHub } from "@/components/layout/link-hub";
 import { LeadModalProvider } from "@/components/shared/lead-modal";
 
 const SITE_URL = "https://stioos.global";
@@ -56,6 +57,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       />
       <PublicHeader />
       <main className="flex-1">{children}</main>
+      <LinkHub />
       <PublicFooter />
       <LeadModalProvider />
     </div>

@@ -11,9 +11,11 @@ import {
   TrendingUp, Workflow, Megaphone,
   Mail, MessageSquare, FileText, HeartHandshake,
   Briefcase, Handshake, Phone, Scale,
-  Shield, GitBranch, type LucideIcon,
+  Shield, GitBranch, HardHat, Cpu, ShoppingCart, Cog, DraftingCompass, Rocket,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { INDUSTRIES } from "@/data/content";
 
 // ============================================================
 // PUBLIC FOOTER — 6-column icon-coded design, fully theme-
@@ -50,17 +52,25 @@ const COLUMNS: FooterColumn[] = [
     ],
   },
   {
-    header: "Platform",
-    headerIcon: Layers,
+    header: "Industries",
+    headerIcon: Factory,
     accent: "text-violet-500",
-    links: [
-      { label: "Admin Platform", href: "/admin", icon: Settings },
-      { label: "Buyer Dashboard", href: "/dashboard/buyer", icon: LayoutDashboard },
-      { label: "Login", href: "/auth/login", icon: Shield },
-      { label: "Sign Up", href: "/auth/signup", icon: Users },
-      { label: "Search", href: "/search", icon: Search },
-      { label: "API Docs", href: "/services", icon: Code },
-    ],
+    links: INDUSTRIES.filter((i) => i.status === "active").slice(0, 6).map((i) => ({
+      label: i.name,
+      href: `/industries/${i.slug}`,
+      icon: ({
+        Construction: HardHat,
+        Manufacturing: Factory,
+        Technology: Cpu,
+        "Financial Services": Scale,
+        "E-Commerce": ShoppingCart,
+        Industrial: Cog,
+        "Professional Services": Briefcase,
+        Engineering: DraftingCompass,
+        Startups: Rocket,
+        Enterprises: Building2,
+      } as Record<string, LucideIcon>)[i.name] ?? Factory,
+    })),
   },
   {
     header: "Divisions",
@@ -73,6 +83,7 @@ const COLUMNS: FooterColumn[] = [
       { label: "Digital Sales", href: "/category/digital-sales-marketing", icon: Target },
       { label: "Business", href: "/category/business-enterprise-services", icon: Building2 },
       { label: "Multimedia", href: "/category/multimedia-ai-graphics", icon: Clapperboard },
+      { label: "Talent Solutions", href: "/talent-solutions", icon: Users },
     ],
   },
   {
@@ -120,7 +131,7 @@ const LEGAL_LINKS = [
   { label: "Privacy", href: "/contact", icon: Shield },
   { label: "Terms", href: "/contact", icon: Scale },
   { label: "Cookie Settings", href: "/contact", icon: Settings },
-  { label: "Sitemap", href: "/contact", icon: GitBranch },
+  { label: "Sitemap", href: "/sitemap.xml", icon: GitBranch },
 ];
 
 // STIOOS acronym — each word highlighted with a gradient.
