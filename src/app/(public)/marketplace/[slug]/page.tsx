@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Reveal } from "@/components/motion/reveal";
@@ -189,9 +189,6 @@ export default function ServiceDetailPage() {
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
 
   const services = useAppStore((s) => s.services);
-  // The generated catalog fill arrives as a deferred chunk after first
-  // paint — until then a missing service is "not loaded YET", not
-  // "not found", so deep links hold the skeleton instead of an error.
   const catalogReady = useAppStore((s) => s.catalogReady);
   const mounted = useIsHydrated();
   const heroCtaPrimary = useAppStore((s) => s.marketplaceSettings.heroCtaPrimary);
@@ -199,13 +196,64 @@ export default function ServiceDetailPage() {
   const cardCtaPrimary = useAppStore((s) => s.marketplaceSettings.cardCtaPrimary);
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestServiceTarget, setRequestServiceTarget] = useState<Service | null>(null);
-  // hero CTAs: quote / consultation share one LeadModal instance
   const [heroLead, setHeroLead] = useState<LeadType | null>(null);
 
-  const service = useMemo(
+  // Primary: find the service in the store's catalog.
+  const storeService = useMemo(
     () => services.find((s) => s.slug === slug && s.status === "published"),
     [services, slug]
   );
+
+  // ── PERMANENT FIX: fallback to static data files if the store's deferred
+  // catalog hasn't loaded (the #1 cause of "service detail not visible").
+  // The page dynamically imports the 7 division data files directly —
+  // independent of the store's hydration state — so deep links ALWAYS
+  // resolve even if ensureFullCatalog() failed or is still pending.
+  const [staticService, setStaticService] = useState<Service | null>(null);
+  useEffect(() => {
+    if (storeService) return; // store has it — no fallback needed
+    let cancelled = false;
+    (async () => {
+      try {
+        const [core, agents, tech, cloud, marketing, business, multimedia, talent] =
+          await Promise.all([
+            import("@/data/services-core"),
+            import("@/data/services-agents"),
+            import("@/data/services-tech"),
+            import("@/data/services-cloud"),
+            import("@/data/services-marketing"),
+            import("@/data/services-business"),
+            import("@/data/services-multimedia"),
+            import("@/data/services-talent"),
+          ]);
+        if (cancelled) return;
+        const all: Service[] = [
+          ...core.CORE_SERVICES,
+          ...agents.AGENT_SERVICES,
+          ...tech.TECH_SERVICES,
+          ...cloud.CLOUD_SERVICES,
+          ...marketing.MARKETING_SERVICES,
+          ...business.BUSINESS_SERVICES,
+          ...multimedia.MULTIMEDIA_SERVICES,
+          ...talent.TALENT_SERVICES,
+        ];
+        // Also inject into the store so other components (related services,
+        // CTAs) benefit — idempotent via injectAutoServices' dedup.
+        const { ensureFullCatalog } = await import("@/lib/store");
+        ensureFullCatalog();
+        const found = all.find((s) => s.slug === slug && s.status === "published");
+        if (found && !cancelled) setStaticService(found);
+      } catch {
+        // If the dynamic imports fail, the store's catalogReady fallback
+        // (2s timer in StoreHydration) will eventually show the skeleton
+        // or not-found panel.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [storeService, slug]);
+
+  // The effective service = store service OR static fallback.
+  const service = storeService ?? staticService ?? null;
 
   const related = useMemo(() => {
     if (!service) return [];
