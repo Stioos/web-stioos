@@ -456,19 +456,13 @@ export default function ServiceDetailPage() {
                     )}
                   </div>
 
-                  {/* Engaging description — 4 lines that sell the outcome */}
-                  <div className="mt-auto space-y-1.5 pt-6">
-                    <p className="text-[13px] font-semibold leading-snug text-white">
-                      {service.name} delivers measurable outcomes — not just activity.
-                    </p>
+                  {/* Engaging description — continuous paragraph (not line-broken) */}
+                  <div className="mt-auto pt-6">
                     <p className="text-[13px] leading-relaxed text-slate-300">
-                      Every engagement is scoped, staffed by senior practitioners, and backed by delivery SLAs you can hold us to.
+                      <span className="font-semibold text-white">{service.name} delivers measurable outcomes — not just activity.</span> Every engagement is scoped, staffed by senior practitioners, and backed by delivery SLAs you can hold us to. Fixed-scope proposals in 48 hours — go live in {service.timeline.toLowerCase()}. Transparent pricing, weekly demos, and complete documentation at handover.
                     </p>
-                    <p className="text-[13px] leading-relaxed text-slate-300">
-                      Fixed-scope proposals in 48 hours — go live in {service.timeline.toLowerCase()}.
-                    </p>
-                    <p className="text-[13px] leading-relaxed text-slate-300">
-                      Transparent pricing, weekly demos, and complete documentation at handover.
+                    <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+                      Scoped to your requirements after a free discovery call — clear deliverables, no surprises.
                     </p>
                   </div>
                 </div>
@@ -488,7 +482,7 @@ export default function ServiceDetailPage() {
                     />
                   </div>
 
-                {/* Request Service button + disclaimer — moved below the image */}
+                {/* Request Service button — below the image */}
                 <div className="mt-4 grid gap-2.5">
                   <Button
                     onClick={openRequest}
@@ -496,14 +490,9 @@ export default function ServiceDetailPage() {
                   >
                     {cardCtaPrimary || "Request Service"}
                   </Button>
-                </div>
-                  <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-                    Scoped to your requirements after a free discovery call — clear
-                    deliverables, no surprises.
-                  </p>
 
-                  {/* Two CTAs — moved here from the left column */}
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                  {/* Two CTAs — directly below Request Service (disclaimer moved to left column) */}
+                  <div className="flex flex-wrap items-center gap-3">
                     <Button
                       onClick={() => openHeroLead("quote")}
                       className="h-11 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 hover:bg-amber-400"
@@ -523,6 +512,7 @@ export default function ServiceDetailPage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </section>
 
