@@ -26,6 +26,18 @@ export function StoreHydration() {
       if (alive) ensureFullCatalog();
     };
 
+    // Clean up legacy persisted blobs from superseded builds (the Django/
+    // backend era wrote a v21 blob with incompatible auth fields). The
+    // current store key is v22, so v21 is harmless, but removing it avoids
+    // confusion + frees quota.
+    try {
+      ["stioos-global-v21", "stioos-global-v20", "stioos-global-v19"].forEach(
+        (k) => window.localStorage.removeItem(k)
+      );
+    } catch {
+      /* storage unavailable */
+    }
+
     // Start loading the full service catalog IMMEDIATELY — it comes
     // from static data files, not from persisted state, so it doesn't
     // need to wait for localStorage hydration. This prevents service
@@ -41,6 +53,10 @@ export function StoreHydration() {
       };
     }
 
+    // AGGRESSIVE self-healing: if the first rehydrate doesn't settle
+    // immediately, purge ALL persisted demo state + retry ONCE. The
+    // previous 3-retry/750ms loop was too slow — visitors saw skeletons
+    // for nearly a second before recovery kicked in.
     let attempts = 0;
     const timer = window.setInterval(() => {
       if (persist.hasHydrated()) {
@@ -48,26 +64,24 @@ export function StoreHydration() {
         return;
       }
       attempts += 1;
-      if (attempts > 3) {
+      if (attempts >= 1) {
         window.clearInterval(timer);
         purgePersistedDemoState();
         persist.rehydrate();
         return;
       }
       persist.rehydrate();
-    }, 250);
+    }, 150);
 
-    // Fallback: if the catalog still hasn't loaded after 3s, force the
+    // Fallback: if the catalog still hasn't loaded after 2s, force the
     // catalogReady flag and retry the load — dev-mode compilation can
     // fail on the first attempt and succeed on retry.
     const fallback = window.setTimeout(() => {
       if (alive && !useAppStore.getState().catalogReady) {
         useAppStore.setState({ catalogReady: true });
-        // Retry the catalog load in case the first attempt failed
-        // during a dev-server compilation cycle.
         ensureFullCatalog();
       }
-    }, 3000);
+    }, 2000);
 
     return () => {
       alive = false;

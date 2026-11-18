@@ -321,7 +321,7 @@ const SEED_ID_SETS: Record<string, Set<string>> = {
 // Persisted-storage key for the current build. Kept as a named constant so
 // the self-healing hydration pipeline (quarantine / purge) can reference it
 // without duplicating the literal.
-export const PERSIST_STORAGE_KEY = "stioos-global-v21";
+export const PERSIST_STORAGE_KEY = "stioos-global-v22";
 
 /**
  * Last-resort recovery for a poisoned persistence layer: drop every
@@ -1265,6 +1265,16 @@ export const useAppStore = create<AppState>()(
       name: PERSIST_STORAGE_KEY,
       storage: createJSONStorage(() => safeLocalStorage),
       skipHydration: true,
+      // Version bump discards ALL persisted state from superseded builds
+      // (the Django/backend era wrote a v21 blob with incompatible auth +
+      // session fields that left pages on infinite skeletons). migrate
+      // simply returns the current seed state — fresh data on every bump.
+      version: 1,
+      migrate: (_persisted, _version) => {
+        // Discard any old/incompatible persisted state — seed data is
+        // always authoritative on a version mismatch.
+        return useAppStore.getState() as unknown as Record<string, unknown>;
+      },
       // Self-healing hook — zustand's persist middleware SWALLOWS hydration
       // errors (corrupt/truncated JSON, any merge throw) and leaves
       // hasHydrated() === false forever, which strands every dashboard on an
