@@ -30,6 +30,7 @@ import { CountUpNumber, AnimatedBar } from "@/components/division/infographics";
 import { ServiceCard } from "@/components/marketplace/service-card";
 import { Button } from "@/components/ui/button";
 import { INDUSTRIES } from "@/data/content";
+import { MarketplaceExplorer } from "@/components/home/marketplace-explorer";
 
 // ============================================================
 // HOMEPAGE — STIOOS GLOBAL
@@ -630,61 +631,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===================== ROI CALCULATOR ===================== */}
-      <section className="border-t border-border bg-muted/40 py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <SectionHeading
-              eyebrow="ROI Model"
-              title="What does a STIOOS engagement return?"
-              description="Representative economics from active engagements. Your numbers scale with scope and outcome targets."
-            />
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mx-auto mt-10 max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
-              <div className="grid gap-8 sm:grid-cols-2">
-                {/* Investment */}
-                <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Your investment</h3>
-                  <div className="mt-4 space-y-2.5">
-                    {["Monthly engagement fee", "Implementation setup", "Internal team time"].map((label, i) => (
-                      <div key={label} className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
-                        <span className="text-xs text-muted-foreground">{label}</span>
-                        <span className="text-sm font-semibold text-foreground">{["$22K", "$15K", "40 hrs"][i]}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 rounded-xl bg-muted/60 p-3">
-                    <div className="text-xs text-muted-foreground">Total quarterly investment</div>
-                    <div className="text-2xl font-bold text-foreground">$81K</div>
-                  </div>
-                </div>
-                {/* Return */}
-                <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">Your return</h3>
-                  <div className="mt-4 grid grid-cols-2 gap-2.5">
-                    {[{ v: "$2.4M", l: "Pipeline generated" }, { v: "4.7x", l: "Blended ROAS" }, { v: "−42%", l: "Cost per SQL" }, { v: "3.2mo", l: "Payback period" }].map((m) => (
-                      <div key={m.l} className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-3">
-                        <div className="text-xl font-bold text-amber-600 dark:text-amber-400">{m.v}</div>
-                        <div className="mt-0.5 text-[11px] text-muted-foreground">{m.l}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 p-3 text-white">
-                    <div className="text-xs uppercase tracking-wider opacity-80">Total quarterly return</div>
-                    <div className="text-2xl font-bold">$2.4M</div>
-                    <div className="mt-2"><AnimatedBar pct={96} gradient="from-white to-white" /></div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-                <span className="text-sm text-muted-foreground">Net value to you</span>
-                <span className="text-xl font-bold text-foreground">$2.32M <span className="text-sm font-normal text-muted-foreground">/ quarter</span></span>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      {/* ===================== MARKETPLACE EXPLORER =====================
+          Engaging two-segmentation showcase (By Division / By Solution)
+          surfacing all 8 divisions with unique per-division styling.
+          Replaces the removed ROI calculator. */}
+      <MarketplaceExplorer />
 
       {/* ==================== AI & TECHNOLOGY HIGHLIGHT ==================== */}
       <section className="border-t border-border bg-muted/40 py-16 md:py-24">

@@ -1372,7 +1372,9 @@ function CategoryMegaMenu({
   // Canonical spec order (01 AI … 07 Talent Solutions) — matches the data
   // file, home division sections and footer; do NOT sort by service count.
   const sortedCats = useMemo(() => [...categories], [categories]);
-  const [activeId, setActiveId] = useState(sortedCats[0]?.id ?? "");
+  // Default to "Digital, Tech & AI Services" so the six-card grid is the
+  // first thing visitors see when the Browse Categories dropdown opens.
+  const [activeId, setActiveId] = useState(DIGITAL_TECH_AI_ID);
   // "Digital, Tech & AI Services" is a pseudo-division that surfaces the six
   // as-a-Service solution cards instead of a category's subcategories.
   const isSolutionsPanel = activeId === DIGITAL_TECH_AI_ID;
@@ -1397,6 +1399,70 @@ function CategoryMegaMenu({
             Solution Divisions
           </p>
           <div className="max-h-[430px] flex-1 overflow-y-auto p-2">
+            {/* ── Digital, Tech & AI Services — FIRST entry (pseudo-division
+                that surfaces the six as-a-Service solution cards in the
+                right pane instead of subcategories) ── */}
+            <Link
+              href="/solutions"
+              onClick={(e) => {
+                // Click previews the 6-card panel (doesn't navigate away);
+                // the cards + "All solutions" link handle navigation.
+                e.preventDefault();
+                setActiveId(DIGITAL_TECH_AI_ID);
+              }}
+              onMouseEnter={() => setActiveId(DIGITAL_TECH_AI_ID)}
+              onFocus={() => setActiveId(DIGITAL_TECH_AI_ID)}
+              className={cn(
+                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150",
+                isSolutionsPanel ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"
+              )}
+            >
+              {isSolutionsPanel && (
+                <span
+                  className="active-bar absolute inset-y-2 left-0 w-[3px] rounded-full bg-amber-400"
+                  aria-hidden="true"
+                />
+              )}
+              <span
+                className={cn(
+                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ring-1 transition-all duration-200",
+                  isSolutionsPanel
+                    ? "from-amber-500/25 to-blue-600/15 ring-amber-400/30"
+                    : "from-blue-600/25 to-amber-500/10 ring-white/10"
+                )}
+              >
+                <Layers
+                  className={cn(
+                    "h-[18px] w-[18px] transition-colors",
+                    isSolutionsPanel ? "text-amber-300" : "text-blue-300"
+                  )}
+                />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span
+                  className={cn(
+                    "block truncate text-sm font-semibold transition-colors",
+                    isSolutionsPanel
+                      ? "text-white"
+                      : "text-slate-200 group-hover:text-white"
+                  )}
+                >
+                  {DIGITAL_TECH_AI_NAME}
+                </span>
+                <span className="block text-[11px] text-slate-500">
+                  6 as-a-Service solutions
+                </span>
+              </span>
+              <ArrowRight
+                className={cn(
+                  "h-4 w-4 shrink-0 transition-all",
+                  isSolutionsPanel
+                    ? "translate-x-0 text-amber-400 opacity-100"
+                    : "-translate-x-1 text-slate-600 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+                )}
+              />
+            </Link>
+
             {sortedCats.map((cat) => {
               const isActive = active ? cat.id === active.id : false;
               return (
@@ -1468,72 +1534,6 @@ function CategoryMegaMenu({
                 </Link>
               );
             })}
-
-            {/* ── Digital, Tech & AI Services — the six as-a-Service
-                solution bundles (pseudo-division, surfaces a 6-card grid
-                in the right pane instead of subcategories) ── */}
-            <Link
-              href="/solutions"
-              onClick={(e) => {
-                // On touch devices (no hover) the first tap must reveal the
-                // 6-card panel instead of navigating away; desktop gets the
-                // same click-to-preview behaviour (hover already previews).
-                // The cards themselves + the "All solutions" link navigate.
-                e.preventDefault();
-                setActiveId(DIGITAL_TECH_AI_ID);
-              }}
-              onMouseEnter={() => setActiveId(DIGITAL_TECH_AI_ID)}
-              onFocus={() => setActiveId(DIGITAL_TECH_AI_ID)}
-              className={cn(
-                "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150",
-                isSolutionsPanel ? "bg-white/[0.07]" : "hover:bg-white/[0.04]"
-              )}
-            >
-              {isSolutionsPanel && (
-                <span
-                  className="active-bar absolute inset-y-2 left-0 w-[3px] rounded-full bg-amber-400"
-                  aria-hidden="true"
-                />
-              )}
-              <span
-                className={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ring-1 transition-all duration-200",
-                  isSolutionsPanel
-                    ? "from-amber-500/25 to-blue-600/15 ring-amber-400/30"
-                    : "from-blue-600/25 to-amber-500/10 ring-white/10"
-                )}
-              >
-                <Layers
-                  className={cn(
-                    "h-[18px] w-[18px] transition-colors",
-                    isSolutionsPanel ? "text-amber-300" : "text-blue-300"
-                  )}
-                />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span
-                  className={cn(
-                    "block truncate text-sm font-semibold transition-colors",
-                    isSolutionsPanel
-                      ? "text-white"
-                      : "text-slate-200 group-hover:text-white"
-                  )}
-                >
-                  {DIGITAL_TECH_AI_NAME}
-                </span>
-                <span className="block text-[11px] text-slate-500">
-                  6 as-a-Service solutions
-                </span>
-              </span>
-              <ArrowRight
-                className={cn(
-                  "h-4 w-4 shrink-0 transition-all",
-                  isSolutionsPanel
-                    ? "translate-x-0 text-amber-400 opacity-100"
-                    : "-translate-x-1 text-slate-600 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
-                )}
-              />
-            </Link>
           </div>
           <div className="border-t border-white/[0.07] p-3">
             <Link
