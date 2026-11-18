@@ -80,6 +80,7 @@ export const ServiceCard = memo(function ServiceCard({
   };
 
   return (
+    <>
     <article
       onClick={handleCardClick}
       role="link"
@@ -196,13 +197,16 @@ export const ServiceCard = memo(function ServiceCard({
           </button>
         </div>
       </div>
+    </article>
 
-      {/* Meeting booking dialog — per-card, submits as a consultation inquiry */}
+      {/* Meeting booking dialog — OUTSIDE the clickable article so it
+          never intercepts card-body clicks (root cause of "card not
+          routing"). Renders nothing visible when closed. */}
       <MeetingDialog
         service={service}
         open={meetingOpen}
         onOpenChange={setMeetingOpen}
       />
-    </article>
+    </>
   );
 });
