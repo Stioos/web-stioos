@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { memo } from "react";
-import { FileText, Heart, MessageCircle, Send, Star } from "lucide-react";
+import { memo, useState } from "react";
+import { CalendarClock, FileText, Heart, Star } from "lucide-react";
 import type { Service } from "@/types";
 import { getCategoryById } from "@/data/categories";
 import { AccentTile } from "@/components/shared/icon";
@@ -10,6 +10,7 @@ import { ToastAction } from "@/components/ui/toast";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useLoginDrawer } from "@/components/auth/login-drawer";
 import { useLeadModal } from "@/components/shared/lead-modal";
+import { MeetingDialog } from "@/components/marketplace/meeting-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { deliveryLabel } from "@/lib/marketplace-utils";
@@ -39,6 +40,7 @@ export const ServiceCard = memo(function ServiceCard({
 }: ServiceCardProps) {
   const router = useRouter();
   const { toast } = useToast();
+  const [meetingOpen, setMeetingOpen] = useState(false);
   const category = getCategoryById(service.categoryId);
   const href = `/marketplace/${service.slug}`;
   const visibleTags = service.tags.slice(0, 3);
@@ -168,34 +170,39 @@ export const ServiceCard = memo(function ServiceCard({
           <span className="text-muted-foreground">{service.timeline}</span>
         </div>
 
-        {/* Footer — three action buttons that open the lead popup */}
-        <div className="mt-auto flex items-center gap-1.5 border-t pt-3">
-          {/* Get a Quote — filled amber */}
+        {/* Footer — two equal-width CTAs */}
+        <div className="mt-auto flex items-center gap-2 border-t pt-3">
+          {/* Get a Quote — primary, filled amber */}
           <button
-            onClick={(e) => { e.stopPropagation(); useLeadModal.getState().openModal("quote", service.name); }}
-            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-md bg-amber-500 px-2 text-[11px] font-bold text-brand-ink transition-colors hover:bg-amber-400"
+            onClick={(e) => {
+              e.stopPropagation();
+              useLeadModal.getState().openModal("quote", service.name);
+            }}
+            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-2 text-[12px] font-bold text-brand-ink transition-colors hover:bg-amber-400"
           >
-            <FileText className="h-3 w-3" strokeWidth={2.2} />
+            <FileText className="h-3.5 w-3.5" strokeWidth={2.2} />
             Get a Quote
           </button>
-          {/* Request Service — outlined teal */}
+          {/* Book a Meeting — secondary, outlined violet */}
           <button
-            onClick={(e) => { e.stopPropagation(); useLeadModal.getState().openModal("service_request", service.name); }}
-            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-md border border-cyan-500/50 bg-transparent px-2 text-[11px] font-semibold text-cyan-600 transition-colors hover:bg-cyan-500/10 dark:text-cyan-400"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMeetingOpen(true);
+            }}
+            className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-violet-500/50 bg-transparent px-2 text-[12px] font-semibold text-violet-600 transition-colors hover:bg-violet-500/10 dark:text-violet-400"
           >
-            <Send className="h-3 w-3" strokeWidth={2} />
-            Request
-          </button>
-          {/* Consultation — outlined violet */}
-          <button
-            onClick={(e) => { e.stopPropagation(); useLeadModal.getState().openModal("consultation", service.name); }}
-            className="flex h-8 flex-1 items-center justify-center gap-1 rounded-md border border-violet-500/50 bg-transparent px-2 text-[11px] font-semibold text-violet-600 transition-colors hover:bg-violet-500/10 dark:text-violet-400"
-          >
-            <MessageCircle className="h-3 w-3" strokeWidth={2} />
-            Consult
+            <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />
+            Book a Meeting
           </button>
         </div>
       </div>
+
+      {/* Meeting booking dialog — per-card, submits as a consultation inquiry */}
+      <MeetingDialog
+        service={service}
+        open={meetingOpen}
+        onOpenChange={setMeetingOpen}
+      />
     </article>
   );
 });
