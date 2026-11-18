@@ -21,20 +21,16 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 /**
- * MarketplaceFilterBar — the new secondary header for the marketplace page.
+ * MarketplaceFilterBar — the secondary header for the marketplace page.
  *
- * A single horizontal row of six pill-shaped dropdown filters (Category,
- * Subcategory, Service Type, Industry, Technology, Sort) on a dark navy
- * background, with amber icons + white labels + chevrons — matching the
- * supplied design. Replaces the old hero band + left sidebar.
- *
- * Each filter is single-select (selecting a value replaces the previous
- * selection for that facet; selecting "All …" clears it).
+ * Full-width light-gray band with six equal-width white pill dropdowns
+ * (Category, Subcategory, Service Type, Industry, Technology, Sort),
+ * each with a violet icon + dark text + violet chevron. Matches the
+ * supplied design reference exactly.
  */
 interface FilterBarProps {
   filters: MarketplaceFilterState;
@@ -72,15 +68,25 @@ function PillSelect({
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger
         className={cn(
-          "h-9 w-full gap-1.5 rounded-full border border-white/10 bg-white/[0.06] px-3 text-xs font-medium text-white transition-colors hover:border-white/25 hover:bg-white/[0.1] focus:ring-amber-400/30",
-          active && "border-amber-400/40 bg-amber-400/[0.08]"
+          // white pill, light border, dark text, rounded — matches the
+          // reference design. The [&_svg:not([class*='text-'])] rule makes
+          // the chevron violet (svgs without an explicit text-* class).
+          "h-10 w-full justify-start gap-2 rounded-xl border-border bg-card px-3 text-[13px] font-medium text-foreground shadow-sm transition-colors hover:border-violet-400/50 hover:bg-violet-50/40 focus:ring-violet-400/30 [&_svg:not([class*='text-'])]:text-violet-500",
+          active && "border-violet-400 bg-violet-50 ring-1 ring-violet-400/20"
         )}
         aria-label={label}
       >
-        <Icon className={cn("h-3.5 w-3.5 shrink-0", active ? "text-amber-300" : "text-amber-400")} />
-        <span className="truncate">
+        <Icon
+          className={cn(
+            "h-4 w-4 shrink-0",
+            active ? "text-violet-600" : "text-violet-500"
+          )}
+        />
+        <span className="min-w-0 flex-1 truncate text-left">
           {label}
-          {value && value !== "__all" ? `: ${options.find((o) => o.value === value)?.label ?? value}` : ""}
+          {value && value !== "__all"
+            ? `: ${options.find((o) => o.value === value)?.label ?? value}`
+            : ""}
         </span>
       </SelectTrigger>
       <SelectContent className="max-h-72">
@@ -105,12 +111,14 @@ export function MarketplaceFilterBar({
   technologies,
   services,
 }: FilterBarProps) {
-  // Subcategories scoped to the selected category (or all).
   const scopedSubs = filters.category
-    ? subcategories.filter((s) => s.categoryId === categories.find((c) => c.slug === filters.category)?.id)
+    ? subcategories.filter(
+        (s) =>
+          s.categoryId ===
+          categories.find((c) => c.slug === filters.category)?.id
+      )
     : subcategories;
 
-  // Unique industries from the published services.
   const industries = Array.from(
     new Set(services.flatMap((s) => s.industries ?? []))
   ).sort();
@@ -128,11 +136,13 @@ export function MarketplaceFilterBar({
     (filters.technologies.length ? 1 : 0);
 
   return (
-    <section className="sticky top-[57px] z-30 border-b border-white/10 bg-brand-navy/95 backdrop-blur">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center gap-2 py-3">
+    // Full-width light-gray band — spans the entire screen (no max-w
+    // container) so the pills run edge to edge like the reference design.
+    <section className="sticky top-[57px] z-30 w-full border-b border-border bg-muted/50 backdrop-blur">
+      <div className="w-full px-3 py-2.5 sm:px-4">
+        <div className="flex flex-wrap items-stretch gap-2 sm:flex-nowrap">
           {/* Category */}
-          <div className="min-w-[140px] flex-1 sm:flex-none">
+          <div className="min-w-[130px] flex-1 sm:min-w-0">
             <PillSelect
               icon={LayoutGrid}
               label="Category"
@@ -150,7 +160,7 @@ export function MarketplaceFilterBar({
           </div>
 
           {/* Subcategory */}
-          <div className="min-w-[140px] flex-1 sm:flex-none">
+          <div className="min-w-[130px] flex-1 sm:min-w-0">
             <PillSelect
               icon={Layers}
               label="Subcategory"
@@ -161,20 +171,27 @@ export function MarketplaceFilterBar({
                 })
               }
               options={subOptions}
-              allLabel={filters.category ? "All subcategories" : "Select a category first"}
+              allLabel={
+                filters.category ? "All subcategories" : "Select a category first"
+              }
               active={filters.subcategories.length > 0}
             />
           </div>
 
           {/* Service Type */}
-          <div className="min-w-[130px] flex-1 sm:flex-none">
+          <div className="min-w-[120px] flex-1 sm:min-w-0">
             <PillSelect
               icon={Network}
               label="Service Type"
               value={filters.serviceTypes[0] ?? "__all"}
               onValueChange={(v) =>
                 updateFilters({
-                  serviceTypes: v === "__all" ? [] : [v as MarketplaceFilterState["serviceTypes"][number]],
+                  serviceTypes:
+                    v === "__all"
+                      ? []
+                      : [
+                          v as MarketplaceFilterState["serviceTypes"][number],
+                        ],
                 })
               }
               options={DELIVERY_OPTIONS}
@@ -184,7 +201,7 @@ export function MarketplaceFilterBar({
           </div>
 
           {/* Industry */}
-          <div className="min-w-[130px] flex-1 sm:flex-none">
+          <div className="min-w-[120px] flex-1 sm:min-w-0">
             <PillSelect
               icon={Briefcase}
               label="Industry"
@@ -201,7 +218,7 @@ export function MarketplaceFilterBar({
           </div>
 
           {/* Technology */}
-          <div className="min-w-[130px] flex-1 sm:flex-none">
+          <div className="min-w-[120px] flex-1 sm:min-w-0">
             <PillSelect
               icon={Code2}
               label="Technology"
@@ -218,15 +235,17 @@ export function MarketplaceFilterBar({
           </div>
 
           {/* Sort */}
-          <div className="min-w-[150px] flex-1 sm:flex-none">
+          <div className="min-w-[140px] flex-1 sm:min-w-0">
             <Select value={sort} onValueChange={(v) => setSort(v as MarketplaceSort)}>
               <SelectTrigger
-                className="h-9 w-full gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/[0.1] px-3 text-xs font-medium text-white transition-colors hover:border-amber-400/50 focus:ring-amber-400/30"
+                className="h-10 w-full justify-start gap-2 rounded-xl border-violet-300 bg-violet-50 px-3 text-[13px] font-medium text-violet-700 shadow-sm transition-colors hover:border-violet-400 hover:bg-violet-100/60 focus:ring-violet-400/30 [&_svg:not([class*='text-'])]:text-violet-500"
                 aria-label="Sort services"
               >
-                <ArrowUpDown className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-                <span className="truncate">
-                  Sort: {SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Most relevant"}
+                <ArrowUpDown className="h-4 w-4 shrink-0 text-violet-600" />
+                <span className="min-w-0 flex-1 truncate text-left">
+                  Sort:{" "}
+                  {SORT_OPTIONS.find((o) => o.value === sort)?.label ??
+                    "Most relevant"}
                 </span>
               </SelectTrigger>
               <SelectContent>
@@ -252,9 +271,9 @@ export function MarketplaceFilterBar({
                   technologies: [],
                 })
               }
-              className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full border border-white/10 px-3 text-xs font-medium text-white/70 transition-colors hover:border-white/25 hover:text-white"
+              className="inline-flex h-10 shrink-0 items-center gap-1 rounded-xl border border-border bg-card px-3 text-[13px] font-medium text-muted-foreground shadow-sm transition-colors hover:border-violet-400/50 hover:text-violet-600"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
               Clear ({activeCount})
             </button>
           )}
