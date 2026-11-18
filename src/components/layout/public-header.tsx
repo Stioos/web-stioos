@@ -162,11 +162,12 @@ export function PublicHeader() {
   // swap cleanly; other inner pages collapse it after a short scroll.
   const [pastTop, setPastTop] = useState(false);
   const isHome = pathname === "/";
-  // Service detail views (/marketplace/<slug>) never show the secondary
-  // division strip — the band directly below the main header is removed on
-  // service pages so the service content owns that space at full width.
-  const isServiceDetailView = pathname.startsWith("/marketplace/");
-  const showStrip = !isServiceDetailView && (isHome || !pastTop);
+  // Marketplace pages (/marketplace + /marketplace/<slug>) never show the
+  // secondary division strip — the marketplace has its own filter bar as
+  // the secondary header, so the division pills would duplicate it.
+  const isMarketplacePage =
+    pathname === "/marketplace" || pathname.startsWith("/marketplace/");
+  const showStrip = !isMarketplacePage && (isHome || !pastTop);
   // TALENT SECTION — on talent pages the secondary strip swaps from the
   // six marketplace division pills to the 9 Talent Solutions options, each
   // with a flyout of its 8 sub-pages (the only way those pages surface).
@@ -742,7 +743,7 @@ export function PublicHeader() {
       {/* Mobile quick-scroll strip — mirrors the desktop secondary header
           (talent options on talent pages, divisions everywhere else).
           Service detail views hide both strips entirely. */}
-      {!isServiceDetailView && (
+      {!isMarketplacePage && (
       <div className="border-b border-white/[0.06] bg-brand-ink lg:hidden">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-4 py-2">
           {isTalentSection
