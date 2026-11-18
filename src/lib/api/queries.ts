@@ -1,4 +1,5 @@
-import { cookies } from "next/headers";
+import { cache } from "react";
+import { cookies, headers } from "next/headers";
 import type {
   ActivityLog,
   AdminUser,
@@ -27,29 +28,47 @@ import type {
  * `stioos-session` cookie so Django can scope the response (admin sees all,
  * buyer sees own).
  *
- * Signatures are preserved from the Prisma-based version so the dashboard
- * page.tsx files need no changes.
+ * `apiGet` is wrapped in React `cache()` so redundant calls within ONE
+ * request (e.g. getBuyerOverview + listBuyerOrders both hitting
+ * /api/orders) collapse into a single Django round-trip. Signatures are
+ * preserved from the Prisma-based version so the dashboard page.tsx files
+ * need no changes.
  */
 
-const DJANGO = "http://localhost:8000";
+const DJANGO = "http://127.0.0.1:8000";
 
 async function cookieHeader(): Promise<Record<string, string>> {
-  const c = await cookies();
-  const token = c.get("stioos-session")?.value;
-  return token ? { cookie: `stioos-session=${token}` } : {};
+  const h = await headers();
+  const raw = h.get("cookie");
+  if (raw) return { cookie: raw };
+  const token = (await cookies()).get("stioos-session")?.value;
+  if (token) return { cookie: `stioos-session=${token}` };
+  return {};
 }
 
-async function apiGet<T>(path: string, fallback: T): Promise<T> {
+/**
+ * Cached raw fetch — deduplicated by `path` (a string compared by
+ * `Object.is`) within a single request via React `cache()`. Returns the
+ * parsed JSON or `undefined` on any error. The `fallback` is applied by
+ * the wrapper below so it never participates in the cache key (otherwise a
+ * fresh `{ services: [] }` literal per call would break deduplication).
+ */
+const rawApiGet = cache(async (path: string): Promise<unknown | undefined> => {
   try {
     const res = await fetch(`${DJANGO}${path}`, {
       headers: await cookieHeader(),
       cache: "no-store",
     });
-    if (!res.ok) return fallback;
-    return (await res.json()) as T;
+    if (!res.ok) return undefined;
+    return await res.json();
   } catch {
-    return fallback;
+    return undefined;
   }
+});
+
+async function apiGet<T>(path: string, fallback: T): Promise<T> {
+  const data = await rawApiGet(path);
+  return (data as T | undefined) ?? fallback;
 }
 
 // ---------- catalog reads ----------
