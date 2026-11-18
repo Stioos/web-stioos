@@ -3,9 +3,9 @@
 import { Suspense, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAppStore } from "@/lib/store";
 import { resolveRedirect, type LoginRole } from "@/lib/auth";
 import { pushWithRescue } from "@/lib/safe-nav";
-import { useCurrentUser } from "@/hooks/use-current-user";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +44,10 @@ function LoginForm() {
   const params = useSearchParams();
   const next = params.get("next");
   const { toast } = useToast();
-  const { refresh } = useCurrentUser();
+
+  const marketLogin = useAppStore((s) => s.marketLogin);
+  const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
+  const quickLogin = useAppStore((s) => s.quickLogin);
 
   // Remembered email is read via useSyncExternalStore: the server snapshot is
   // empty and the client value applies right after hydration — no effect
@@ -88,7 +91,41 @@ function LoginForm() {
     setTimeout(() => window.location.reload(), 400);
   };
 
-  const finishSignIn = (role: LoginRole, name: string) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (!email.trim() || !password) {
+      setError("Enter your email address and password to continue.");
+      return;
+    }
+    setSubmitting(true);
+    await new Promise((r) => setTimeout(r, 700));
+
+    const result = marketLogin(email, password);
+    if (!result.ok) {
+      const base = result.error ?? "Unable to sign in.";
+      const hint = base.startsWith("No ")
+        ? " Demo accounts: buyer@stioos.com (Buyer) or aarav@stioos.com (Super Admin) — password demo1234."
+        : "";
+      setError(base + hint);
+      setSubmitting(false);
+      return;
+    }
+
+    if (remember) {
+      window.localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
+    } else {
+      window.localStorage.removeItem(REMEMBER_KEY);
+    }
+
+    const state = useAppStore.getState();
+    const lower = email.trim().toLowerCase();
+    const marketUser = state.users.find((u) => u.email.toLowerCase() === lower);
+    const adminUser = state.admins.find((a) => a.email.toLowerCase() === lower);
+    const name = marketUser?.name ?? adminUser?.name ?? "there";
+    const role: LoginRole =
+      result.role ?? (marketUser?.role as LoginRole | undefined) ?? "member";
+
     toast({
       title: `Welcome back, ${name}`,
       description:
@@ -99,125 +136,46 @@ function LoginForm() {
     pushWithRescue(router, resolveRedirect(next, role));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!email.trim() || !password) {
-      setError("Enter your email address and password to continue.");
-      return;
-    }
-    setSubmitting(true);
-
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-      const data = (await res.json().catch(() => ({}))) as
-        | { ok: true; role: "buyer" | "admin"; user?: { name: string }; admin?: { name: string } }
-        | { ok?: false; error?: string };
-
-      if (res.ok && data.ok && data.role) {
-        if (remember) {
-          window.localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
-        } else {
-          window.localStorage.removeItem(REMEMBER_KEY);
-        }
-        await refresh();
-        const name =
-          data.role === "buyer"
-            ? data.user?.name ?? "there"
-            : data.admin?.name ?? "there";
-        finishSignIn(data.role as LoginRole, name);
-        return;
-      }
-
-      const base = data.error ?? "Unable to sign in.";
-      const hint = base.toLowerCase().startsWith("no ")
-        ? " Demo accounts: buyer@stioos.com (Buyer) or aarav@stioos.com (Super Admin) — password demo1234."
-        : "";
-      setError(base + hint);
-    } catch {
-      setError("Network error — please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleQuickMarketLogin = async () => {
-    setQuickBusy("usr-mkt-buyer");
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ email: "buyer@stioos.com", password: "demo1234" }),
-      });
-      const data = (await res.json().catch(() => ({}))) as
-        | { ok: true; role: "buyer" | "admin"; user?: { name: string } }
-        | { ok?: false; error?: string };
-      if (res.ok && data.ok && data.role === "buyer") {
-        await refresh();
-        toast({
-          title: `Welcome back, ${data.user?.name ?? "there"}`,
-          description: `Signed in to your buyer workspace.`,
-        });
-        pushWithRescue(router, resolveRedirect(next, "buyer"));
-        return;
-      }
-      toast({
-        title: "Demo account unavailable",
-        description: data.error ?? "Could not sign in to this demo account. Please try again.",
-        variant: "destructive",
-      });
-    } catch {
+  const handleQuickMarketLogin = async (userId: string) => {
+    setQuickBusy(userId);
+    await new Promise((r) => setTimeout(r, 400));
+    const result = quickMarketLogin(userId);
+    if (!result.ok) {
       toast({
         title: "Demo account unavailable",
         description: "Could not sign in to this demo account. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setQuickBusy(null);
+      return;
     }
+    const user = useAppStore.getState().users.find((u) => u.id === userId);
+    toast({
+      title: `Welcome back, ${user?.name ?? "there"}`,
+      description: `Signed in to your ${result.role ?? "marketplace"} workspace.`,
+    });
+    pushWithRescue(router, resolveRedirect(next, result.role));
   };
 
   const handleQuickAdminLogin = async () => {
     setQuickBusy("adm-001");
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ email: "aarav@stioos.com", password: "demo1234" }),
-      });
-      const data = (await res.json().catch(() => ({}))) as
-        | { ok: true; role: "buyer" | "admin"; admin?: { name: string; title?: string } }
-        | { ok?: false; error?: string };
-      if (res.ok && data.ok && data.role === "admin") {
-        await refresh();
-        toast({
-          title: `Welcome back, ${data.admin?.name ?? "there"}`,
-          description: `Signed in as ${data.admin?.title ?? "Super Admin"}.`,
-        });
-        pushWithRescue(router, resolveRedirect(next, "member"));
-        return;
-      }
-      toast({
-        title: "Demo account unavailable",
-        description: data.error ?? "Could not sign in to the admin demo. Please try again.",
-        variant: "destructive",
-      });
-    } catch {
+    await new Promise((r) => setTimeout(r, 400));
+    const admin = useAppStore.getState().admins.find((a) => a.id === "adm-001");
+    if (!admin) {
       toast({
         title: "Demo account unavailable",
         description: "Could not sign in to the admin demo. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setQuickBusy(null);
+      return;
     }
+    quickLogin(admin.id);
+    toast({
+      title: `Welcome back, ${admin.name}`,
+      description: `Signed in as ${admin.title}.`,
+    });
+    pushWithRescue(router, resolveRedirect(next, "member"));
   };
 
   const quickBusyAny =
@@ -342,11 +300,11 @@ function LoginForm() {
             variant="outline"
             className="w-full justify-between"
             disabled={quickBusyAny}
-            onClick={handleQuickMarketLogin}
+            onClick={() => handleQuickMarketLogin("usr-mkt-buyer")}
           >
             <span className="flex items-center gap-2">
               <ShoppingBag className="h-4 w-4 text-violet-600" />
-              Buyer — demo account
+              Buyer — Meera Krishnan
             </span>
             {quickBusy === "usr-mkt-buyer" ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -362,7 +320,7 @@ function LoginForm() {
           >
             <span className="flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-amber-600" />
-              Super Admin — demo account
+              Super Admin — Aarav Mehta
             </span>
             {quickBusy === "adm-001" ? (
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

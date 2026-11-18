@@ -21,8 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TalentMegaMenu } from "@/components/layout/talent-mega-menu";
 import { TalentStripMenu } from "@/components/layout/talent-strip-menu";
-import { useAppStore } from "@/lib/store";
-import { useCurrentUser, signOutCurrent } from "@/hooks/use-current-user";
+import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useLoginDrawer, LoginDrawer } from "@/components/auth/login-drawer";
 import { deliveryLabel } from "@/lib/marketplace-utils";
 import { subIconFor } from "@/lib/sub-icons";
@@ -620,20 +619,10 @@ export function PublicHeader() {
                         >
                           <Link
                             href={`/talent-solutions/${opt.slug}`}
-                            onClick={(e) => {
-                              // Touch devices have no hover: first tap reveals
-                              // the option's sub-page flyout, second tap navigates.
-                              if (
-                                typeof window !== "undefined" &&
-                                window.matchMedia("(hover: none)").matches &&
-                                openStrip !== menuId
-                              ) {
-                                e.preventDefault();
-                                clearTimers();
-                                setStripAnchor(pillRefs.current[menuId] ?? null);
-                                setOpenStrip(menuId);
-                                return;
-                              }
+                            onClick={() => {
+                              // Always navigate on click — the hover flyout
+                              // (onMouseEnter) provides a desktop preview; on
+                              // touch devices tapping goes straight to the page.
                               dismissFlyouts();
                             }}
                             tabIndex={showStrip ? 0 : -1}
@@ -690,20 +679,10 @@ export function PublicHeader() {
                     >
                       <Link
                         href={`/category/${cat.slug}`}
-                        onClick={(e) => {
-                          // Touch devices have no hover: first tap reveals the
-                          // division flyout, second tap navigates to the division.
-                          if (
-                            typeof window !== "undefined" &&
-                            window.matchMedia("(hover: none)").matches &&
-                            openStrip !== cat.id
-                          ) {
-                            e.preventDefault();
-                            clearTimers();
-                            setStripAnchor(pillRefs.current[cat.id] ?? null);
-                            setOpenStrip(cat.id);
-                            return;
-                          }
+                        onClick={() => {
+                          // Always navigate on click — the hover flyout
+                          // (onMouseEnter) provides a desktop preview; on
+                          // touch devices tapping goes straight to the page.
                           dismissFlyouts();
                         }}
                         tabIndex={showStrip ? 0 : -1}
@@ -816,11 +795,12 @@ export function PublicHeader() {
 // ============================================================
 
 function AccountButton() {
-  const { user, admin, kind, isAuthenticated, refresh } = useCurrentUser();
+  const user = useCurrentUser();
+  const marketLogout = useAppStore((s) => s.marketLogout);
   const router = useRouter();
   const openLoginDrawer = useLoginDrawer((s) => s.openDrawer);
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <Button
         onClick={openLoginDrawer}
@@ -831,20 +811,9 @@ function AccountButton() {
     );
   }
 
-  const accountName = kind === "buyer" ? user?.name ?? "there" : admin?.name ?? "there";
-  const accountRole = kind === "buyer" ? user?.role ?? "buyer" : "member";
-  const initials = accountName
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("");
-  const dashHome = kind === "buyer" ? "/dashboard/buyer" : "/admin";
-
-  const handleSignOut = async () => {
-    await signOutCurrent();
-    await refresh();
-    router.push("/");
-  };
+  const initials = user.name.split(" ").map((p) => p[0]).slice(0, 2).join("");
+  const dashHome =
+    user.role === "buyer" ? "/dashboard/buyer" : "/dashboard";
 
   return (
     <DropdownMenu>
@@ -857,15 +826,15 @@ function AccountButton() {
             {initials}
           </span>
           <span className="hidden max-w-24 truncate text-sm font-medium text-slate-200 xl:block">
-            {accountName.split(" ")[0]}
+            {user.name.split(" ")[0]}
           </span>
           <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuLabel>
-          <p className="truncate text-sm font-semibold">{accountName}</p>
-          <p className="text-xs font-normal capitalize text-muted-foreground">{accountRole} workspace</p>
+          <p className="truncate text-sm font-semibold">{user.name}</p>
+          <p className="text-xs font-normal capitalize text-muted-foreground">{user.role} workspace</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push(dashHome)}>
@@ -877,7 +846,10 @@ function AccountButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="text-destructive focus:text-destructive"
-          onClick={handleSignOut}
+          onClick={() => {
+            marketLogout();
+            router.push("/");
+          }}
         >
           <LogOut className="h-4 w-4" /> Sign out
         </DropdownMenuItem>
@@ -887,13 +859,15 @@ function AccountButton() {
 }
 
 function MobileAccountSection({ onNavigate }: { onNavigate?: () => void }) {
-  const { kind, isAuthenticated, refresh } = useCurrentUser();
+  const user = useCurrentUser();
+  const marketLogout = useAppStore((s) => s.marketLogout);
   const router = useRouter();
   const openLoginDrawer = useLoginDrawer((s) => s.openDrawer);
 
-  const dashHome = kind === "buyer" ? "/dashboard/buyer" : "/admin";
+  const dashHome =
+    user?.role === "buyer" ? "/dashboard/buyer" : "/dashboard";
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div className="mt-2 flex flex-col gap-2">
         <Button
@@ -914,13 +888,6 @@ function MobileAccountSection({ onNavigate }: { onNavigate?: () => void }) {
     );
   }
 
-  const handleSignOut = async () => {
-    await signOutCurrent();
-    await refresh();
-    onNavigate?.();
-    router.push("/");
-  };
-
   return (
     <div className="mt-2 flex flex-col gap-2">
       <Button
@@ -934,7 +901,11 @@ function MobileAccountSection({ onNavigate }: { onNavigate?: () => void }) {
       <Button
         variant="outline"
         className="h-11 border-white/15 bg-transparent text-slate-200 hover:bg-white/10 hover:text-white"
-        onClick={handleSignOut}
+        onClick={() => {
+          marketLogout();
+          onNavigate?.();
+          router.push("/");
+        }}
       >
         <LogOut className="h-4 w-4" /> Sign out
       </Button>

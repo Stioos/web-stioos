@@ -7,7 +7,8 @@ import {
   ArrowDown, ArrowUp, ExternalLink, Loader2, Plus, RefreshCw, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { Category, Service, ServiceProcessStep, Subcategory } from "@/types";
+import { useAppStore, useCurrentAdmin } from "@/lib/store";
+import type { Service, ServiceProcessStep } from "@/types";
 import { INDUSTRIES } from "@/data/content";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -278,15 +279,16 @@ function ProcessEditor({
 export function ServiceForm({
   initial,
   mode,
-  categories,
-  subcategories,
 }: {
   initial?: Service;
   mode: "create" | "edit";
-  categories: Category[];
-  subcategories: Subcategory[];
 }) {
   const router = useRouter();
+  const admin = useCurrentAdmin();
+  const categories = useAppStore((s) => s.categories);
+  const subcategories = useAppStore((s) => s.subcategories);
+  const addService = useAppStore((s) => s.addService);
+  const updateService = useAppStore((s) => s.updateService);
 
   const [draft, setDraft] = useState<Partial<Service>>(() => draftFrom(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -328,7 +330,7 @@ export function ServiceForm({
     return errs;
   };
 
-  const submit = async (intent: "draft" | "published") => {
+  const submit = (intent: "draft" | "published") => {
     const forPublish = intent === "published";
     const errs = validate(forPublish);
     if (Object.keys(errs).length > 0) {
@@ -345,66 +347,38 @@ export function ServiceForm({
     }
     setErrors({});
     setBusy(intent);
-
-    const payload: Partial<Service> = {
-      ...draft,
-      name: draft.name!.trim(),
-      slug: draft.slug?.trim() || slugify(draft.name ?? ""),
-      shortDescription: draft.shortDescription!.trim(),
-      tags: (draft.tags ?? []).map((t) => t.trim()).filter(Boolean),
-      industries: draft.industries ?? [],
-      problemsSolved: (draft.problemsSolved ?? []).map((v) => v.trim()).filter(Boolean),
-      capabilities: (draft.capabilities ?? []).map((v) => v.trim()).filter(Boolean),
-      deliverables: (draft.deliverables ?? []).map((v) => v.trim()).filter(Boolean),
-      technologies: (draft.technologies ?? []).map((v) => v.trim()).filter(Boolean),
-      process: (draft.process ?? []).filter((p) => p.title.trim() || p.description.trim()),
-      status: forPublish ? "published" : (draft.status ?? "draft"),
-    };
-
-    try {
+    window.setTimeout(() => {
+      const payload: Partial<Service> = {
+        ...draft,
+        name: draft.name!.trim(),
+        slug: draft.slug?.trim() || slugify(draft.name ?? ""),
+        shortDescription: draft.shortDescription!.trim(),
+        tags: (draft.tags ?? []).map((t) => t.trim()).filter(Boolean),
+        industries: draft.industries ?? [],
+        problemsSolved: (draft.problemsSolved ?? []).map((v) => v.trim()).filter(Boolean),
+        capabilities: (draft.capabilities ?? []).map((v) => v.trim()).filter(Boolean),
+        deliverables: (draft.deliverables ?? []).map((v) => v.trim()).filter(Boolean),
+        technologies: (draft.technologies ?? []).map((v) => v.trim()).filter(Boolean),
+        process: (draft.process ?? []).filter((p) => p.title.trim() || p.description.trim()),
+      };
       if (mode === "create") {
-        const res = await fetch("/api/services", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          credentials: "same-origin",
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to create service.");
-        }
+        const created = addService({ ...payload, status: intent, createdBy: admin?.name ?? "You" });
+        setBusy(null);
         toast({
           title: forPublish ? "Service published" : "Service created as draft",
-          description: `"${payload.name}" was ${forPublish ? "published to the marketplace" : "saved as a draft"}.`,
+          description: `"${created.name}" was ${forPublish ? "published to the marketplace" : "saved as a draft"}.`,
         });
         router.push("/admin/services");
       } else if (initial) {
-        const res = await fetch(`/api/services/${initial.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          credentials: "same-origin",
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Failed to update service.");
-        }
+        const patch: Partial<Service> = forPublish ? { ...payload, status: "published" } : payload;
+        updateService(initial.id, patch);
         setDraft((d) => ({ ...d, status: forPublish ? "published" : d.status }));
-        toast({
-          title: "Service updated",
-          description: `"${payload.name}" was saved successfully.`,
-        });
-        router.refresh();
+        setBusy(null);
+        toast({ title: "Service updated", description: `"${payload.name}" was saved successfully.` });
+      } else {
+        setBusy(null);
       }
-    } catch (e) {
-      toast({
-        title: "Save failed",
-        description: e instanceof Error ? e.message : "Something went wrong.",
-        variant: "destructive",
-      });
-    } finally {
-      setBusy(null);
-    }
+    }, 900);
   };
 
   const err = (k: string) => (errors[k] ? cn("border-red-400 focus-visible:ring-red-200") : undefined);

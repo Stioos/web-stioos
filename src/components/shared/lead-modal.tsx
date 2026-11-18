@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, Loader2, FileText, MessageCircle, Phone, Send, UserPlus } from "lucide-react";
 import {
   Dialog,
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { useAppStore, useCurrentUser } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import {
   BuyerRegistrationForm,
@@ -32,9 +32,10 @@ import type { InquiryType } from "@/types";
 // ============================================================
 // LEAD MODAL — fully functional conversion form behind the four
 // action-bar CTAs (Get A Quote / Enquiry / Consultation / Contact).
-// Visitor-entered data is captured through the real inquiry API
-// (POST /api/inquiries) and the returned reference is shown in the
-// success panel.
+// Visitor-entered data is captured through the app store
+// (addInquiry → persisted locally) and shows up instantly in
+// Admin → Inquiries, complete with the page/service context the
+// visitor started from.
 //
 // BUYER-CAPTURE GATE: when "Require buyer registration" is on in
 // Admin → Settings → Marketplace and no buyer is signed in, the
@@ -165,46 +166,14 @@ function LeadForm({
   onClose: () => void;
 }) {
   const { toast } = useToast();
-  const { user } = useCurrentUser();
-
-  // Read the marketplace's "Require buyer registration" flag once per
-  // mount from the public settings endpoint. Until it resolves we assume
-  // the gate is on (the legacy default), so the funnel keeps capturing
-  // serious buyers even if the fetch is slow.
-  const [requireRegistration, setRequireRegistration] = useState<boolean>(true);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch("/api/settings", {
-          method: "GET",
-          cache: "no-store",
-          credentials: "same-origin",
-        });
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          marketplace?: { requireLeadRegistration?: boolean } | null;
-        };
-        if (cancelled) return;
-        if (
-          data?.marketplace &&
-          typeof data.marketplace.requireLeadRegistration === "boolean"
-        ) {
-          setRequireRegistration(data.marketplace.requireLeadRegistration);
-        }
-      } catch {
-        // leave the default
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const addInquiry = useAppStore((s) => s.addInquiry);
+  const requireRegistration = useAppStore((s) => s.marketplaceSettings.requireLeadRegistration);
+  const currentUser = useCurrentUser();
 
   // Funnel state: guests (when the gate is on) see the registration
   // step first; everyone else lands directly on the lead form.
   const [step, setStep] = useState<"register" | "lead">(
-    requireRegistration && !user ? "register" : "lead"
+    requireRegistration && !currentUser ? "register" : "lead"
   );
   const [registeredHere, setRegisteredHere] = useState(false);
 
@@ -217,14 +186,14 @@ function LeadForm({
 
   /** registration step succeeded → sign-in happened inside the form;
       pre-fill the lead form from the (new or existing) buyer account. */
-  const handleRegistered = ({ user: u, existing }: BuyerRegistrationResult) => {
+  const handleRegistered = ({ user, existing }: BuyerRegistrationResult) => {
     if (!existing) setRegisteredHere(true);
     setForm((f) => ({
       ...f,
-      name: u.name,
-      email: u.email,
-      company: u.company || "",
-      phone: u.phone || f.phone,
+      name: user.name,
+      email: user.email,
+      company: user.company || "",
+      phone: user.phone || f.phone,
     }));
     setStep("lead");
   };
@@ -247,52 +216,29 @@ function LeadForm({
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    try {
-      const res = await fetch("/api/inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          company: form.company.trim(),
-          phone: form.phone.trim(),
-          type,
-          serviceName: context,
-          requirements: form.message.trim(),
-          budgetRange: form.budgetRange || "Not specified",
-          timeline: form.timeline || "Not specified",
-        }),
+    window.setTimeout(() => {
+      const inquiry = addInquiry({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        company: form.company.trim(),
+        phone: form.phone.trim(),
+        type,
+        serviceName: context,
+        requirements: form.message.trim(),
+        budgetRange: form.budgetRange || "Not specified",
+        timeline: form.timeline || "Not specified",
       });
-      const data = (await res.json().catch(() => ({}))) as
-        | { ok: true; inquiry: { id: string; reference: string } }
-        | { ok?: false; error?: string };
-      if (res.ok && data.ok && data.inquiry) {
-        setReference(data.inquiry.reference || data.inquiry.id.toUpperCase());
-        toast({
-          title: `${displayTitle} — received`,
-          description: "Our expert team will respond within one business day.",
-        });
-        return;
-      }
-      toast({
-        title: "Could not send your request",
-        description: data.error ?? "Please try again in a moment.",
-        variant: "destructive",
-      });
-    } catch {
-      toast({
-        title: "Network error",
-        description: "Please check your connection and try again.",
-        variant: "destructive",
-      });
-    } finally {
+      setReference(inquiry.id.toUpperCase());
       setSubmitting(false);
-    }
+      toast({
+        title: `${displayTitle} — received`,
+        description: "Our expert team will respond within one business day.",
+      });
+    }, 700);
   };
 
   // ---------- success panel ----------

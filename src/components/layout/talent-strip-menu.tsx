@@ -125,7 +125,7 @@ export function TalentStripMenu({
           </div>
           <Link
             href={`/talent-solutions/${option.slug}`}
-            onClick={onClose}
+            onClick={() => setTimeout(onClose, 60)}
             className={cn(
               "hidden shrink-0 items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold transition-colors hover:bg-white/[0.09] sm:inline-flex",
               "text-slate-200"
@@ -148,7 +148,7 @@ export function TalentStripMenu({
                 <Link
                   key={sub.slug}
                   href={`/talent-solutions/${option.slug}/${sub.slug}`}
-                  onClick={onClose}
+                  onClick={() => setTimeout(onClose, 60)}
                   className={cn(
                     "group/sub flex flex-col rounded-xl border p-3 transition-all duration-150",
                     isActive
@@ -204,7 +204,7 @@ export function TalentStripMenu({
           </span>
           <Link
             href={`/talent-solutions/${option.slug}`}
-            onClick={onClose}
+            onClick={() => setTimeout(onClose, 60)}
             className={cn("text-[11px] font-semibold transition-colors", accent.link)}
           >
             View the full option →

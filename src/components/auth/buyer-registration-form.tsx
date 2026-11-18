@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrentUser } from "@/hooks/use-current-user";
+import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { User as PlatformUser } from "@/types";
 
@@ -244,7 +244,8 @@ export function BuyerRegistrationForm({
   hideTypeSelector = false,
 }: BuyerRegistrationFormProps) {
   const { toast } = useToast();
-  const { refresh } = useCurrentUser();
+  const signUp = useAppStore((s) => s.signUp);
+  const marketLogin = useAppStore((s) => s.marketLogin);
 
   const [form, setForm] = useState<FormState>(INITIAL);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -348,83 +349,63 @@ export function BuyerRegistrationForm({
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     if (!validate()) return;
 
     setSubmitting(true);
-    // Build the API payload from the captured fields.
-    const cleanEmail = form.email.trim().toLowerCase();
-    const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.replace(/\s+/g, " ");
-    const fullPhone = `${form.dial === "+" ? "" : form.dial} ${form.phone.trim()}`.trim();
-    const isCompany = activeTrack === "company";
+    window.setTimeout(() => {
+      const cleanEmail = form.email.trim().toLowerCase();
+      const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.replace(/\s+/g, " ");
+      const fullPhone = `${form.dial === "+" ? "" : form.dial} ${form.phone.trim()}`.trim();
+      const isCompany = activeTrack === "company";
 
-    const payload = {
-      name: fullName,
-      email: cleanEmail,
-      password: form.password,
-      role: "buyer" as const,
-      registrationType: activeTrack,
-      company: isCompany ? form.company.trim() : "",
-      country: form.country,
-      phone: fullPhone,
-      phoneCountry: form.dial,
-      accountType: accountTypeValue,
-      profession: isCompany ? undefined : form.profession.trim(),
-      companySize: isCompany ? form.companySize : undefined,
-      intent: form.intent,
-      intentTimeline: form.intentTimeline,
-      registrationSource: source,
-    };
-
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify(payload),
+      const result = signUp({
+        name: fullName,
+        email: cleanEmail,
+        password: form.password,
+        role: "buyer",
+        registrationType: activeTrack,
+        company: isCompany ? form.company.trim() : "",
+        country: form.country,
+        phone: fullPhone,
+        phoneCountry: form.dial,
+        accountType: accountTypeValue,
+        profession: isCompany ? undefined : form.profession.trim(),
+        companySize: isCompany ? form.companySize : undefined,
+        intent: form.intent,
+        intentTimeline: form.intentTimeline,
+        registrationSource: source,
       });
-      const data = (await res.json().catch(() => ({}))) as
-        | { ok: true; user: PlatformUser }
-        | { ok?: false; error?: string };
 
-      if (res.ok && data.ok && data.user) {
-        await refresh();
+      if (result.ok && result.user) {
         setSubmitting(false);
         toast({
-          title: `Welcome to STIOOS, ${data.user.name.split(" ")[0]}`,
+          title: `Welcome to STIOOS, ${result.user.name.split(" ")[0]}`,
           description: "Your buyer account is ready — serious buyers only, and you're verified in.",
         });
-        onRegistered({ user: data.user, existing: false });
+        onRegistered({ user: result.user, existing: false });
         return;
       }
 
-      // Email already registered → fall back to signing that account in
-      // with the entered password so the visitor continues frictionlessly.
-      const errMsg = (data as { error?: string }).error ?? "";
-      if (
-        errMsg.toLowerCase().includes("already exists") ||
-        errMsg.toLowerCase().includes("in use")
-      ) {
-        const loginRes = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "same-origin",
-          body: JSON.stringify({ email: cleanEmail, password: form.password }),
-        });
-        const loginData = (await loginRes.json().catch(() => ({}))) as
-          | { ok: true; role: "buyer" | "admin"; user?: PlatformUser; admin?: unknown }
-          | { ok?: false; error?: string };
-        if (loginRes.ok && loginData.ok && loginData.role === "buyer" && loginData.user) {
-          await refresh();
-          setSubmitting(false);
-          toast({
-            title: "Welcome back",
-            description: "You already have a buyer account — signed you in.",
-          });
-          onRegistered({ user: loginData.user, existing: true });
-          return;
+      // Email already registered → sign that account in with the entered
+      // password so the visitor continues without friction.
+      if ((result.error ?? "").includes("already exists")) {
+        const login = marketLogin(cleanEmail, form.password);
+        if (login.ok) {
+          const existing = useAppStore
+            .getState()
+            .users.find((u) => u.email.toLowerCase() === cleanEmail);
+          if (existing) {
+            setSubmitting(false);
+            toast({
+              title: "Welcome back",
+              description: "You already have a buyer account — signed you in.",
+            });
+            onRegistered({ user: existing, existing: true });
+            return;
+          }
         }
         setSubmitting(false);
         setFormError(
@@ -434,11 +415,8 @@ export function BuyerRegistrationForm({
       }
 
       setSubmitting(false);
-      setFormError(errMsg || "Unable to create your account.");
-    } catch {
-      setSubmitting(false);
-      setFormError("Network error — please try again.");
-    }
+      setFormError(result.error ?? "Unable to create your account.");
+    }, 650);
   };
 
   const gap = isModal ? "space-y-3.5" : "space-y-4 lg:space-y-2.5";

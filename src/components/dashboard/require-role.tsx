@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Loader2, RotateCcw, ShieldAlert } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser, purgePersistedDemoState, useAppStore } from "@/lib/store";
+import { useHydrated } from "@/lib/use-hydrated";
+import { replaceWithRescue } from "@/lib/safe-nav";
 
 /**
  * Escape hatch shown when the dashboard skeleton is still on screen after
@@ -40,17 +44,8 @@ function StalledHydrationNotice() {
           disabled={resetting}
           onClick={() => {
             setResetting(true);
-            // Best-effort wipe of any stale persisted demo state, then reload.
-            try {
-              for (let i = localStorage.length - 1; i >= 0; i--) {
-                const key = localStorage.key(i);
-                if (key && (key.startsWith("stioos-") || key.startsWith("jobsonn-"))) {
-                  localStorage.removeItem(key);
-                }
-              }
-            } catch {
-              /* ignore */
-            }
+            purgePersistedDemoState();
+            useAppStore.persist.rehydrate();
             setTimeout(() => window.location.reload(), 300);
           }}
         >
@@ -67,8 +62,8 @@ function StalledHydrationNotice() {
 }
 
 /**
- * Pulsing placeholder shown while a redirect is in flight or while a
- * page is being fetched server-side. Reused by the dashboard entry point.
+ * Pulsing placeholder shown while the persisted store hydrates or while an
+ * auth redirect is in flight. Reused by the dashboard shell and pages.
  * Includes a stalled-hydration notice so the skeleton can never silently
  * spin forever.
  */
@@ -105,17 +100,39 @@ export function DashboardSkeleton() {
 }
 
 /**
- * Thin presentational wrapper — auth gating for the buyer dashboard is now
- * enforced server-side by `/dashboard/buyer/layout.tsx` (which calls
- * `getCurrentBuyer()` and redirects unauthenticated visitors to the login
- * page). This component just renders its children so any existing call
- * sites keep working without touching the layout.
+ * Hydration-aware dashboard guard.
+ * - Renders a skeleton until the persisted store has rehydrated.
+ * - Signed-out visitors are redirected to the login page (with a `next`
+ *   param so they return to the page they tried to open).
+ * - Cross-role access is redirected to the visitor's own dashboard home.
+ *   Marketplace "member" accounts are allowed through (read-only browsing).
  */
 export function RequireRole({
+  role,
   children,
 }: {
-  role?: "buyer";
+  role: "buyer";
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const hydrated = useHydrated();
+  const user = useCurrentUser();
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!user) {
+      replaceWithRescue(router, `/auth/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    if (user.role !== role && user.role !== "member") {
+      replaceWithRescue(router, "/dashboard/buyer");
+    }
+  }, [hydrated, user, role, pathname, router]);
+
+  if (!hydrated) return <DashboardSkeleton />;
+  if (!user) return null;
+  if (user.role !== role && user.role !== "member") return null;
+
   return <>{children}</>;
 }

@@ -7,7 +7,6 @@ import { StoreHydration } from "@/components/store-hydration";
 import { AppWatchdog } from "@/components/system/app-watchdog";
 import { ErrorRecovery } from "@/components/system/error-recovery";
 import { getAppStamp } from "@/lib/app-stamp";
-import { CurrentUserProvider } from "@/hooks/use-current-user";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -125,12 +124,10 @@ document.addEventListener("pointerdown", function (e) {
           disableTransitionOnChange
         >
           <ErrorRecovery>
-            <CurrentUserProvider>
-              <StoreHydration />
-              <AppWatchdog />
-              {children}
-              <Toaster />
-            </CurrentUserProvider>
+            <StoreHydration />
+            <AppWatchdog />
+            {children}
+            <Toaster />
           </ErrorRecovery>
         </ThemeProvider>
       </body>

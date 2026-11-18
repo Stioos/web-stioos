@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -20,8 +20,9 @@ import {
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { PublicFooter } from "@/components/layout/public-footer";
-import type { BuyerDTO } from "@/lib/auth-server";
-import { useCurrentUser, signOutCurrent } from "@/hooks/use-current-user";
+import { DashboardSkeleton } from "@/components/dashboard/require-role";
+import { useAppStore, useCurrentUser } from "@/lib/store";
+import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -50,8 +51,6 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/profile", label: "Profile", icon: UserCog },
 ];
 
-const WORKSPACE_LABEL = "Buyer workspace";
-
 function initialsOf(name: string): string {
   return (
     name
@@ -63,53 +62,49 @@ function initialsOf(name: string): string {
   );
 }
 
-/** Resolve the page title (topbar breadcrumb) from the current pathname. */
-function titleFromPathname(pathname: string): string {
-  const exact = BUYER_NAV.find((n) => n.href === pathname);
-  if (exact) return exact.label;
-  // Default for any future buyer sub-page that isn't in the nav.
-  return "Dashboard";
-}
-
-export interface DashboardShellProps {
-  buyer: BuyerDTO;
-  children: React.ReactNode;
-}
-
 /**
  * Shared marketplace dashboard chrome: sticky topbar, desktop sidebar,
  * mobile sheet navigation and the public footer. The footer sticks to the
  * bottom on short pages (min-h-screen flex-col wrapper + footer mt-auto).
- *
- * The shell is rendered once by the buyer dashboard layout (a server
- * component) which has already verified the buyer session — so the shell
- * receives `buyer` as a prop and renders immediately (no hydration guard,
- * no client-side auth redirect).
  */
-export function DashboardShell({ buyer, children }: DashboardShellProps) {
+export function DashboardShell({
+  role,
+  title,
+  children,
+}: {
+  role: "buyer";
+  title: string;
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
-  const { refresh } = useCurrentUser();
+  const hydrated = useHydrated();
+  const user = useCurrentUser();
+  const marketLogout = useAppStore((s) => s.marketLogout);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
 
-  const title = titleFromPathname(pathname);
-  const initials = initialsOf(buyer.name);
+  const nav = BUYER_NAV;
+  const workspaceLabel = "Buyer workspace";
 
-  const signOut = async () => {
-    if (signingOut) return;
-    setSigningOut(true);
-    try {
-      await signOutCurrent();
-      await refresh();
-    } finally {
-      router.push("/");
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!user) {
+      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
     }
+  }, [hydrated, user, pathname, router]);
+
+  if (!hydrated || !user) return <DashboardSkeleton />;
+
+  const initials = initialsOf(user.name);
+
+  const signOut = () => {
+    marketLogout();
+    router.push("/");
   };
 
   const renderNavLinks = (onNavigate?: () => void) => (
-    <nav aria-label={`${WORKSPACE_LABEL} navigation`} className="flex flex-col gap-1">
-      {BUYER_NAV.map((item) => {
+    <nav aria-label={`${workspaceLabel} navigation`} className="flex flex-col gap-1">
+      {nav.map((item) => {
         const active = pathname === item.href;
         return (
           <Link
@@ -141,19 +136,18 @@ export function DashboardShell({ buyer, children }: DashboardShellProps) {
         {initials}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-white">{buyer.name}</p>
-        <p className="truncate text-[11px] text-slate-400">{buyer.email}</p>
+        <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+        <p className="truncate text-[11px] text-slate-400">{user.email}</p>
       </div>
       <button
         type="button"
         onClick={() => {
-          void signOut();
+          signOut();
           onNavigate?.();
         }}
-        disabled={signingOut}
         aria-label="Sign out"
         title="Sign out"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-rose-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 disabled:opacity-50"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-rose-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40"
       >
         <LogOut className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -193,7 +187,7 @@ export function DashboardShell({ buyer, children }: DashboardShellProps) {
                 <div className="border-b border-white/10 px-5 py-4">
                   <Logo className="h-7 w-auto" priority />
                   <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    {WORKSPACE_LABEL}
+                    {workspaceLabel}
                   </p>
                 </div>
               </SheetTitle>
@@ -209,7 +203,7 @@ export function DashboardShell({ buyer, children }: DashboardShellProps) {
           {/* Breadcrumb */}
           <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex" aria-label="Breadcrumb">
             <span className="text-slate-500" aria-hidden="true">/</span>
-            <span className="whitespace-nowrap text-slate-400">{WORKSPACE_LABEL}</span>
+            <span className="whitespace-nowrap text-slate-400">{workspaceLabel}</span>
             <span className="text-slate-500" aria-hidden="true">/</span>
             <span className="truncate font-semibold text-white">{title}</span>
           </div>
@@ -240,32 +234,28 @@ export function DashboardShell({ buyer, children }: DashboardShellProps) {
                   {initials}
                 </span>
                 <span className="hidden max-w-28 truncate text-sm font-medium text-slate-200 xl:block">
-                  {buyer.name.split(" ")[0]}
+                  {user.name.split(" ")[0]}
                 </span>
                 <ChevronDown className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuLabel>
-                  <p className="truncate text-sm font-semibold">{buyer.name}</p>
+                  <p className="truncate text-sm font-semibold">{user.name}</p>
                   <p className="text-xs font-normal capitalize text-muted-foreground">
-                    {buyer.role} workspace
+                    {user.role} workspace
                   </p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push("/dashboard/buyer")}>
+                <DropdownMenuItem onClick={() => router.push(nav[0].href)}>
                   <LayoutDashboard className="h-4 w-4" /> Dashboard home
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/marketplace")}>
                   <Store className="h-4 w-4" /> Marketplace
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/dashboard/buyer/profile")}>
-                  <UserCog className="h-4 w-4" /> Profile
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
-                  disabled={signingOut}
-                  onClick={() => void signOut()}
+                  onClick={signOut}
                 >
                   <LogOut className="h-4 w-4" /> Sign out
                 </DropdownMenuItem>

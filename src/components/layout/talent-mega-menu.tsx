@@ -110,7 +110,7 @@ export function TalentMegaMenu({ onClose }: { onClose: () => void }) {
           <div className="relative flex flex-col gap-1.5">
             <Link
               href="/talent-solutions#placements"
-              onClick={onClose}
+              onClick={() => setTimeout(onClose, 60)}
               className="group inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-400 px-3 py-1.5 text-[11px] font-bold text-brand-ink transition-colors hover:bg-amber-300"
             >
               <UserRound className="h-3.5 w-3.5" aria-hidden="true" />
@@ -122,7 +122,7 @@ export function TalentMegaMenu({ onClose }: { onClose: () => void }) {
             </Link>
             <Link
               href="/talent-solutions#staffing-solutions"
-              onClick={onClose}
+              onClick={() => setTimeout(onClose, 60)}
               className="group inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold text-slate-200 transition-colors hover:border-violet-400/40 hover:bg-white/[0.08] hover:text-white"
             >
               <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -153,7 +153,7 @@ export function TalentMegaMenu({ onClose }: { onClose: () => void }) {
                   <Link
                     key={item.name}
                     href={item.href}
-                    onClick={onClose}
+                    onClick={() => setTimeout(onClose, 60)}
                     className="group flex items-start gap-2.5 rounded-xl px-2 py-2 transition-colors hover:bg-white/[0.05]"
                   >
                     <span
@@ -195,7 +195,7 @@ export function TalentMegaMenu({ onClose }: { onClose: () => void }) {
           <Link
             key={tile.name}
             href={tile.href}
-            onClick={onClose}
+            onClick={() => setTimeout(onClose, 60)}
             className="group flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition-all hover:border-amber-400/40 hover:bg-amber-400/[0.06]"
           >
             <span className="flex items-center justify-between gap-2">
@@ -238,7 +238,7 @@ export function TalentMegaMenu({ onClose }: { onClose: () => void }) {
         </p>
         <Link
           href="/talent-solutions"
-          onClick={onClose}
+          onClick={() => setTimeout(onClose, 60)}
           className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-[10.5px] font-semibold text-amber-300 transition-colors hover:bg-amber-400/20"
         >
           Explore all talent solutions

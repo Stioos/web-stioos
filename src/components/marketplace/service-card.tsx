@@ -7,8 +7,7 @@ import type { Service } from "@/types";
 import { getCategoryById } from "@/data/categories";
 import { AccentTile } from "@/components/shared/icon";
 import { ToastAction } from "@/components/ui/toast";
-import { useCurrentUser } from "@/hooks/use-current-user";
-import { useWishlist } from "@/hooks/use-wishlist";
+import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useLoginDrawer } from "@/components/auth/login-drawer";
 import { useLeadModal } from "@/components/shared/lead-modal";
 import { useToast } from "@/hooks/use-toast";
@@ -45,18 +44,19 @@ export const ServiceCard = memo(function ServiceCard({
   const visibleTags = service.tags.slice(0, 3);
   const extraTags = service.tags.length - visibleTags.length;
 
-  const { isAuthenticated } = useCurrentUser();
-  const wishlist = useWishlist();
-  const saved = wishlist.has(service.slug);
+  const wishlist = useAppStore((s) => s.wishlist);
+  const toggleWishlist = useAppStore((s) => s.toggleWishlist);
+  const user = useCurrentUser();
+  const saved = wishlist.includes(service.slug);
 
   const handleCardClick = () => {
     router.push(href);
   };
 
-  const handleToggleWishlist = async (e: React.MouseEvent) => {
+  const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isAuthenticated || !wishlist.enabled) {
+    if (!user) {
       toast({
         title: "Sign in to save services",
         description: "Create a free account to build your wishlist.",
@@ -68,14 +68,12 @@ export const ServiceCard = memo(function ServiceCard({
       });
       return;
     }
-    // Optimistic UI: the hook updates `slugs` synchronously so the heart
-    // flips immediately; we just feedback the outcome via toast.
-    const nowSaved = await wishlist.toggle(service.slug);
+    toggleWishlist(service.slug);
     toast({
-      title: nowSaved ? "Saved to wishlist" : "Removed from wishlist",
-      description: nowSaved
-        ? `${service.name} was added to your wishlist.`
-        : `${service.name} was removed from your wishlist.`,
+      title: saved ? "Removed from wishlist" : "Saved to wishlist",
+      description: saved
+        ? `${service.name} was removed from your wishlist.`
+        : `${service.name} was added to your wishlist.`,
     });
   };
 

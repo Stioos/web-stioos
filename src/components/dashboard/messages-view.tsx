@@ -1,73 +1,55 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowLeft, Loader2, MessageSquare, SendHorizonal } from "lucide-react";
+import { ArrowLeft, MessageSquare, SendHorizonal } from "lucide-react";
+import { useAppStore, useCurrentUser } from "@/lib/store";
 import { Icon } from "@/components/shared/icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { EmptyState, timeAgo } from "@/components/dashboard/shared";
-import { useToast } from "@/hooks/use-toast";
-import type { MarketMessage, MarketThread } from "@/types";
-
-export interface MessagesViewProps {
-  threads: MarketThread[];
-  buyerId: string;
-}
 
 /**
  * Two-pane messaging view used by the buyer dashboard. Thread list on the
- * left, chat pane on the right; on mobile the panes switch via the
- * selected-thread state.
- *
- * The server fetches `listBuyerThreads(buyerId)` once per render and
- * passes the result as `threads`. Sending a message POSTs to
- * `/api/threads/[id]/messages`, then calls `router.refresh()` so the
- * server query re-runs and the thread's messages list is updated.
- *
- * Pending messages are appended optimistically to the visible list and
- * removed from the local `pending` array as soon as the server prop
- * catches up — the memo filters them out by body+sentAt, so no effect
- * is needed for reconciliation (avoids cascading renders).
+ * left, chat pane on the right; on mobile the panes switch via the selected
+ * thread state.
  */
-export function MessagesView({ threads, buyerId }: MessagesViewProps) {
-  const router = useRouter();
-  const { toast } = useToast();
+export function MessagesView({ role }: { role: "buyer" }) {
+  const user = useCurrentUser();
+  const threads = useAppStore((s) => s.threads);
+  const sendMarketMessage = useAppStore((s) => s.sendMarketMessage);
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
-  const [sending, setSending] = useState(false);
-  const [pending, setPending] = useState<MarketMessage[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // Threads come sorted by the server (lastMessageAt desc).
-  const myThreads = useMemo(() => threads, [threads]);
+  const myThreads = useMemo(() => {
+    if (!user) return [];
+    return threads
+      .filter((t) => t.buyerId === user.id)
+      .sort((a, b) => Date.parse(b.lastMessageAt) - Date.parse(a.lastMessageAt));
+  }, [threads, user]);
+
   const activeThread = myThreads.find((t) => t.id === selectedId) ?? null;
 
-  // Merge server messages with any local pending messages for the active
-  // thread that the server hasn't yet persisted (matched on body+sentAt).
-  // Once `router.refresh()` delivers the server's authoritative copy, the
-  // pending entry is dropped from the visible list — no effect required.
-  const visibleMessages = useMemo(() => {
-    if (!activeThread) return [];
-    const serverKeys = new Set(
-      activeThread.messages.map((m) => `${m.body}|${m.sentAt}`)
-    );
-    const local = pending.filter(
-      (m) =>
-        m.threadId === activeThread.id &&
-        !serverKeys.has(`${m.body}|${m.sentAt}`)
-    );
-    return [...activeThread.messages, ...local];
-  }, [activeThread, pending]);
-
-  // Auto-scroll to the latest message whenever the count changes.
+  // Auto-scroll to the latest message whenever it changes.
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [visibleMessages.length, selectedId]);
+  }, [activeThread?.messages.length, selectedId]);
+
+  if (!user) return null;
+
+  const counterpartOf = (thread: (typeof myThreads)[number]) =>
+    thread.teamName;
+
+  const handleSend = () => {
+    if (!activeThread || !draft.trim()) return;
+    sendMarketMessage(activeThread.id, draft);
+    setDraft("");
+  };
 
   if (myThreads.length === 0) {
     return (
@@ -91,65 +73,6 @@ export function MessagesView({ threads, buyerId }: MessagesViewProps) {
       </div>
     );
   }
-
-  const counterpartOf = (thread: MarketThread) => thread.teamName;
-
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeThread || !draft.trim() || sending) return;
-    const body = draft.trim();
-    const nowIso = new Date().toISOString();
-    const tempId = `local-${Date.now()}`;
-    // Optimistic: append a local copy so the buyer sees their message
-    // immediately. Cleared from the visible list once the server prop
-    // includes the matching body+sentAt.
-    const tempMessage: MarketMessage = {
-      id: tempId,
-      threadId: activeThread.id,
-      senderId: buyerId,
-      senderName: "You",
-      senderRole: "buyer",
-      body,
-      sentAt: nowIso,
-    };
-    setPending((prev) => [...prev, tempMessage]);
-    setDraft("");
-    setSending(true);
-    try {
-      const res = await fetch(`/api/threads/${activeThread.id}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({ body }),
-      });
-      const data = (await res.json().catch(() => ({}))) as
-        | { ok?: true; error?: string }
-        | { ok?: false; error?: string };
-      if (res.ok && (data as { ok?: boolean }).ok !== false) {
-        // Refresh so the server's authoritative copy lands. The memo
-        // above will drop the optimistic entry as soon as the new prop
-        // matches body+sentAt.
-        router.refresh();
-        return;
-      }
-      // Revert the optimistic message on failure.
-      setPending((prev) => prev.filter((m) => m.id !== tempId));
-      toast({
-        title: "Could not send message",
-        description: data.error ?? "Please try again in a moment.",
-        variant: "destructive",
-      });
-    } catch {
-      setPending((prev) => prev.filter((m) => m.id !== tempId));
-      toast({
-        title: "Network error",
-        description: "Please check your connection and try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSending(false);
-    }
-  };
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -252,8 +175,8 @@ export function MessagesView({ threads, buyerId }: MessagesViewProps) {
                 aria-live="polite"
                 aria-label="Message history"
               >
-                {visibleMessages.map((message) => {
-                  const mine = message.senderId === buyerId;
+                {activeThread.messages.map((message) => {
+                  const mine = message.senderId === user.id;
                   return (
                     <div
                       key={message.id}
@@ -283,7 +206,13 @@ export function MessagesView({ threads, buyerId }: MessagesViewProps) {
               </div>
 
               {/* Composer */}
-              <form className="flex items-center gap-2 border-t p-3" onSubmit={handleSend}>
+              <form
+                className="flex items-center gap-2 border-t p-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSend();
+                }}
+              >
                 <label htmlFor="message-input" className="sr-only">
                   Type your message
                 </label>
@@ -294,20 +223,9 @@ export function MessagesView({ threads, buyerId }: MessagesViewProps) {
                   placeholder="Write a message…"
                   autoComplete="off"
                   className="min-h-11 flex-1"
-                  disabled={sending}
                 />
-                <Button
-                  type="submit"
-                  size="icon"
-                  className="h-11 w-11 shrink-0"
-                  disabled={!draft.trim() || sending}
-                  aria-label="Send message"
-                >
-                  {sending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <SendHorizonal className="h-4 w-4" aria-hidden="true" />
-                  )}
+                <Button type="submit" size="icon" className="h-11 w-11 shrink-0" disabled={!draft.trim()} aria-label="Send message">
+                  <SendHorizonal className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </form>
             </>
