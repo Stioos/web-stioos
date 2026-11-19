@@ -21,11 +21,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TalentMegaMenu } from "@/components/layout/talent-mega-menu";
 import { TalentStripMenu } from "@/components/layout/talent-strip-menu";
+import { TalentVerticalFlyout } from "@/components/layout/talent-vertical-flyout";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useLoginDrawer, LoginDrawer } from "@/components/auth/login-drawer";
 import { deliveryLabel } from "@/lib/marketplace-utils";
 import { subIconFor } from "@/lib/sub-icons";
 import { TALENT_STRIP_OPTIONS } from "@/data/talent-solutions";
+import {
+  TALENT_STRIP_GROUPS,
+  CANDIDATE_STRIP_GROUPS,
+  EMPLOYER_STRIP_GROUPS,
+  getTalentStripGroup,
+} from "@/data/talent-strip-groups";
 import { getTalentSubSeeds } from "@/data/pages/talent-sub-pages";
 import { SOLUTION_LIST } from "@/data/pages/solution-pages";
 import {
@@ -37,7 +44,7 @@ import { SolutionCard } from "@/components/shared/solution-card";
 import type { Category, Service, Subcategory } from "@/types";
 import type { LucideIcon } from "lucide-react";
 import {
-  ArrowRight, ChevronDown, LayoutDashboard, LayoutGrid, Layers, LogIn, LogOut, Menu, Search, ShoppingBag, Sparkles, Users, X,
+  ArrowRight, ChevronDown, LayoutDashboard, LayoutGrid, Layers, LogIn, LogOut, Menu, Search, ShoppingBag, Sparkles, Users, X, UserRound,
 } from "lucide-react";
 
 // ============================================================
@@ -169,13 +176,32 @@ export function PublicHeader() {
     pathname === "/marketplace" || pathname.startsWith("/marketplace/");
   const showStrip = !isMarketplacePage && (isHome || !pastTop);
   // TALENT SECTION — on talent pages the secondary strip swaps from the
-  // six marketplace division pills to the 9 Talent Solutions options, each
-  // with a flyout of its 8 sub-pages (the only way those pages surface).
+  // six marketplace division pills to the NEW 6-grouped Talent Solutions
+  // options (3 candidate-side + 3 employer-side). Each group pill opens a
+  // vertical flyout on its RIGHT side listing the existing talent services
+  // that belong to that group.
+  //
+  // Active-group detection: a path can be either a GROUP page
+  // (/talent-solutions/candidate-get-trained) — slug matches a group
+  // directly — OR an existing SERVICE page (/talent-solutions/train-to-hire
+  // or /talent-solutions/train-to-hire/<sub>) — we look up which group's
+  // services include that slug and highlight the matching group.
   const isTalentSection =
     pathname === "/talent-solutions" || pathname.startsWith("/talent-solutions/");
   const talentPathParts = isTalentSection ? pathname.split("/") : [];
-  const talentActiveOption = talentPathParts[2] ?? "";
+  const talentSegment2 = talentPathParts[2] ?? "";
   const talentActiveSub = talentPathParts[3];
+  // If the segment matches a group slug directly, that's the active group.
+  // Otherwise find the group whose services include this slug.
+  const talentActiveGroup =
+    talentSegment2 && getTalentStripGroup(talentSegment2)
+      ? talentSegment2
+      : TALENT_STRIP_GROUPS.find((g) =>
+            g.services.some((s) => s.slug === talentSegment2)
+          )?.slug ?? "";
+  // Keep the legacy active option name so any code that still reads it
+  // keeps working (e.g. the existing TalentStripMenu for sub-page nav).
+  const talentActiveOption = talentSegment2;
 
   const toggleMenu = (menu: Exclude<OpenMenu, null>) => {
     // Same-interaction guard: hover-intent just opened a flyout (< 600 ms
@@ -612,66 +638,126 @@ export function PublicHeader() {
             >
               <div className="flex min-w-0 flex-1 items-center justify-between gap-1.5 xl:gap-2">
                 {isTalentSection
-                  ? TALENT_STRIP_OPTIONS.map((opt, idx) => {
-                      const menuId = `talent-${opt.slug}`;
-                      const isActiveOpt = talentActiveOption === opt.slug;
-                      return (
-                        <div
-                          key={opt.slug}
-                          ref={(el) => {
-                            pillRefs.current[menuId] = el;
-                          }}
-                          className="relative flex min-w-0 shrink"
-                          onMouseEnter={() => hoverOpenStrip(menuId)}
-                        >
-                          <Link
-                            href={`/talent-solutions/${opt.slug}`}
-                            onClick={() => {
-                              // Always navigate on click — the hover flyout
-                              // (onMouseEnter) provides a desktop preview; on
-                              // touch devices tapping goes straight to the page.
-                              dismissFlyouts();
+                  ? (() => {
+                      // Talent Solutions secondary header — 6 grouped
+                      // options split into two equal halves with a visual
+                      // divider: 3 candidate-side (left) + 3 employer-side
+                      // (right). Each pill opens a vertical flyout on its
+                      // RIGHT side listing the existing talent services
+                      // that belong to that group.
+                      const GROUP_ACCENT_TILE: Record<string, string> = {
+                        blue: "text-sky-300",
+                        emerald: "text-emerald-300",
+                        orange: "text-orange-300",
+                      };
+                      const GROUP_ACCENT_BORDER: Record<
+                        string,
+                        string
+                      > = {
+                        blue: "hover:border-sky-400/50",
+                        emerald: "hover:border-emerald-400/50",
+                        orange: "hover:border-orange-400/50",
+                      };
+                      const GROUP_ACCENT_ACTIVE: Record<
+                        string,
+                        string
+                      > = {
+                        blue: "border-sky-400/60 bg-sky-400/[0.10]",
+                        emerald:
+                          "border-emerald-400/60 bg-emerald-400/[0.10]",
+                        orange:
+                          "border-orange-400/60 bg-orange-400/[0.10]",
+                      };
+                      const renderGroupPill = (
+                        group: (typeof TALENT_STRIP_GROUPS)[number],
+                        idx: number
+                      ) => {
+                        const menuId = `talent-group-${group.slug}`;
+                        const isActive = talentActiveGroup === group.slug;
+                        return (
+                          <div
+                            key={group.slug}
+                            ref={(el) => {
+                              pillRefs.current[menuId] = el;
                             }}
-                            tabIndex={showStrip ? 0 : -1}
-                            title={opt.name}
-                            aria-haspopup="true"
-                            aria-expanded={openStrip === menuId}
-                            aria-current={isActiveOpt ? "page" : undefined}
-                            className={cn(
-                              "group inline-flex h-9 min-w-0 shrink items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] pl-2.5 pr-2 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:border-indigo-400/40 hover:bg-white/[0.09]",
-                              isActiveOpt && "border-indigo-400/50 bg-white/[0.10]"
-                            )}
+                            className="relative flex min-w-0 shrink"
+                            onMouseEnter={() => hoverOpenStrip(menuId)}
                           >
-                            <opt.icon className="h-4 w-4 shrink-0 text-indigo-400" />
-                            <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
-                              {opt.stripLabel}
-                            </span>
-                            <ChevronDown
+                            <Link
+                              href={`/talent-solutions/${group.slug}`}
+                              onClick={() => {
+                                // Always navigate on click — the hover
+                                // flyout (onMouseEnter) provides a desktop
+                                // preview; on touch devices tapping goes
+                                // straight to the page.
+                                dismissFlyouts();
+                              }}
+                              tabIndex={showStrip ? 0 : -1}
+                              title={group.name}
+                              aria-haspopup="true"
+                              aria-expanded={openStrip === menuId}
+                              aria-current={isActive ? "page" : undefined}
                               className={cn(
-                                "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200",
-                                openStrip === menuId && "rotate-180"
+                                "group inline-flex h-9 min-w-0 shrink items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] pl-2.5 pr-2 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
+                                GROUP_ACCENT_BORDER[group.accent],
+                                isActive && GROUP_ACCENT_ACTIVE[group.accent]
                               )}
-                            />
-                          </Link>
+                            >
+                              <group.icon
+                                className={cn(
+                                  "h-4 w-4 shrink-0",
+                                  GROUP_ACCENT_TILE[group.accent]
+                                )}
+                              />
+                              <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
+                                {group.stripLabel}
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200",
+                                  openStrip === menuId && "rotate-180"
+                                )}
+                              />
+                            </Link>
 
-                          {/* Flyout: the option's 8 sub-pages in a 4×2 grid */}
-                          {openStrip === menuId && showStrip && (
-                            <TalentStripMenu
-                              anchorEl={stripAnchor}
-                              option={opt}
-                              subs={getTalentSubSeeds(opt.slug)}
-                              activeSubSlug={
-                                isActiveOpt ? talentActiveSub : undefined
-                              }
-                              align={idx <= 1 ? "left" : idx >= 7 ? "right" : "center"}
-                              onClose={dismissFlyouts}
-                              onKeepAlive={clearTimers}
-                              onScheduleClose={scheduleClose}
-                            />
-                          )}
-                        </div>
+                            {/* Vertical flyout — opens on the RIGHT side of
+                                the pill, listing the group's services */}
+                            {openStrip === menuId && showStrip && (
+                              <TalentVerticalFlyout
+                                anchorEl={stripAnchor}
+                                group={group}
+                                activeServiceSlug={
+                                  isActive ? talentActiveSub : undefined
+                                }
+                                onClose={dismissFlyouts}
+                                onKeepAlive={clearTimers}
+                                onScheduleClose={scheduleClose}
+                              />
+                            )}
+                          </div>
+                        );
+                      };
+
+                      return (
+                        <>
+                          {/* CANDIDATE SIDE (3) — left half */}
+                          <div className="flex min-w-0 shrink items-center gap-1.5 xl:gap-2">
+                            {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
+                          </div>
+
+                          {/* Divider — candidate | employer */}
+                          <div
+                            className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block"
+                            aria-hidden="true"
+                          />
+
+                          {/* EMPLOYER SIDE (3) — right half */}
+                          <div className="flex min-w-0 shrink items-center gap-1.5 xl:gap-2">
+                            {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
+                          </div>
+                        </>
                       );
-                    })
+                    })()
                   : stripCategories.map((cat, idx) => {
                   const data = stripMenuData[idx];
                   const accent = divisionAccent(cat.id);
@@ -741,27 +827,42 @@ export function PublicHeader() {
       </header>
 
       {/* Mobile quick-scroll strip — mirrors the desktop secondary header
-          (talent options on talent pages, divisions everywhere else).
-          Service detail views hide both strips entirely. */}
+          (6 grouped talent options on talent pages, divisions everywhere
+          else). Service detail views hide both strips entirely. */}
       {!isMarketplacePage && (
       <div className="border-b border-white/[0.06] bg-brand-ink lg:hidden">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-4 py-2">
           {isTalentSection
-            ? TALENT_STRIP_OPTIONS.map((opt) => {
-                const isActiveOpt = talentActiveOption === opt.slug;
+            ? TALENT_STRIP_GROUPS.map((group) => {
+                const isActiveGroup = talentActiveGroup === group.slug;
+                const GROUP_ACCENT_MOBILE_TILE: Record<string, string> = {
+                  blue: "text-sky-300",
+                  emerald: "text-emerald-300",
+                  orange: "text-orange-300",
+                };
+                const GROUP_ACCENT_MOBILE_ACTIVE: Record<string, string> = {
+                  blue: "border-sky-400/50 bg-sky-400/[0.10]",
+                  emerald: "border-emerald-400/50 bg-emerald-400/[0.10]",
+                  orange: "border-orange-400/50 bg-orange-400/[0.10]",
+                };
                 return (
                   <Link
-                    key={opt.slug}
-                    href={`/talent-solutions/${opt.slug}`}
+                    key={group.slug}
+                    href={`/talent-solutions/${group.slug}`}
                     onClick={() => setMobileOpen(false)}
-                    aria-current={isActiveOpt ? "page" : undefined}
+                    aria-current={isActiveGroup ? "page" : undefined}
                     className={cn(
                       "inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] py-2 pl-2.5 pr-2 text-xs font-semibold text-slate-200 shadow-[0_1px_2px_rgba(2,8,23,0.05)]",
-                      isActiveOpt && "border-indigo-400/50 bg-white/[0.10]"
+                      isActiveGroup && GROUP_ACCENT_MOBILE_ACTIVE[group.accent]
                     )}
                   >
-                    <opt.icon className="h-4 w-4 shrink-0 text-indigo-400" />
-                    {opt.stripLabel}
+                    <group.icon
+                      className={cn(
+                        "h-4 w-4 shrink-0",
+                        GROUP_ACCENT_MOBILE_TILE[group.accent]
+                      )}
+                    />
+                    {group.stripLabel}
                     <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                   </Link>
                 );

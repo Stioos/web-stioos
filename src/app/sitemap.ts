@@ -9,6 +9,7 @@ import { MULTIMEDIA_SERVICES } from "@/data/services-multimedia";
 import { TALENT_SERVICES } from "@/data/services-talent";
 import { SOLUTION_LIST } from "@/data/pages/solution-pages";
 import { TALENT_PAGE_SPECS } from "@/data/pages/talent-pages";
+import { TALENT_STRIP_GROUPS } from "@/data/talent-strip-groups";
 import { WORKSONN_PAGE_SPECS } from "@/data/pages/worksonn-pages";
 import { INDUSTRIES, INSIGHTS, RESOURCES } from "@/data/content";
 
@@ -126,6 +127,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
+  // 6 new talent group pages (3 candidate-side + 3 employer-side placeholders)
+  const talentGroupRoutes: MetadataRoute.Sitemap = TALENT_STRIP_GROUPS.map(
+    (g) => ({
+      url: `${SITE_URL}/talent-solutions/${g.slug}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.55,
+    })
+  );
+
   // 8 worksonn pages
   const worksonnRoutes: MetadataRoute.Sitemap = WORKSONN_PAGE_SPECS.map((w) => ({
     url: `${SITE_URL}/worksonn/${w.slug}`,
@@ -144,6 +155,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...insightRoutes,
     ...resourceRoutes,
     ...talentRoutes,
+    ...talentGroupRoutes,
     ...worksonnRoutes,
   ];
 }
