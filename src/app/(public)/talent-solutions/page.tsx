@@ -1,221 +1,419 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
-  BrainCircuit,
+  ArrowRight,
+  ArrowUpRight,
+  BadgeCheck,
+  BookOpen,
   Briefcase,
-  Building2,
-  ClipboardCheck,
+  Check,
+  CheckCircle2,
+  Clock,
+  Coins,
+  Factory,
   GraduationCap,
-  UserCheck,
+  HeartPulse,
+  LineChart,
+  RefreshCw,
+  Rocket,
+  Radio,
+  Server,
+  ShieldCheck,
+  ShoppingCart,
+  Sparkles,
+  Star,
+  Target,
+  Truck,
   Users,
+  XCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Reveal } from "@/components/motion/reveal";
+import { TALENT_COLUMNS } from "@/data/talent-solutions";
+import type { TalentAccent } from "@/data/talent-solutions";
 
 // ============================================================
-// TALENT SOLUTIONS — End-to-end talent management
+// TALENT SOLUTIONS — Employer landing page (12 sections)
+//
+// Audience: hiring teams, founders, engineering managers, and
+// HR directors. The page is a server component — all data is
+// static and lives in this file or in @/data/talent-solutions.
+// Scroll-triggered reveals are gated client-side by <Reveal>
+// (IntersectionObserver + CSS transition, no motion library).
 // ============================================================
 
 export const metadata: Metadata = {
-  title: "Talent Solutions",
+  title: "Talent Solutions for Employers | STIOOS",
   description:
-    "Comprehensive talent solutions from STIOOS — train to hire, hire to train, staffing, corporate training, AI-powered talent assessment, and placements.",
+    "Hire job-ready talent, not resumes. STIOOS trains, screens, and places candidates against your exact role spec — 48h shortlists, 90-day replacement, 40% lower cost-per-hire.",
+  alternates: { canonical: "/talent-solutions" },
 };
 
-type Offering = {
-  id: string;
-  title: string;
-  description: string;
+// ----------------------------------------------------------------------
+// Static content — drives every infographic on the page.
+// ----------------------------------------------------------------------
+
+type TrustBadge = { icon: LucideIcon; label: string };
+
+const TRUST_BADGES: TrustBadge[] = [
+  { icon: ShieldCheck, label: "ISO 27001 certified" },
+  { icon: Briefcase, label: "500+ employers served" },
+  { icon: Target, label: "96% placement rate" },
+  { icon: Clock, label: "48h shortlists" },
+  { icon: RefreshCw, label: "90-day replacement" },
+  { icon: Star, label: "4.9/5 employer rating" },
+];
+
+type Kpi = {
   icon: LucideIcon;
+  value: string;
+  label: string;
+  detail: string;
 };
 
-const OFFERINGS: Offering[] = [
+const KPIS: Kpi[] = [
   {
-    id: "train-to-hire",
-    title: "Train to Hire",
-    description:
-      "Upskill candidates to your exact requirements, then hire job-ready talent.",
-    icon: UserCheck,
-  },
-  {
-    id: "hire-to-train",
-    title: "Hire to Train",
-    description:
-      "Hire promising talent and invest in their growth with structured training.",
-    icon: GraduationCap,
-  },
-  {
-    id: "staffing-solutions",
-    title: "Staffing Solutions",
-    description:
-      "Flexible staffing models — contract, permanent, or project-based hiring.",
     icon: Users,
+    value: "2M+",
+    label: "Candidate pool",
+    detail: "AI-sourced, screened, and ranked against your role spec.",
   },
   {
-    id: "corporate-training",
-    title: "Corporate Training",
-    description:
-      "Custom corporate training programs to upskill your workforce at scale.",
-    icon: Building2,
+    icon: GraduationCap,
+    value: "12,000+",
+    label: "Trained talent",
+    detail: "Industry-aligned curricula delivered across 200+ skill tracks.",
   },
   {
-    id: "talent-assessment",
-    title: "Talent Assessment",
-    description:
-      "AI-powered assessments to evaluate skills, aptitude, and job readiness.",
-    icon: ClipboardCheck,
+    icon: Target,
+    value: "96%",
+    label: "Placement rate",
+    detail: "Of cohort graduates placed within 60 days of completion.",
   },
   {
-    id: "placements",
-    title: "Placements",
-    description:
-      "Dedicated placement cell connecting trained talent with top employers.",
-    icon: Briefcase,
+    icon: Coins,
+    value: "40%",
+    label: "Lower cost-per-hire",
+    detail: "Versus 20–30% traditional agency fees on first-year salary.",
   },
 ];
 
-const HIGHLIGHTS = [
+type ProcessStep = {
+  icon: LucideIcon;
+  title: string;
+  duration: string;
+  description: string;
+};
+
+const PROCESS_STEPS: ProcessStep[] = [
   {
-    icon: BrainCircuit,
-    value: "2M+",
-    description: "AI-powered talent sourcing from 2M+ candidates.",
+    icon: Sparkles,
+    title: "Discovery call",
+    duration: "Week 1",
+    description:
+      "30-minute deep dive into your roles, stack, team culture, and ramp expectations. You get a written engagement plan.",
+  },
+  {
+    icon: Target,
+    title: "Role definition",
+    duration: "Week 1–2",
+    description:
+      "We translate your hiring need into a role scorecard — skills, must-haves, deal-breakers, and assessment rubric.",
   },
   {
     icon: Users,
-    value: "Flexible",
-    description: "Deploy talent flexibly — contract, project-based, or on-demand staffing.",
+    title: "Sourcing & screening",
+    duration: "Week 2–3",
+    description:
+      "AI sourcing from 2M+ candidates, then 5-stage human screening. You receive a shortlist of 5–8 vetted profiles in 48h.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Training & cohort",
+    duration: "Week 4–9",
+    description:
+      "Selected candidates complete a role-aligned curriculum on your stack — projects, code reviews, and live shadowing.",
+  },
+  {
+    icon: Rocket,
+    title: "Placement & ramp",
+    duration: "Week 10+",
+    description:
+      "Candidates join your team pre-trained. We support onboarding for 90 days and replace for free if it doesn't work out.",
   },
 ];
+
+type RoiMetric = {
+  label: string;
+  traditional: { value: string; width: string };
+  stioos: { value: string; width: string };
+};
+
+const ROI_METRICS: RoiMetric[] = [
+  {
+    label: "Cost per hire",
+    traditional: { value: "$18k avg (20–30% fee)", width: "100%" },
+    stioos: { value: "$10.8k avg (pay-after-join)", width: "60%" },
+  },
+  {
+    label: "Time to ramp",
+    traditional: { value: "3–6 months", width: "100%" },
+    stioos: { value: "1–2 weeks (pre-trained)", width: "22%" },
+  },
+  {
+    label: "Risk of bad hire",
+    traditional: { value: "1 in 3 hires underperforms", width: "100%" },
+    stioos: { value: "90-day free replacement", width: "12%" },
+  },
+];
+
+type ComparisonRow = {
+  feature: string;
+  stioos: string;
+  agency: string;
+  inhouse: string;
+};
+
+const COMPARISON_ROWS: ComparisonRow[] = [
+  { feature: "Time-to-hire", stioos: "48h shortlists", agency: "3–8 weeks", inhouse: "6–12 weeks" },
+  { feature: "Cost-per-hire", stioos: "40% lower", agency: "20–30% of salary", inhouse: "Recruiter salary + tools" },
+  { feature: "Replacement guarantee", stioos: "90-day, free", agency: "30–60 day, partial", inhouse: "None" },
+  { feature: "Training included", stioos: "Yes, on your stack", agency: "No", inhouse: "No" },
+  { feature: "Vetting depth", stioos: "5-stage AI + human", agency: "Resume + 1–2 calls", inhouse: "Phone screen" },
+  { feature: "Talent pool size", stioos: "2M+ screened", agency: "Agency CRM", inhouse: "Inbound applicants" },
+  { feature: "Dedicated bench", stioos: "Optional", agency: "No", inhouse: "No" },
+  { feature: "Reporting cadence", stioos: "Weekly + SLA-backed", agency: "Monthly, ad hoc", inhouse: "Internal only" },
+  { feature: "Ramp time", stioos: "1–2 weeks", agency: "3–6 months", inhouse: "3–6 months" },
+  { feature: "Best for", stioos: "Scale + quality", agency: "One-off hires", inhouse: "Brand-led hiring" },
+];
+
+type Industry = {
+  icon: LucideIcon;
+  name: string;
+  hires: string;
+};
+
+const INDUSTRIES_SERVED: Industry[] = [
+  { icon: Coins, name: "Fintech", hires: "180+ hires" },
+  { icon: HeartPulse, name: "Healthcare", hires: "120+ hires" },
+  { icon: ShoppingCart, name: "Retail", hires: "260+ hires" },
+  { icon: Server, name: "SaaS", hires: "320+ hires" },
+  { icon: Factory, name: "Manufacturing", hires: "90+ hires" },
+  { icon: Truck, name: "Logistics", hires: "140+ hires" },
+  { icon: BookOpen, name: "Education", hires: "70+ hires" },
+  { icon: Radio, name: "Telecom", hires: "110+ hires" },
+];
+
+type CaseStudy = {
+  type: string;
+  timeline: string;
+  company: string;
+  problem: string;
+  solution: string;
+  resultMetric: string;
+  resultDetail: string;
+};
+
+const CASE_STUDIES: CaseStudy[] = [
+  {
+    type: "Series B Fintech",
+    timeline: "8 weeks",
+    company: "Payments infrastructure scale-up",
+    problem:
+      "Needed to triple the engineering team in one quarter without lowering the hiring bar on payments domain depth.",
+    solution:
+      "Train-to-Hire cohort — three sprints of React/Node plus payments-domain training, with weekly code reviews by the client's staff engineer.",
+    resultMetric: "12 hires · 96% retention",
+    resultDetail: "All 12 engineers still on team at the 12-month mark.",
+  },
+  {
+    type: "Healthcare SaaS",
+    timeline: "5 weeks",
+    company: "HIPAA-aware clinical analytics platform",
+    problem:
+      "Compliance-aware hires were the bottleneck — sourcing engineers who could pass HIPAA and SOC 2 background screens took 4+ months each.",
+    solution:
+      "Talent Sourcing + AI Assessment, with a pre-filtered pool of compliance-cleared candidates and a 5-stage screening rubric.",
+    resultMetric: "7 hires · 0 incidents",
+    resultDetail: "Zero compliance incidents across the first 12 months.",
+  },
+  {
+    type: "Retail Giant",
+    timeline: "Ongoing",
+    company: "National omnichannel retailer",
+    problem:
+      "Seasonal demand cycles required a flexible analyst bench that could be stood up 4x per year without re-hiring from scratch.",
+    solution:
+      "Pipeline Partner — quarterly analyst cohorts with a dedicated 40-person bench, retainer plus success-fee model.",
+    resultMetric: "38% lower cost-per-hire",
+    resultDetail: "Bench covers peak season across 6 regions, ramped in days.",
+  },
+];
+
+type PricingTier = {
+  audience: string;
+  name: string;
+  description: string;
+  price: string;
+  unit: string;
+  features: string[];
+  cta: string;
+  featured?: boolean;
+};
+
+const PRICING_TIERS: PricingTier[] = [
+  {
+    audience: "Single engagement",
+    name: "Cohort Sprint",
+    description:
+      "One training cohort, built around a single role spec. Pay-after-join — you only pay for hires that stick.",
+    price: "From $12k",
+    unit: "per cohort",
+    features: [
+      "1 training cohort (8–12 candidates)",
+      "Role-aligned curriculum on your stack",
+      "48-hour shortlist delivery",
+      "90-day replacement guarantee",
+      "Weekly progress reports",
+      "Pay-after-join model",
+    ],
+    cta: "Start a cohort",
+  },
+  {
+    audience: "Quarterly engagement",
+    name: "Pipeline Partner",
+    description:
+      "Quarterly cohorts with a dedicated talent partner, priority sourcing, and a maintained bench you can pull from on demand.",
+    price: "From $4.5k/mo",
+    unit: "+ success fee",
+    features: [
+      "4 cohorts per year (annual pipeline)",
+      "Dedicated talent partner",
+      "Priority 48-hour shortlists",
+      "Maintained bench of 20–40 candidates",
+      "SLA-backed weekly reporting",
+      "Quarterly business reviews",
+    ],
+    cta: "Become a partner",
+    featured: true,
+  },
+  {
+    audience: "Annual program",
+    name: "Enterprise Academy",
+    description:
+      "A branded academy inside your organization — dedicated delivery team, multi-role tracks, and an LMS tuned to your stack.",
+    price: "Custom",
+    unit: "annual program",
+    features: [
+      "Annual cohort program (unlimited roles)",
+      "Branded academy + LMS",
+      "Dedicated delivery team",
+      "Multi-role training tracks",
+      "Executive QBRs + OKR mapping",
+      "Integration with your HRIS",
+    ],
+    cta: "Talk to sales",
+  },
+];
+
+// Per-pillar visual identity. The data model defines three accents
+// (blue / emerald / orange); we remap "blue" to amber here to honor
+// the project's no-blue-primary color rule while keeping three
+// distinct, scannable column identities.
+type PillarStyle = {
+  headerText: string;
+  headerChip: string;
+  iconTile: string;
+  iconText: string;
+  ring: string;
+  bar: string;
+};
+
+const PILLAR_STYLE: Record<TalentAccent, PillarStyle> = {
+  blue: {
+    headerText: "text-amber-400",
+    headerChip: "bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/25",
+    iconTile: "bg-amber-400/10",
+    iconText: "text-amber-300",
+    ring: "ring-amber-400/25",
+    bar: "from-amber-500 to-amber-400",
+  },
+  emerald: {
+    headerText: "text-emerald-400",
+    headerChip: "bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-400/25",
+    iconTile: "bg-emerald-400/10",
+    iconText: "text-emerald-300",
+    ring: "ring-emerald-400/25",
+    bar: "from-emerald-500 to-emerald-400",
+  },
+  orange: {
+    headerText: "text-orange-400",
+    headerChip: "bg-orange-400/10 text-orange-300 ring-1 ring-orange-400/25",
+    iconTile: "bg-orange-400/10",
+    iconText: "text-orange-300",
+    ring: "ring-orange-400/25",
+    bar: "from-orange-500 to-orange-400",
+  },
+};
+
+const PILLAR_ICON: Record<TalentAccent, LucideIcon> = {
+  blue: GraduationCap,
+  emerald: Users,
+  orange: BadgeCheck,
+};
 
 export default function TalentSolutionsPage() {
   return (
-    <>
-      {/* ============================ HERO ============================ */}
-      <section className="relative overflow-hidden bg-brand-ink text-white">
+    <main className="bg-brand-ink text-white">
+      {/* ============================================================ */}
+      {/* 1. HERO                                                       */}
+      {/* ============================================================ */}
+      <section
+        id="hero"
+        className="relative scroll-mt-36 overflow-hidden bg-brand-ink text-white"
+      >
         <div className="absolute inset-0 surface-grid" aria-hidden="true" />
         <div
           className="absolute inset-0 radial-fade"
           aria-hidden="true"
           style={{
             background:
-              "radial-gradient(ellipse 55% 60% at 50% 0%, rgba(30,100,232,0.25), transparent 70%)",
+              "radial-gradient(ellipse 60% 65% at 50% 0%, rgba(245,158,11,0.22), transparent 70%)",
           }}
         />
-        <div className="relative mx-auto max-w-7xl px-4 py-20 text-center sm:px-6 md:py-28 lg:px-8">
-          <p className="eyebrow flex items-center justify-center gap-2 text-amber-400">
-            <span className="inline-block h-px w-6 bg-amber-400/60" />
-            Talent Solutions
-            <span className="inline-block h-px w-6 bg-amber-400/60" />
-          </p>
-          <h1 className="mx-auto mt-5 max-w-4xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl">
-            Comprehensive <span className="text-gradient-brand">Talent Solutions</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
-            End-to-end talent management from training to hiring, staffing, and corporate programs.
-          </p>
-        </div>
-      </section>
-
-      {/* ========================== OFFERINGS ========================== */}
-      <section className="py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow text-amber-400">What We Deliver</p>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight text-white md:text-3xl">
-              Six capabilities across the talent lifecycle
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-slate-400 md:text-base">
-              One partner for sourcing, upskilling, assessment, and placement — built around your
-              hiring requirements.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {OFFERINGS.map((offering) => (
-              <article
-                key={offering.id}
-                id={offering.id}
-                className="relative scroll-mt-36 overflow-hidden rounded-2xl border border-white/10 bg-brand-navy p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-xl hover:shadow-amber-500/5"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600/10 to-amber-500/15 ring-1 ring-blue-600/20">
-                  <offering.icon className="h-5 w-5 text-blue-600" aria-hidden="true" />
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-white md:text-lg">
-                  {offering.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                  {offering.description}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ======================= HIGHLIGHTS BAND ======================= */}
-      <section
-        id="workforce"
-        className="relative scroll-mt-36 overflow-hidden border-t border-white/[0.06] bg-brand-ink py-16 text-white md:py-20"
-      >
-        <div className="absolute inset-0 surface-grid" aria-hidden="true" />
-        <div
-          className="absolute left-1/2 top-1/2 h-64 w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/20 blur-3xl"
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow text-amber-400">Talent Network</p>
-            <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-3xl">
-              Sourcing and deployment at scale
-            </h2>
-          </div>
-
-          <div className="mt-12 grid gap-5 lg:grid-cols-2">
-            {HIGHLIGHTS.map((highlight) => (
-              <div
-                key={highlight.value}
-                className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-10"
-              >
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600/10 to-amber-500/15 ring-1 ring-blue-600/20">
-                  <highlight.icon className="h-5 w-5 text-blue-600" aria-hidden="true" />
-                </span>
-                <p className="mt-6 text-4xl font-bold tracking-tight text-white md:text-5xl">
-                  {highlight.value}
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-slate-300 md:text-base">
-                  {highlight.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============================== CTA ============================== */}
-      <section className="border-t border-white/[0.06] py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-2xl bg-brand-ink px-6 py-14 text-center text-white md:py-16">
-            <div className="absolute inset-0 surface-grid" aria-hidden="true" />
-            <div
-              className="absolute left-1/2 top-0 h-56 w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/25 blur-3xl"
-              aria-hidden="true"
-            />
-            <div className="relative mx-auto max-w-2xl">
-              <Briefcase className="mx-auto h-8 w-8 text-amber-400" aria-hidden="true" />
-              <h2 className="mt-4 text-2xl font-bold tracking-tight md:text-3xl">
-                Build your team with STIOOS
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-300 md:text-base">
-                Tell us the roles you need to fill. Our talent experts will map them to the right
-                engagement model and respond within one business day.
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <Reveal>
+              <p className="eyebrow flex items-center justify-center gap-2 text-amber-400">
+                <span className="inline-block h-px w-6 bg-amber-400/60" />
+                For Employers · Talent Solutions
+                <span className="inline-block h-px w-6 bg-amber-400/60" />
               </p>
-              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            </Reveal>
+            <Reveal delay={0.05} as="h1">
+              <span className="mt-5 block text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl">
+                Hire <span className="text-gradient-brand">job-ready talent,</span> not resumes.
+              </span>
+            </Reveal>
+            <Reveal delay={0.1} as="p">
+              <span className="mx-auto mt-6 block max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
+                STIOOS trains, screens, and places candidates against your exact role spec — so every
+                hire is ramped on your stack, covered by a 90-day replacement guarantee, and delivered
+                40% cheaper than agency hiring.
+              </span>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
                 <Button
                   asChild
                   size="lg"
                   className="h-12 bg-amber-500 px-8 text-base font-semibold text-brand-ink hover:bg-amber-400"
                 >
-                  <Link href="/contact">Talk to an Expert</Link>
+                  <Link href="/contact">
+                    Hire Talent Now
+                    <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                  </Link>
                 </Button>
                 <Button
                   asChild
@@ -223,13 +421,816 @@ export default function TalentSolutionsPage() {
                   variant="outline"
                   className="h-12 border-white/25 bg-transparent px-8 text-base font-medium text-white hover:bg-white/10 hover:text-white"
                 >
-                  <Link href="/marketplace">Explore the Marketplace</Link>
+                  <Link href="/contact">Book a Discovery Call</Link>
                 </Button>
               </div>
-            </div>
+            </Reveal>
+            <Reveal delay={0.2}>
+              <dl className="mx-auto mt-14 grid max-w-2xl grid-cols-3 gap-4 border-t border-white/10 pt-8">
+                <div className="text-center">
+                  <dt className="sr-only">Candidate pool size</dt>
+                  <dd className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                    2M+
+                  </dd>
+                  <p className="mt-1 text-xs text-slate-400 sm:text-sm">Candidate pool</p>
+                </div>
+                <div className="border-x border-white/10 text-center">
+                  <dt className="sr-only">Shortlist delivery time</dt>
+                  <dd className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                    48h
+                  </dd>
+                  <p className="mt-1 text-xs text-slate-400 sm:text-sm">Shortlist SLA</p>
+                </div>
+                <div className="text-center">
+                  <dt className="sr-only">Twelve-month retention</dt>
+                  <dd className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                    96%
+                  </dd>
+                  <p className="mt-1 text-xs text-slate-400 sm:text-sm">12-month retention</p>
+                </div>
+              </dl>
+            </Reveal>
           </div>
         </div>
       </section>
-    </>
+
+      {/* ============================================================ */}
+      {/* 2. TRUST BAR                                                  */}
+      {/* ============================================================ */}
+      <section
+        id="trust"
+        className="scroll-mt-36 border-y border-white/[0.06] bg-brand-navy py-6"
+        aria-label="Employer trust signals"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ul className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
+            {TRUST_BADGES.map((badge) => (
+              <li
+                key={badge.label}
+                className="flex items-center gap-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5"
+              >
+                <badge.icon
+                  className="h-4 w-4 shrink-0 text-amber-400"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-medium leading-tight text-slate-200">
+                  {badge.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 3. KPI BAND                                                   */}
+      {/* ============================================================ */}
+      <section
+        id="kpi"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">By the Numbers</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Outcomes that move your hiring metrics
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Every engagement is measured against the four numbers that matter to your hiring
+                committee — pool depth, training volume, placement rate, and cost.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {KPIS.map((kpi) => (
+                <article
+                  key={kpi.label}
+                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-brand-navy p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-amber-400/10 ring-1 ring-amber-400/25">
+                    <kpi.icon className="h-5 w-5 text-amber-400" aria-hidden="true" />
+                  </span>
+                  <p className="mt-5 text-4xl font-bold tracking-tight text-white md:text-5xl">
+                    {kpi.value}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-white">{kpi.label}</p>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                    {kpi.detail}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 4. SERVICE PILLARS                                            */}
+      {/* ============================================================ */}
+      <section
+        id="services"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Capabilities</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                One partner across the talent lifecycle
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Three pillars, nine services — pick the entry point that matches where you are in the
+                hiring funnel, or let our talent team stitch them into a single engagement.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {TALENT_COLUMNS.map((col) => {
+                const style = PILLAR_STYLE[col.accent];
+                const PillarIcon = PILLAR_ICON[col.accent];
+                return (
+                  <article
+                    key={col.title}
+                    className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60"
+                  >
+                    <header className="flex items-center gap-3 border-b border-white/10 px-6 py-5">
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.iconTile} ring-1 ${style.ring}`}
+                      >
+                        <PillarIcon
+                          className={`h-5 w-5 ${style.iconText}`}
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <div>
+                        <p className={`eyebrow ${style.headerText}`}>{col.accent}</p>
+                        <h3 className="text-lg font-bold text-white">{col.title}</h3>
+                      </div>
+                    </header>
+                    <ul className="divide-y divide-white/5">
+                      {col.items.map((item) => (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            className="group block px-6 py-5 transition-colors hover:bg-white/[0.03]"
+                          >
+                            <div className="flex items-start gap-3">
+                              <span
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${style.iconTile} ring-1 ${style.ring}`}
+                              >
+                                <item.icon
+                                  className={`h-4 w-4 ${style.iconText}`}
+                                  aria-hidden="true"
+                                />
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <h4 className="text-sm font-semibold text-white">
+                                    {item.name}
+                                  </h4>
+                                  <ArrowUpRight
+                                    className="h-4 w-4 shrink-0 text-slate-500 transition-colors group-hover:text-amber-400"
+                                    aria-hidden="true"
+                                  />
+                                </div>
+                                <p
+                                  className={`mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${style.headerChip}`}
+                                >
+                                  {item.tag}
+                                </p>
+                                <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                );
+              })}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 5. AUDIENCE PROPOSITION                                       */}
+      {/* ============================================================ */}
+      <section
+        id="audiences"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Who This Is For</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Built for employers. Open to talent.
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Every engagement is engineered around the employer outcome — but the same pipeline
+                powers job seekers who want a real career, not just a job.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {/* Employer card — PRIMARY */}
+              <article className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-transparent p-8 lg:col-span-2">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="eyebrow text-amber-400">For Employers</p>
+                  <span className="rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-ink">
+                    Primary audience
+                  </span>
+                </div>
+                <h3 className="mt-4 text-2xl font-bold text-white">
+                  Hire trained, vetted talent ramped on your stack
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  Tell us the roles. We source from a 2M+ pool, screen with a 5-stage rubric, train
+                  the finalists on your codebase, and place them with a 90-day replacement guarantee
+                  — at 40% lower cost-per-hire than agency hiring.
+                </p>
+                <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {[
+                    "48-hour shortlists of 5–8 vetted profiles",
+                    "Pre-trained on your stack, ramped in 1–2 weeks",
+                    "Pay-after-join — you only pay for hires that stick",
+                    "SLA-backed weekly reporting and dashboards",
+                  ].map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2
+                        className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
+                        aria-hidden="true"
+                      />
+                      <span className="text-slate-200">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    asChild
+                    className="h-11 bg-amber-500 px-6 text-sm font-semibold text-brand-ink hover:bg-amber-400"
+                  >
+                    <Link href="/contact">
+                      Hire Talent Now
+                      <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 border-white/25 bg-transparent px-6 text-sm font-medium text-white hover:bg-white/10"
+                  >
+                    <Link href="#pricing">See pricing models</Link>
+                  </Button>
+                </div>
+              </article>
+
+              {/* Seeker card */}
+              <article className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-8">
+                <p className="eyebrow text-slate-400">For Job Seekers</p>
+                <h3 className="mt-4 text-xl font-bold text-white">
+                  Get trained, placed, paid
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                  Join a cohort, get trained on real production stacks, and walk into a role with a
+                  hiring partner already lined up. Free training for accepted candidates.
+                </p>
+                <ul className="mt-6 space-y-3">
+                  {[
+                    "Free training for accepted cohort candidates",
+                    "Placement support with 500+ hiring partners",
+                    "Career coaching for the first 12 months",
+                  ].map((benefit) => (
+                    <li key={benefit} className="flex items-start gap-2 text-sm">
+                      <Check
+                        className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400"
+                        aria-hidden="true"
+                      />
+                      <span className="text-slate-300">{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href="/talent-solutions/placements"
+                  className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-amber-400 hover:text-amber-300"
+                >
+                  Explore open roles
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </article>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 6. PROCESS INFOGRAPHIC                                        */}
+      {/* ============================================================ */}
+      <section
+        id="process"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">How It Works</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                From discovery call to placement in 10 weeks
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                A predictable, SLA-backed engagement — you always know which week you are in and what
+                happens next.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <ol
+              className="relative mt-12 grid gap-6 lg:grid-cols-5"
+              aria-label="Five-step talent engagement timeline"
+            >
+              {PROCESS_STEPS.map((step, index) => (
+                <li key={step.title} className="relative">
+                  <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-brand-ink/60 p-5">
+                    <div className="flex items-center justify-between">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-400/10 ring-1 ring-amber-400/30">
+                        <step.icon className="h-5 w-5 text-amber-400" aria-hidden="true" />
+                      </span>
+                      <span className="font-mono text-[11px] text-slate-500">
+                        Step {String(index + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-amber-400">
+                      {step.duration}
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-white">
+                      {step.title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                      {step.description}
+                    </p>
+                  </div>
+                  {index < PROCESS_STEPS.length - 1 && (
+                    <span
+                      className="absolute -right-3 top-1/2 z-10 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-brand-navy ring-1 ring-white/10 lg:flex"
+                      aria-hidden="true"
+                    >
+                      <ArrowRight className="h-3 w-3 text-amber-400" />
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 7. ROI INFOGRAPHIC                                            */}
+      {/* ============================================================ */}
+      <section
+        id="roi"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">The ROI Math</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                What you save by hiring through STIOOS
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                The same three numbers your CFO tracks — cost, time, and risk — compared side by side
+                against the traditional hiring path.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-2">
+              {/* Traditional */}
+              <article className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-8">
+                <header className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-400/10 ring-1 ring-rose-400/25">
+                    <Coins className="h-5 w-5 text-rose-400" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="eyebrow text-rose-400">The old way</p>
+                    <h3 className="text-lg font-bold text-white">Traditional Hiring</h3>
+                  </div>
+                </header>
+                <div className="mt-6 space-y-5">
+                  {ROI_METRICS.map((metric) => (
+                    <div key={metric.label}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-slate-300">{metric.label}</span>
+                        <span className="text-slate-400">{metric.traditional.value}</span>
+                      </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-rose-400/70"
+                          style={{ width: metric.traditional.width }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ul className="mt-6 space-y-2 border-t border-white/10 pt-5 text-sm">
+                  {[
+                    "20–30% agency fee on first-year salary",
+                    "3–6 months of onboarding before productivity",
+                    "Bad-hire risk absorbed entirely by the employer",
+                  ].map((point) => (
+                    <li key={point} className="flex items-start gap-2 text-slate-400">
+                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400/70" aria-hidden="true" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+
+              {/* STIOOS */}
+              <article className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-transparent p-6 md:p-8">
+                <header className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400/10 ring-1 ring-amber-400/30">
+                    <Sparkles className="h-5 w-5 text-amber-400" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="eyebrow text-amber-400">The STIOOS way</p>
+                    <h3 className="text-lg font-bold text-white">STIOOS Talent</h3>
+                  </div>
+                </header>
+                <div className="mt-6 space-y-5">
+                  {ROI_METRICS.map((metric) => (
+                    <div key={metric.label}>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-slate-200">{metric.label}</span>
+                        <span className="text-amber-300">{metric.stioos.value}</span>
+                      </div>
+                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400"
+                          style={{ width: metric.stioos.width }}
+                          aria-hidden="true"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ul className="mt-6 space-y-2 border-t border-white/10 pt-5 text-sm">
+                  {[
+                    "Pay-after-join — you only pay for hires that stick",
+                    "Trained on your stack, ramped in 1–2 weeks",
+                    "90-day replacement guarantee on every placement",
+                  ].map((point) => (
+                    <li key={point} className="flex items-start gap-2 text-slate-200">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 8. COMPARISON TABLE                                           */}
+      {/* ============================================================ */}
+      <section
+        id="comparison"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Head-to-Head</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                STIOOS vs. agency vs. in-house recruiting
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Ten capability rows, three approaches. The STIOOS column is highlighted because
+                that is the column your hiring committee will actually want to read.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-10 overflow-x-auto rounded-2xl border border-white/10">
+              <p className="sr-only">
+                Comparison table of talent hiring approaches. Swipe horizontally to view all columns.
+              </p>
+              <table className="min-w-[720px] w-full border-collapse text-left text-sm">
+                <thead>
+                  <tr className="bg-brand-ink">
+                    <th
+                      scope="col"
+                      className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-400"
+                    >
+                      Capability
+                    </th>
+                    <th
+                      scope="col"
+                      className="bg-amber-500/[0.08] px-5 py-4 text-center text-xs font-bold uppercase tracking-wide text-amber-400"
+                    >
+                      STIOOS Talent
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-400"
+                    >
+                      Traditional Agency
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-400"
+                    >
+                      In-house Recruiting
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {COMPARISON_ROWS.map((row) => (
+                    <tr
+                      key={row.feature}
+                      className="transition-colors hover:bg-white/[0.02]"
+                    >
+                      <th
+                        scope="row"
+                        className="px-5 py-4 align-top text-sm font-medium text-white"
+                      >
+                        {row.feature}
+                      </th>
+                      <td className="bg-amber-500/[0.04] px-5 py-4 text-center align-top text-sm font-semibold text-amber-300">
+                        {row.stioos}
+                      </td>
+                      <td className="px-5 py-4 text-center align-top text-sm text-slate-400">
+                        {row.agency}
+                      </td>
+                      <td className="px-5 py-4 text-center align-top text-sm text-slate-400">
+                        {row.inhouse}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 9. INDUSTRIES SERVED                                          */}
+      {/* ============================================================ */}
+      <section
+        id="industries"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Industries We Serve</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Talent placed across eight core industries
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Domain-calibrated cohorts — your candidates learn the regulations, tooling, and
+                operating rhythm of your sector before they ever sit down with your team.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {INDUSTRIES_SERVED.map((ind) => (
+                <article
+                  key={ind.name}
+                  className="group rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:bg-white/[0.05]"
+                >
+                  <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-amber-400/10 ring-1 ring-amber-400/25">
+                    <ind.icon className="h-6 w-6 text-amber-400" aria-hidden="true" />
+                  </span>
+                  <h3 className="mt-4 text-sm font-semibold text-white">{ind.name}</h3>
+                  <p className="mt-1 text-xs text-slate-400">{ind.hires}</p>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 10. CASE STUDIES / RESULTS                                    */}
+      {/* ============================================================ */}
+      <section
+        id="case-studies"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Results</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Engagements that shipped hires, not promises
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Three recent employer engagements — each with the challenge we walked into, the
+                STIOOS service we applied, and the number that mattered to the hiring committee.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {CASE_STUDIES.map((study) => (
+                <article
+                  key={study.company}
+                  className="flex flex-col rounded-2xl border border-white/10 bg-brand-ink/60 p-6"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="rounded-full bg-amber-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-300 ring-1 ring-amber-400/25">
+                      {study.type}
+                    </span>
+                    <span className="font-mono text-xs text-slate-500">{study.timeline}</span>
+                  </div>
+                  <h3 className="mt-4 text-lg font-bold leading-snug text-white">
+                    {study.company}
+                  </h3>
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        Challenge
+                      </p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                        {study.problem}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        Solution
+                      </p>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                        {study.solution}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-auto border-t border-white/10 pt-5">
+                    <p className="text-2xl font-bold text-amber-400">{study.resultMetric}</p>
+                    <p className="mt-1 text-xs text-slate-400">{study.resultDetail}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 11. PRICING MODELS                                            */}
+      {/* ============================================================ */}
+      <section
+        id="pricing"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Engagement Models</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Three ways to engage, one pay-after-join philosophy
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Start with a single cohort, commit to a quarterly pipeline, or build a full
+                enterprise academy. Every model includes the 90-day replacement guarantee.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {PRICING_TIERS.map((tier) => (
+                <article
+                  key={tier.name}
+                  className={`relative flex flex-col rounded-2xl border p-6 ${
+                    tier.featured
+                      ? "border-amber-500/40 bg-gradient-to-b from-amber-500/[0.12] to-transparent lg:-translate-y-2"
+                      : "border-white/10 bg-white/[0.03]"
+                  }`}
+                >
+                  {tier.featured && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-ink">
+                      Most popular
+                    </span>
+                  )}
+                  <p className="eyebrow text-amber-400">{tier.audience}</p>
+                  <h3 className="mt-2 text-xl font-bold text-white">{tier.name}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {tier.description}
+                  </p>
+                  <div className="mt-5">
+                    <span className="text-3xl font-bold tracking-tight text-white">
+                      {tier.price}
+                    </span>
+                    <span className="ml-1.5 text-sm text-slate-400">{tier.unit}</span>
+                  </div>
+                  <ul className="mt-6 flex-1 space-y-3">
+                    {tier.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm">
+                        <Check
+                          className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
+                          aria-hidden="true"
+                        />
+                        <span className="text-slate-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    asChild
+                    variant={tier.featured ? "default" : "outline"}
+                    className={`mt-6 h-11 ${
+                      tier.featured
+                        ? "bg-amber-500 text-brand-ink hover:bg-amber-400"
+                        : "border-white/25 bg-transparent text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <Link href="/contact">
+                      {tier.cta}
+                      <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 12. CTA BAND                                                  */}
+      {/* ============================================================ */}
+      <section
+        id="cta"
+        className="scroll-mt-36 border-t border-white/[0.06] bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.12] via-brand-navy to-brand-navy px-6 py-14 text-center md:px-12 md:py-16">
+              <div className="absolute inset-0 surface-grid opacity-40" aria-hidden="true" />
+              <div
+                className="absolute left-1/2 top-0 h-56 w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500/20 blur-3xl"
+                aria-hidden="true"
+              />
+              <div className="relative mx-auto max-w-2xl">
+                <p className="eyebrow text-amber-400">Build your pipeline</p>
+                <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                  Build your talent pipeline this quarter
+                </h2>
+                <p className="mt-4 text-base leading-relaxed text-slate-300">
+                  Book a 30-minute discovery call. We will map your roles to the right engagement
+                  model, hand you a written SLA, and start shortlists within 48 hours of signing.
+                </p>
+                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                  <Button
+                    asChild
+                    size="lg"
+                    className="h-12 bg-amber-500 px-8 text-base font-semibold text-brand-ink hover:bg-amber-400"
+                  >
+                    <Link href="/contact">
+                      Book a Free Consultation
+                      <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="h-12 border-white/25 bg-transparent px-8 text-base font-medium text-white hover:bg-white/10"
+                  >
+                    <Link href="#services">Explore Services</Link>
+                  </Button>
+                </div>
+                <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-300">
+                  <li className="flex items-center gap-1.5">
+                    <ShieldCheck className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+                    SLA-backed delivery
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <RefreshCw className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+                    90-day replacement guarantee
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <LineChart className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+                    Weekly reporting + dashboard
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </main>
   );
 }

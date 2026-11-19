@@ -98,30 +98,18 @@ export function TalentVerticalFlyout({
     const rect = anchorEl.getBoundingClientRect();
     const vw = window.innerWidth;
 
-    // Default: panel sits to the RIGHT of the pill (left = pill.right + gap).
-    // If the pill is too close to the right edge of the viewport, fall back
-    // to opening BELOW the pill (left-aligned with the pill) so the panel
-    // never gets clipped off-screen.
-    const rightGap = vw - rect.right;
-    const openRight = rightGap >= PANEL_W + MARGIN;
-
-    if (openRight) {
-      const left = Math.min(rect.right + 12, vw - PANEL_W - MARGIN);
-      // Vertically center on the pill's center, clamped to viewport.
-      const panelH = Math.min(440, window.innerHeight - 32);
-      const top = Math.max(
-        MARGIN,
-        Math.min(
-          rect.top + rect.height / 2 - panelH / 2,
-          window.innerHeight - panelH - MARGIN
-        )
-      );
-      return { top, left };
-    }
-
-    // Fallback: below the pill, left-aligned.
-    const left = Math.min(rect.left, vw - PANEL_W - MARGIN);
-    return { top: rect.bottom + 10, left: Math.max(MARGIN, left) };
+    // ALWAYS open BELOW the pill, flush against the secondary header's
+    // bottom edge — never to the right side. This matches the user's
+    // reference image (green-marked zone): the dropdown drops down
+    // from the strip as a continuation of the header.
+    //
+    // Horizontal alignment: prefer left-aligned with the pill, but
+    // clamp so the panel never gets clipped off the right edge.
+    const left = Math.min(
+      Math.max(rect.left, MARGIN),
+      Math.max(MARGIN, vw - PANEL_W - MARGIN)
+    );
+    return { top: rect.bottom, left };
   })();
 
   if (!style) return null;
@@ -138,7 +126,7 @@ export function TalentVerticalFlyout({
     >
       <div
         className={cn(
-          "flyout-panel w-[380px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-2xl border border-white/10 bg-brand-navy text-white shadow-2xl shadow-black/60 ring-1",
+          "flyout-panel w-[380px] max-w-[calc(100vw-1.5rem)] overflow-hidden rounded-b-2xl border border-t-0 bg-brand-navy text-white shadow-2xl shadow-black/60 ring-1",
           accent.panelBorder,
           accent.panelGlow
         )}

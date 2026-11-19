@@ -741,12 +741,14 @@ export function PublicHeader() {
 
                       return (
                         <>
-                          {/* ALL TALENT SOLUTIONS — left-most pill, opens a
-                              wide mega menu (Browse-Categories pattern) with
-                              all 9 services in 3 columns on the left + the
-                              hovered service's 8 deep-dive sub-pages on the
-                              right. Different accent (amber gradient) so it
-                              reads as the "browse all" entry point. */}
+                          {/* PREMIUM TALENT SOLUTIONS — left-most pill, opens
+                              a wide mega menu (Browse-Categories pattern)
+                              with deep-dive page cards on the left + a
+                              vertical services list on the right. Premium
+                              styling (deeper amber gradient + gold accents)
+                              and wider button so it reads as the marquee
+                              entry point and matches the header's horizontal
+                              rhythm. */}
                           <div
                             ref={(el) => {
                               pillRefs.current["talent-all-services"] = el;
@@ -760,7 +762,7 @@ export function PublicHeader() {
                                 dismissFlyouts();
                               }}
                               tabIndex={showStrip ? 0 : -1}
-                              title="All Talent Solutions"
+                              title="Premium Talent Solutions"
                               aria-haspopup="true"
                               aria-expanded={openStrip === "talent-all-services"}
                               aria-current={
@@ -768,21 +770,21 @@ export function PublicHeader() {
                                   ? "page"
                                   : undefined
                               }
-                              className="group inline-flex h-9 min-w-0 shrink items-center gap-2 rounded-lg border border-amber-400/50 bg-gradient-to-br from-amber-400/20 to-orange-500/15 pl-2.5 pr-2 shadow-[0_0_18px_-8px] shadow-amber-500/40 transition-colors duration-200 hover:border-amber-400/70 hover:from-amber-400/30 hover:to-orange-500/20"
+                              className="group inline-flex h-9 min-w-[180px] shrink-0 items-center justify-center gap-2 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 px-3 shadow-[0_0_22px_-6px] shadow-amber-500/50 transition-colors duration-200 hover:border-amber-300/80 hover:from-amber-500/35 hover:via-orange-500/25 hover:to-amber-600/20"
                             >
                               <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
-                              <span className="min-w-0 truncate text-[11px] font-bold whitespace-nowrap leading-none text-amber-300 transition-colors group-hover:text-amber-200 xl:text-xs">
-                                All Talent
+                              <span className="min-w-0 truncate text-[11px] font-bold whitespace-nowrap leading-none text-amber-200 transition-colors group-hover:text-amber-100 xl:text-[13px]">
+                                Premium Talent Solutions
                               </span>
                               <ChevronDown
                                 className={cn(
-                                  "h-3.5 w-3.5 shrink-0 text-amber-300/70 transition-transform duration-200",
+                                  "h-3.5 w-3.5 shrink-0 text-amber-300/80 transition-transform duration-200",
                                   openStrip === "talent-all-services" && "rotate-180"
                                 )}
                               />
                             </Link>
 
-                            {/* Mega flyout — 9 services in 3 columns + 8 deep-dive sub-pages */}
+                            {/* Mega flyout — deep-dive page cards + vertical services list */}
                             {openStrip === "talent-all-services" && showStrip && (
                               <TalentAllServicesFlyout
                                 anchorEl={stripAnchor}
@@ -882,14 +884,15 @@ export function PublicHeader() {
       </header>
 
       {/* Mobile quick-scroll strip — mirrors the desktop secondary header
-          (All Talent + 6 grouped options on talent pages, divisions
-          everywhere else). Service detail views hide both strips entirely. */}
+          (Premium Talent Solutions + 6 grouped options on talent pages,
+          divisions everywhere else). Service detail views hide both
+          strips entirely. */}
       {!isMarketplacePage && (
       <div className="border-b border-white/[0.06] bg-brand-ink lg:hidden">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-4 py-2">
           {isTalentSection
             ? (<>
-                {/* All Talent Solutions — first pill (amber accent) */}
+                {/* Premium Talent Solutions — first pill (premium amber accent) */}
                 <Link
                   href="/talent-solutions"
                   onClick={() => setMobileOpen(false)}
@@ -898,11 +901,11 @@ export function PublicHeader() {
                       ? "page"
                       : undefined
                   }
-                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/50 bg-gradient-to-br from-amber-400/20 to-orange-500/15 py-2 pl-2.5 pr-2 text-xs font-bold text-amber-300 shadow-[0_0_18px_-8px] shadow-amber-500/40"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 py-2 pl-2.5 pr-2 text-xs font-bold text-amber-200 shadow-[0_0_22px_-6px] shadow-amber-500/50"
                 >
                   <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
-                  All Talent
-                  <ChevronDown className="h-3.5 w-3.5 shrink-0 text-amber-300/70" />
+                  Premium Talent Solutions
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 text-amber-300/80" />
                 </Link>
                 {TALENT_STRIP_GROUPS.map((group) => {
                 const isActiveGroup = talentActiveGroup === group.slug;
