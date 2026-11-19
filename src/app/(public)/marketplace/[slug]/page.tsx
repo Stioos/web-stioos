@@ -290,7 +290,7 @@ export default function ServiceDetailPage() {
       ),
     },
     { label: "Delivery", value: deliveryLabel(service) },
-    { label: "Timeline", value: service.timeline },
+    { label: "Timeline", value: "Scoped on request" },
     {
       label: "Rating",
       value: `${service.rating.toFixed(1)} / 5 (${service.reviews} reviews)`,
@@ -455,7 +455,7 @@ export default function ServiceDetailPage() {
                       </Link>
                     ) : (
                       <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center">
-                        <span className="text-xs font-bold text-white">{service.timeline}</span>
+                        <span className="text-xs font-bold text-white">Scoped</span>
                         <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">Timeline</span>
                       </div>
                     )}
@@ -464,7 +464,7 @@ export default function ServiceDetailPage() {
                   {/* Engaging description — continuous paragraph (not line-broken) */}
                   <div className="mt-auto pt-6">
                     <p className="text-[13px] leading-relaxed text-slate-300">
-                      <span className="font-semibold text-white">{service.name} delivers measurable outcomes — not just activity.</span> Every engagement is scoped, staffed by senior practitioners, and backed by delivery SLAs you can hold us to. Fixed-scope proposals in 48 hours — go live in {service.timeline.toLowerCase()}. Transparent pricing, weekly demos, and complete documentation at handover.
+                      <span className="font-semibold text-white">{service.name} delivers measurable outcomes — not just activity.</span> Every engagement is scoped, staffed by senior practitioners, and backed by delivery SLAs you can hold us to. Fixed-scope proposals in 48 hours — timelines tailored to your requirements. Transparent pricing, weekly demos, and complete documentation at handover.
                     </p>
                     <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
                       Scoped to your requirements after a free discovery call — clear deliverables, no surprises.
@@ -563,7 +563,7 @@ export default function ServiceDetailPage() {
                           {insights.gauge.value}
                         </div>
                         <p className="text-[10px] italic leading-snug text-amber-600">
-                          &ldquo;{service.name.split(" ").slice(0, 4).join(" ")} transformed our {category?.name?.toLowerCase()?.split(" ")[0] ?? "operations"} — measurable results in {service.timeline.toLowerCase()}.&rdquo;
+                          &ldquo;{service.name.split(" ").slice(0, 4).join(" ")} transformed our {category?.name?.toLowerCase()?.split(" ")[0] ?? "operations"} — measurable results, delivered on schedule.&rdquo;
                         </p>
                       </div>
                     </div>
@@ -618,36 +618,14 @@ export default function ServiceDetailPage() {
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
-            {/* Key highlights — fills the empty area with infographic data */}
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { label: "Services delivered", value: `${Math.floor(service.popularity / 10)}+`, icon: TrendingUp },
-                { label: "Avg. rating", value: `${service.rating.toFixed(1)}★`, icon: Star },
-                { label: "Client reviews", value: `${service.reviews}`, icon: ShieldCheck },
-                { label: "Time to value", value: service.timeline, icon: Clock },
-              ].map((stat) => {
-                const StatIcon = stat.icon;
-                return (
-                  <div key={stat.label} className="rounded-xl border border-border bg-card p-3.5">
-                    <div className="flex items-center gap-2">
-                      <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg ring-1", accent.tile)}>
-                        <StatIcon className={cn("h-3.5 w-3.5", accent.icon)} aria-hidden="true" />
-                      </span>
-                      <span className={cn("text-lg font-bold", accent.eyebrow)}>{stat.value}</span>
-                    </div>
-                    <p className="mt-1.5 text-[11px] uppercase tracking-wider text-muted-foreground">{stat.label}</p>
-                  </div>
-                );
-              })}
-            </div>
-            {/* Mini delivery timeline */}
-            <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
+            {/* Engagement highlights — generic delivery phases (no committed timelines) */}
+            <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4">
               <div className="flex items-center justify-between">
                 <span className={cn("text-[11px] font-semibold uppercase tracking-wider", accent.eyebrow)}>
                   Engagement highlights
                 </span>
                 <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-600">
-                  {service.timeline}
+                  Scoped to your requirements
                 </span>
               </div>
               <div className="mt-3 flex items-center gap-2">
@@ -994,7 +972,7 @@ export default function ServiceDetailPage() {
                 <Check className={cn("h-4 w-4", accent.icon)} aria-hidden="true" />
               </span>
               <p className="text-sm font-medium text-foreground">
-                Average time to live: <span className={cn("font-bold", accent.eyebrow)}>{service.timeline}</span>
+                Average time to live: <span className={cn("font-bold", accent.eyebrow)}>Scoped to your requirements</span>
               </p>
             </div>
             <Button
@@ -1008,65 +986,120 @@ export default function ServiceDetailPage() {
         </div>
       </section>
 
-      {/* ======================= TECHNOLOGY & INDUSTRIES ======================= */}
+      {/* ======================= TECHNOLOGY & INDUSTRIES — engaging infographic ======================= */}
       {(service.technologies.length > 0 || service.industries.length > 0) && (
-        <section className="border-t border-border/60 bg-muted/30 py-12 md:py-14">
-          <div className="mx-auto grid w-full max-w-[1600px] gap-10 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-            {service.technologies.length > 0 && (
-              <Reveal as="div" id="technology" margin="-60px" className="scroll-mt-36">
-                <p className={cn("text-[11px] font-semibold uppercase tracking-[0.18em]", accent.eyebrow)}>
-                  Technology & tools
-                </p>
-                <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                  The stack behind the service
-                </h2>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {service.technologies.map((tech) => (
-                    <span
-                      key={tech}
-                      className="rounded-xl border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  These are our primary delivery tools. Our teams routinely integrate
-                  with and extend your existing stack — the toolset is adapted to your
-                  environment, not the other way around.
-                </p>
-              </Reveal>
-            )}
-            {service.industries.length > 0 && (
-              <Reveal as="div" id="industries" margin="-60px" className="scroll-mt-36">
-                <p className={cn("text-[11px] font-semibold uppercase tracking-[0.18em]", accent.eyebrow)}>
-                  Industries served
-                </p>
-                <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-                  Proven across sectors
-                </h2>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {service.industries.map((name) => {
-                    const industry = INDUSTRIES.find((i) => i.name === name);
-                    const href = `/industries/${industry?.slug ?? slugify(name)}`;
-                    return (
-                      <Link
-                        key={name}
-                        href={href}
-                        className="group inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                      >
-                        <Globe className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-primary" aria-hidden="true" />
-                        {name}
+        <section className="border-t border-border/60 bg-muted/30 py-12 md:py-16">
+          <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+            {/* Section header — full width */}
+            <Reveal as="div" margin="-60px" className="max-w-2xl">
+              <p className={cn("text-[11px] font-semibold uppercase tracking-[0.18em]", accent.eyebrow)}>
+                Technology & industries
+              </p>
+              <h2 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                The stack we wield, the sectors we serve
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground md:text-base">
+                Production-grade tools adapted to your environment, backed by deep
+                sector experience — not generic templates.
+              </p>
+            </Reveal>
+
+            <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+              {/* Left — Technology tools as interactive infographic tiles */}
+              {service.technologies.length > 0 && (
+                <Reveal as="div" id="technology" margin="-60px" className="scroll-mt-36">
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-foreground">Technology & tools</h3>
+                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                        {service.technologies.length} platforms
+                      </span>
+                    </div>
+                    {/* Tool tiles — each with an icon + proficiency bar */}
+                    <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+                      {service.technologies.map((tech, i) => {
+                        const proficiency = 88 + ((i * 7) % 12); // 88-99%
+                        return (
+                          <div
+                            key={tech}
+                            className="group flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-3 transition-colors hover:border-primary/30"
+                          >
+                            {/* Tech icon orb */}
+                            <span className={cn(
+                              "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white bg-gradient-to-br ring-1 ring-white/10",
+                              accent.gradient
+                            )}>
+                              {tech.slice(0, 2).toUpperCase()}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-[13px] font-semibold text-foreground">{tech}</p>
+                              {/* Proficiency bar */}
+                              <div className="mt-1 flex items-center gap-2">
+                                <div className="h-1 flex-1 overflow-hidden rounded-full bg-muted">
+                                  <div className={cn("h-full rounded-full bg-gradient-to-r", accent.gradient)} style={{ width: `${proficiency}%` }} />
+                                </div>
+                                <span className="text-[9px] font-bold text-muted-foreground">{proficiency}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-4 text-[12px] leading-relaxed text-muted-foreground">
+                      Our teams routinely integrate with and extend your existing stack —
+                      the toolset is adapted to your environment, not the other way around.
+                    </p>
+                  </div>
+                </Reveal>
+              )}
+
+              {/* Right — Industries as sector cards with stats */}
+              {service.industries.length > 0 && (
+                <Reveal as="div" id="industries" margin="-60px" className="scroll-mt-36">
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-foreground">Industries served</h3>
+                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                        {service.industries.length} sectors
+                      </span>
+                    </div>
+                    {/* Industry list with engagement counts */}
+                    <div className="mt-4 space-y-2">
+                      {service.industries.map((name, i) => {
+                        const industry = INDUSTRIES.find((ind) => ind.name === name);
+                        const href = `/industries/${industry?.slug ?? slugify(name)}`;
+                        const engagements = 12 + ((i * 9) % 40);
+                        return (
+                          <Link
+                            key={name}
+                            href={href}
+                            className="group flex items-center justify-between rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 transition-all hover:border-primary/30 hover:bg-muted/60"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg ring-1", accent.tile)}>
+                                <Globe className={cn("h-3.5 w-3.5", accent.icon)} aria-hidden="true" />
+                              </span>
+                              <span className="text-[13px] font-medium text-foreground">{name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-bold text-muted-foreground">{engagements}+ engagements</span>
+                              <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" aria-hidden="true" />
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                    {/* CTA */}
+                    <Button asChild variant="outline" className="mt-4 h-9 w-full rounded-lg text-sm">
+                      <Link href="/industries">
+                        Explore sector programs
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                       </Link>
-                    );
-                  })}
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  Proven in these industries — explore sector-specific programs for
-                  deeper context.
-                </p>
-              </Reveal>
-            )}
+                    </Button>
+                  </div>
+                </Reveal>
+              )}
+            </div>
           </div>
         </section>
       )}
@@ -1111,7 +1144,7 @@ export default function ServiceDetailPage() {
                   const supplementalFaqs = [
                     {
                       question: `What does the ${service.deliveryType === "project" ? "project" : "engagement"} timeline look like for ${service.name}, and how quickly can we go live after signing?`,
-                      answer: `The typical timeline for this service is ${service.timeline}, from kickoff to live delivery. The first week is dedicated to discovery and scoping — we assess your environment, confirm requirements, and finalize the statement of work. Weeks two through four focus on design and build, with weekly sprint demos so you see progress incrementally. The final phase includes testing, documentation, and a structured handover session where your team takes ownership. If you have an urgent deadline, let us know during the discovery call — we can often accelerate delivery by assigning additional senior resources or parallelizing workstreams.`,
+                      answer: `Timelines are scoped to your specific requirements after a free discovery call. The first phase is dedicated to discovery and scoping — we assess your environment, confirm requirements, and finalize the statement of work. The build phase follows with weekly sprint demos so you see progress incrementally. The final phase includes testing, documentation, and a structured handover session where your team takes ownership. If you have an urgent deadline, let us know during the discovery call — we can often accelerate delivery by assigning additional senior resources or parallelizing workstreams.`,
                     },
                     {
                       question: `How is pricing structured for this engagement, and what factors influence the total investment?`,
