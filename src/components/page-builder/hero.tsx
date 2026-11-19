@@ -87,8 +87,10 @@ export function HeroSection({ spec }: { spec: PageSpec }) {
       />
 
       {/* Viewport-fit shell: fills the first screen under the sticky
-          chrome and centers the card vertically on tall displays */}
-      <div className="relative mx-auto flex min-h-[calc(100svh-110px)] w-full max-w-7xl flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 lg:min-h-[calc(100svh-118px)] lg:px-8 lg:py-14">
+          chrome and centers the card vertically on tall displays.
+          Wider max-width (1600px) matches the service detail hero so
+          the merged identity card spans the same band on wide screens. */}
+      <div className="relative mx-auto flex min-h-[calc(100svh-110px)] w-full max-w-[1600px] flex-col justify-center px-4 py-10 sm:px-6 sm:py-12 lg:min-h-[calc(100svh-118px)] lg:px-8 lg:py-14">
         <div className="relative">
           {/* Soft accent halo behind the card */}
           <div

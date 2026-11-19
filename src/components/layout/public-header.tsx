@@ -22,6 +22,7 @@ import {
 import { TalentMegaMenu } from "@/components/layout/talent-mega-menu";
 import { TalentStripMenu } from "@/components/layout/talent-strip-menu";
 import { TalentVerticalFlyout } from "@/components/layout/talent-vertical-flyout";
+import { TalentAllServicesFlyout } from "@/components/layout/talent-all-services-flyout";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useLoginDrawer, LoginDrawer } from "@/components/auth/login-drawer";
 import { deliveryLabel } from "@/lib/marketplace-utils";
@@ -740,6 +741,60 @@ export function PublicHeader() {
 
                       return (
                         <>
+                          {/* ALL TALENT SOLUTIONS — left-most pill, opens a
+                              wide mega menu (Browse-Categories pattern) with
+                              all 9 services in 3 columns on the left + the
+                              hovered service's 8 deep-dive sub-pages on the
+                              right. Different accent (amber gradient) so it
+                              reads as the "browse all" entry point. */}
+                          <div
+                            ref={(el) => {
+                              pillRefs.current["talent-all-services"] = el;
+                            }}
+                            className="relative flex min-w-0 shrink"
+                            onMouseEnter={() => hoverOpenStrip("talent-all-services")}
+                          >
+                            <Link
+                              href="/talent-solutions"
+                              onClick={() => {
+                                dismissFlyouts();
+                              }}
+                              tabIndex={showStrip ? 0 : -1}
+                              title="All Talent Solutions"
+                              aria-haspopup="true"
+                              aria-expanded={openStrip === "talent-all-services"}
+                              aria-current={
+                                talentActiveGroup === "" && !talentActiveOption
+                                  ? "page"
+                                  : undefined
+                              }
+                              className="group inline-flex h-9 min-w-0 shrink items-center gap-2 rounded-lg border border-amber-400/50 bg-gradient-to-br from-amber-400/20 to-orange-500/15 pl-2.5 pr-2 shadow-[0_0_18px_-8px] shadow-amber-500/40 transition-colors duration-200 hover:border-amber-400/70 hover:from-amber-400/30 hover:to-orange-500/20"
+                            >
+                              <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
+                              <span className="min-w-0 truncate text-[11px] font-bold whitespace-nowrap leading-none text-amber-300 transition-colors group-hover:text-amber-200 xl:text-xs">
+                                All Talent
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "h-3.5 w-3.5 shrink-0 text-amber-300/70 transition-transform duration-200",
+                                  openStrip === "talent-all-services" && "rotate-180"
+                                )}
+                              />
+                            </Link>
+
+                            {/* Mega flyout — 9 services in 3 columns + 8 deep-dive sub-pages */}
+                            {openStrip === "talent-all-services" && showStrip && (
+                              <TalentAllServicesFlyout
+                                anchorEl={stripAnchor}
+                                align="left"
+                                activeServiceSlug={talentActiveOption || undefined}
+                                onClose={dismissFlyouts}
+                                onKeepAlive={clearTimers}
+                                onScheduleClose={scheduleClose}
+                              />
+                            )}
+                          </div>
+
                           {/* CANDIDATE SIDE (3) — left half */}
                           <div className="flex min-w-0 shrink items-center gap-1.5 xl:gap-2">
                             {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
@@ -827,13 +882,29 @@ export function PublicHeader() {
       </header>
 
       {/* Mobile quick-scroll strip — mirrors the desktop secondary header
-          (6 grouped talent options on talent pages, divisions everywhere
-          else). Service detail views hide both strips entirely. */}
+          (All Talent + 6 grouped options on talent pages, divisions
+          everywhere else). Service detail views hide both strips entirely. */}
       {!isMarketplacePage && (
       <div className="border-b border-white/[0.06] bg-brand-ink lg:hidden">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto px-4 py-2">
           {isTalentSection
-            ? TALENT_STRIP_GROUPS.map((group) => {
+            ? (<>
+                {/* All Talent Solutions — first pill (amber accent) */}
+                <Link
+                  href="/talent-solutions"
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={
+                    talentActiveGroup === "" && !talentActiveOption
+                      ? "page"
+                      : undefined
+                  }
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/50 bg-gradient-to-br from-amber-400/20 to-orange-500/15 py-2 pl-2.5 pr-2 text-xs font-bold text-amber-300 shadow-[0_0_18px_-8px] shadow-amber-500/40"
+                >
+                  <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
+                  All Talent
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 text-amber-300/70" />
+                </Link>
+                {TALENT_STRIP_GROUPS.map((group) => {
                 const isActiveGroup = talentActiveGroup === group.slug;
                 const GROUP_ACCENT_MOBILE_TILE: Record<string, string> = {
                   blue: "text-sky-300",
@@ -866,7 +937,8 @@ export function PublicHeader() {
                     <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                   </Link>
                 );
-              })
+                })}
+              </>)
             : stripCategories.map((cat) => (
                 <Link
                   key={cat.id}
