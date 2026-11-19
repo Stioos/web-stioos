@@ -444,21 +444,11 @@ export default function ServiceDetailPage() {
                       <span className="text-xs font-bold text-white">{deliveryLabel(service)}</span>
                       <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">Delivery</span>
                     </div>
-                    {/* Capability area */}
-                    {subcategory && category ? (
-                      <Link
-                        href={`/category/${category.slug}/${subcategory.slug}`}
-                        className="group flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center transition-colors hover:border-white/20"
-                      >
-                        <Icon name={subIconFor(subcategory, category.icon)} className={cn("h-4 w-4", accent.icon)} />
-                        <span className="mt-0.5 line-clamp-1 text-[9px] font-medium uppercase tracking-wider text-slate-400">{subcategory.name}</span>
-                      </Link>
-                    ) : (
-                      <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center">
-                        <span className="text-xs font-bold text-white">Scoped</span>
-                        <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">Timeline</span>
-                      </div>
-                    )}
+                    {/* Timeline — always shows "On request" (diplomatic, non-committal) */}
+                    <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center">
+                      <span className="text-xs font-bold text-white">On request</span>
+                      <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">Timeline</span>
+                    </div>
                   </div>
 
                   {/* Engaging description — continuous paragraph (not line-broken) */}

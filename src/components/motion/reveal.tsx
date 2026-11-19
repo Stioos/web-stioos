@@ -72,7 +72,12 @@ export function useCountUp(target: number, start: boolean, duration = 1.6): numb
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!start) return;
+    if (!start) {
+      // Fallback: if the animation never starts within 2s, show the
+      // target value directly so cards don't stay at 0/0.0.
+      const fallback = window.setTimeout(() => setValue(target), 2000);
+      return () => window.clearTimeout(fallback);
+    }
     let raf = 0;
     const t0 = performance.now();
     const total = duration * 1000;

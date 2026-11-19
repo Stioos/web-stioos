@@ -94,13 +94,13 @@ function showBar() {
   bar.appendChild(msg); bar.appendChild(btn);
   document.body.appendChild(bar);
 }
-document.addEventListener("pointerdown", function (e) {
-  if (window.__STIOOS_HYDRATED__) return;
-  if (performance.now() < 1200) return;
-  if (e.target && e.target.closest && e.target.closest("#stioos-recovery-bar")) return;
-  if (budget()) { location.reload(); } else { showBar(); }
-}, true);
-})();`;
+// Hydration guard removed — the ErrorRecovery boundary + AppWatchdog
+// already handle stale tabs and crashes. The pointerdown listener was
+// causing false positives on service detail pages where the static data
+// import delays React hydration, showing "did not finish loading" when
+// users clicked FAQ accordions and other interactive elements.
+})();
+`;
   return (
     <html lang="en" suppressHydrationWarning>
       <body

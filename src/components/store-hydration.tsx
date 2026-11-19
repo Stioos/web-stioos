@@ -21,6 +21,13 @@ import { ensureFullCatalog, purgePersistedDemoState, useAppStore } from "@/lib/s
  */
 export function StoreHydration() {
   useEffect(() => {
+    // Mark as hydrated immediately — the page is interactive even before
+    // the full catalog loads (static data is available from the import).
+    // This prevents the hydration-guard from showing the "did not finish
+    // loading" bar when users click FAQ accordions or other interactive
+    // elements before ErrorRecovery.componentDidMount fires.
+    (window as { __STIOOS_HYDRATED__?: boolean }).__STIOOS_HYDRATED__ = true;
+
     let alive = true;
     const kickCatalog = () => {
       if (alive) ensureFullCatalog();
