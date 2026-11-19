@@ -51,7 +51,17 @@ export function useInViewOnce<T extends HTMLElement>(margin = "-40px") {
       { rootMargin: `${margin} 0px` }
     );
     io.observe(el);
-    return () => io.disconnect();
+    // Fallback: if the observer hasn't fired within 1.5s (e.g. element
+    // already in view but observer didn't trigger), force inView=true so
+    // count-up animations start and values don't stay at 0.
+    const fallback = window.setTimeout(() => {
+      setInView(true);
+      io.disconnect();
+    }, 1500);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallback);
+    };
   }, [margin]);
 
   return [ref, inView] as const;

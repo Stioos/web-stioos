@@ -57,8 +57,8 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       />
       <PublicHeader />
       <main className="flex-1">{children}</main>
-      <LinkHub />
       <PublicFooter />
+      <LinkHub />
       <LeadModalProvider />
     </div>
   );
