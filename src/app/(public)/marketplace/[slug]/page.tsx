@@ -471,17 +471,99 @@ export default function ServiceDetailPage() {
                 {/* Divider rail between identity and the why-panel (lg only) */}
                 <div className="hidden lg:block bg-white/[0.07]" aria-hidden="true" />
 
-                {/* Right — visual image + Request Service button */}
+                {/* Right — Live Impact Signal panel + CTAs */}
                 <div className="flex flex-col border-t border-white/[0.07] bg-white/[0.02] p-5 sm:p-7 lg:border-t-0 lg:p-8">
-                  {/* Service preview image — fills available vertical space */}
-                  <div className="flex-1 overflow-hidden rounded-xl border border-white/[0.08]">
-                    <img
-                      src="/service-preview.png"
-                      alt="Service preview — digital intelligence network"
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                  {/* Live Impact Signal — data-driven panel (replaces the old
+                      static image). Uses the service's insights (gauge,
+                      KPIs, bars) so each service shows different metrics. */}
+                  {insights && (
+                    <div className="flex-1 overflow-hidden rounded-xl border border-white/[0.08] bg-card p-4 text-foreground">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-foreground">
+                          <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" />
+                          Live Impact Signal
+                        </span>
+                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-semibold text-amber-600">
+                          {insights.gauge.label}
+                        </span>
+                      </div>
+
+                      {/* Gauge + KPI metrics */}
+                      <div className="mt-3 flex gap-3">
+                        {/* Donut gauge */}
+                        <div className="flex shrink-0 flex-col items-center justify-center">
+                          <div className="relative h-20 w-20">
+                            <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="9" className="text-muted/30" />
+                              <circle
+                                cx="50" cy="50" r="40" fill="none"
+                                stroke="url(#gaugeGrad)" strokeWidth="9" strokeLinecap="round"
+                                strokeDasharray={`${insights.gauge.value * 2.51} 251`}
+                              />
+                              <defs>
+                                <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1">
+                                  <stop offset="0%" stopColor="#f97316" />
+                                  <stop offset="100%" stopColor="#f59e0b" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xl font-bold text-foreground">{insights.gauge.value}%</span>
+                            </div>
+                          </div>
+                          <span className="mt-0.5 text-center text-[8px] uppercase tracking-wider text-muted-foreground">{insights.gauge.caption}</span>
+                        </div>
+
+                        {/* KPI before→after cards */}
+                        <div className="flex-1 space-y-1.5">
+                          {insights.kpis.slice(0, 3).map((kpi) => {
+                            const delta = Math.round(Math.abs((kpi.after - kpi.before) / kpi.before * 100));
+                            return (
+                              <div key={kpi.label} className="rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-2.5 py-1.5">
+                                <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">{kpi.label}</div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] text-muted-foreground line-through">{kpi.before}{kpi.unit}</span>
+                                  <span className="text-[11px] font-bold text-foreground">{kpi.after}{kpi.unit}</span>
+                                  <span className="rounded-full bg-emerald-500/15 px-1 py-0.5 text-[8px] font-bold text-emerald-600">
+                                    {kpi.direction === "down" ? "-" : "+"}{delta}%
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Progress bars */}
+                      <div className="mt-3 space-y-2">
+                        {insights.benefitBars.slice(0, 2).map((bar) => (
+                          <div key={bar.label}>
+                            <div className="flex items-center justify-between text-[8px]">
+                              <span className="font-semibold uppercase tracking-wider text-muted-foreground">{bar.label}</span>
+                              <span className="text-muted-foreground">{bar.before}{bar.unit} → <span className="font-bold text-foreground">{bar.after}{bar.unit}</span></span>
+                            </div>
+                            <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                                style={{ width: `${Math.min((bar.after / bar.max) * 100, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Score badge + quote */}
+                      <div className="mt-3 flex items-center gap-2 border-t border-border pt-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-xs font-bold text-white">
+                          {insights.gauge.value}
+                        </div>
+                        <p className="text-[10px] italic text-amber-600">
+                          &ldquo;The best way to predict the future is to invent it.&rdquo;
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                 {/* Request Service button — below the image */}
                 <div className="mt-4 grid gap-2.5">
