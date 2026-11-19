@@ -34,6 +34,7 @@ import {
   EMPLOYER_STRIP_GROUPS,
   getTalentStripGroup,
 } from "@/data/talent-strip-groups";
+import { TALENT_INFO_PAGES } from "@/data/talent-info-pages";
 import { getTalentSubSeeds } from "@/data/pages/talent-sub-pages";
 import { SOLUTION_LIST } from "@/data/pages/solution-pages";
 import {
@@ -637,7 +638,7 @@ export function PublicHeader() {
               }
               className="flex h-[46px] items-center border-t border-white/[0.07]"
             >
-              <div className="flex min-w-0 flex-1 items-center justify-between gap-1.5 xl:gap-2">
+              <div className="flex min-w-0 flex-1 items-center justify-between gap-1 xl:gap-1.5">
                 {isTalentSection
                   ? (() => {
                       // Talent Solutions secondary header — 6 grouped
@@ -699,14 +700,14 @@ export function PublicHeader() {
                               aria-expanded={openStrip === menuId}
                               aria-current={isActive ? "page" : undefined}
                               className={cn(
-                                "group inline-flex h-9 min-w-0 shrink items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] pl-2.5 pr-2 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
+                                "group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.05] px-2.5 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
                                 GROUP_ACCENT_BORDER[group.accent],
                                 isActive && GROUP_ACCENT_ACTIVE[group.accent]
                               )}
                             >
                               <group.icon
                                 className={cn(
-                                  "h-4 w-4 shrink-0",
+                                  "h-3.5 w-3.5 shrink-0",
                                   GROUP_ACCENT_TILE[group.accent]
                                 )}
                               />
@@ -715,7 +716,7 @@ export function PublicHeader() {
                               </span>
                               <ChevronDown
                                 className={cn(
-                                  "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform duration-200",
+                                  "h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200",
                                   openStrip === menuId && "rotate-180"
                                 )}
                               />
@@ -770,15 +771,15 @@ export function PublicHeader() {
                                   ? "page"
                                   : undefined
                               }
-                              className="group inline-flex h-9 min-w-[180px] shrink-0 items-center justify-center gap-2 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 px-3 shadow-[0_0_22px_-6px] shadow-amber-500/50 transition-colors duration-200 hover:border-amber-300/80 hover:from-amber-500/35 hover:via-orange-500/25 hover:to-amber-600/20"
+                              className="group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 px-2.5 shadow-[0_0_22px_-6px] shadow-amber-500/50 transition-colors duration-200 hover:border-amber-300/80 hover:from-amber-500/35 hover:via-orange-500/25 hover:to-amber-600/20"
                             >
-                              <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
-                              <span className="min-w-0 truncate text-[11px] font-bold whitespace-nowrap leading-none text-amber-200 transition-colors group-hover:text-amber-100 xl:text-[13px]">
-                                Premium Talent Solutions
+                              <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                              <span className="min-w-0 truncate text-[11px] font-bold whitespace-nowrap leading-none text-amber-700 dark:text-amber-200 transition-colors group-hover:text-amber-800 dark:group-hover:text-amber-100 xl:text-xs">
+                                Premium Talent
                               </span>
                               <ChevronDown
                                 className={cn(
-                                  "h-3.5 w-3.5 shrink-0 text-amber-300/80 transition-transform duration-200",
+                                  "h-3 w-3 shrink-0 text-amber-600 dark:text-amber-300/80 transition-transform duration-200",
                                   openStrip === "talent-all-services" && "rotate-180"
                                 )}
                               />
@@ -798,19 +799,77 @@ export function PublicHeader() {
                           </div>
 
                           {/* CANDIDATE SIDE (3) — left half */}
-                          <div className="flex min-w-0 shrink items-center gap-1.5 xl:gap-2">
+                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
                             {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
                           </div>
 
                           {/* Divider — candidate | employer */}
                           <div
-                            className="mx-1 hidden h-5 w-px shrink-0 bg-white/15 sm:block"
+                            className="mx-0.5 hidden h-5 w-px shrink-0 bg-white/15 sm:block"
                             aria-hidden="true"
                           />
 
                           {/* EMPLOYER SIDE (3) — right half */}
-                          <div className="flex min-w-0 shrink items-center gap-1.5 xl:gap-2">
+                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
                             {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
+                          </div>
+
+                          {/* Divider — employer | info */}
+                          <div
+                            className="mx-0.5 hidden h-5 w-px shrink-0 bg-white/15 sm:block"
+                            aria-hidden="true"
+                          />
+
+                          {/* INFO SIDE (2) — Joining Terms + Learning Terms */}
+                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
+                            {TALENT_INFO_PAGES.map((info) => {
+                              const INFO_ACCENT_TILE: Record<string, string> = {
+                                blue: "text-sky-300",
+                                emerald: "text-emerald-300",
+                                orange: "text-orange-300",
+                              };
+                              const INFO_ACCENT_BORDER: Record<string, string> = {
+                                blue: "hover:border-sky-400/50",
+                                emerald: "hover:border-emerald-400/50",
+                                orange: "hover:border-orange-400/50",
+                              };
+                              const isActiveInfo = talentActiveOption === info.slug;
+                              return (
+                                <Link
+                                  key={info.slug}
+                                  href={`/talent-solutions/${info.slug}`}
+                                  onClick={() => {
+                                    dismissFlyouts();
+                                  }}
+                                  tabIndex={showStrip ? 0 : -1}
+                                  title={info.name}
+                                  aria-current={isActiveInfo ? "page" : undefined}
+                                  className={cn(
+                                    "group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.05] px-2.5 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
+                                    INFO_ACCENT_BORDER[info.accent],
+                                    isActiveInfo &&
+                                      info.accent === "blue" &&
+                                      "border-sky-400/60 bg-sky-400/[0.10]",
+                                    isActiveInfo &&
+                                      info.accent === "emerald" &&
+                                      "border-emerald-400/60 bg-emerald-400/[0.10]",
+                                    isActiveInfo &&
+                                      info.accent === "orange" &&
+                                      "border-orange-400/60 bg-orange-400/[0.10]"
+                                  )}
+                                >
+                                  <info.icon
+                                    className={cn(
+                                      "h-3.5 w-3.5 shrink-0",
+                                      INFO_ACCENT_TILE[info.accent]
+                                    )}
+                                  />
+                                  <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
+                                    {info.stripLabel}
+                                  </span>
+                                </Link>
+                              );
+                            })}
                           </div>
                         </>
                       );
@@ -901,11 +960,11 @@ export function PublicHeader() {
                       ? "page"
                       : undefined
                   }
-                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 py-2 pl-2.5 pr-2 text-xs font-bold text-amber-200 shadow-[0_0_22px_-6px] shadow-amber-500/50"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 py-2 pl-2.5 pr-2 text-xs font-bold text-amber-700 dark:text-amber-200 shadow-[0_0_22px_-6px] shadow-amber-500/50"
                 >
-                  <Sparkles className="h-4 w-4 shrink-0 text-amber-300" />
+                  <Sparkles className="h-4 w-4 shrink-0 text-amber-400" />
                   Premium Talent Solutions
-                  <ChevronDown className="h-3.5 w-3.5 shrink-0 text-amber-300/80" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300/80" />
                 </Link>
                 {TALENT_STRIP_GROUPS.map((group) => {
                 const isActiveGroup = talentActiveGroup === group.slug;
@@ -940,6 +999,40 @@ export function PublicHeader() {
                     <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                   </Link>
                 );
+                })}
+                {/* Info pills — Joining Terms + Learning Terms */}
+                {TALENT_INFO_PAGES.map((info) => {
+                  const INFO_ACCENT_MOBILE_TILE: Record<string, string> = {
+                    blue: "text-sky-300",
+                    emerald: "text-emerald-300",
+                    orange: "text-orange-300",
+                  };
+                  const INFO_ACCENT_MOBILE_ACTIVE: Record<string, string> = {
+                    blue: "border-sky-400/50 bg-sky-400/[0.10]",
+                    emerald: "border-emerald-400/50 bg-emerald-400/[0.10]",
+                    orange: "border-orange-400/50 bg-orange-400/[0.10]",
+                  };
+                  const isActiveInfo = talentActiveOption === info.slug;
+                  return (
+                    <Link
+                      key={info.slug}
+                      href={`/talent-solutions/${info.slug}`}
+                      onClick={() => setMobileOpen(false)}
+                      aria-current={isActiveInfo ? "page" : undefined}
+                      className={cn(
+                        "inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] py-2 pl-2.5 pr-2 text-xs font-semibold text-slate-200 shadow-[0_1px_2px_rgba(2,8,23,0.05)]",
+                        isActiveInfo && INFO_ACCENT_MOBILE_ACTIVE[info.accent]
+                      )}
+                    >
+                      <info.icon
+                        className={cn(
+                          "h-4 w-4 shrink-0",
+                          INFO_ACCENT_MOBILE_TILE[info.accent]
+                        )}
+                      />
+                      {info.stripLabel}
+                    </Link>
+                  );
                 })}
               </>)
             : stripCategories.map((cat) => (

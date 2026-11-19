@@ -166,17 +166,17 @@ export function TalentAllServicesFlyout({
             <Sparkles className="h-[18px] w-[18px]" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-bold tracking-tight text-amber-100">
+            <p className="truncate text-sm font-bold tracking-tight text-amber-700 dark:text-amber-200">
               Premium Talent Solutions
             </p>
-            <p className="truncate text-[11px] text-slate-400">
+            <p className="truncate text-[11px] text-slate-600 dark:text-slate-400">
               9 services · 72 deep-dive pages · one partner from training to placement
             </p>
           </div>
           <Link
             href="/talent-solutions"
             onClick={() => setTimeout(onClose, 60)}
-            className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-amber-400/40 bg-gradient-to-br from-amber-400/20 to-orange-500/15 px-3 py-1.5 text-[11px] font-bold text-amber-200 transition-colors hover:from-amber-400/30 hover:to-orange-500/20 sm:inline-flex"
+            className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-amber-400/50 bg-gradient-to-br from-amber-400/25 to-orange-500/15 px-3 py-1.5 text-[11px] font-bold text-amber-700 transition-colors hover:from-amber-400/40 hover:to-orange-500/25 dark:text-amber-200 sm:inline-flex"
           >
             Explore overview
             <ArrowRight className="h-3.5 w-3.5" />

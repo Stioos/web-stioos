@@ -10,6 +10,7 @@ import { TALENT_SERVICES } from "@/data/services-talent";
 import { SOLUTION_LIST } from "@/data/pages/solution-pages";
 import { TALENT_PAGE_SPECS } from "@/data/pages/talent-pages";
 import { TALENT_STRIP_GROUPS } from "@/data/talent-strip-groups";
+import { TALENT_INFO_PAGES } from "@/data/talent-info-pages";
 import { WORKSONN_PAGE_SPECS } from "@/data/pages/worksonn-pages";
 import { INDUSTRIES, INSIGHTS, RESOURCES } from "@/data/content";
 
@@ -137,6 +138,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
 
+  // 2 info pages (Joining Terms, Learning Terms)
+  const talentInfoRoutes: MetadataRoute.Sitemap = TALENT_INFO_PAGES.map((p) => ({
+    url: `${SITE_URL}/talent-solutions/${p.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
   // 8 worksonn pages
   const worksonnRoutes: MetadataRoute.Sitemap = WORKSONN_PAGE_SPECS.map((w) => ({
     url: `${SITE_URL}/worksonn/${w.slug}`,
@@ -156,6 +165,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...resourceRoutes,
     ...talentRoutes,
     ...talentGroupRoutes,
+    ...talentInfoRoutes,
     ...worksonnRoutes,
   ];
 }
