@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSolutionSpec, SOLUTION_LIST } from "@/data/pages/solution-pages";
 import { SolutionLanding } from "@/components/solution/solution-landing";
-import { PageActionBar } from "@/components/shared/page-action-bar";
+import { BottomCTABar } from "@/components/shared/bottom-cta-bar";
 
 // ============================================================
 // SOLUTION PAGE — renders the 16-section SolutionLanding for
@@ -43,15 +43,8 @@ export default async function SolutionPage({
 
   return (
     <>
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Solutions", href: "/solutions" },
-          { label: spec.name },
-        ]}
-        serviceName={spec.name}
-      />
       <SolutionLanding spec={spec} />
+      <BottomCTABar serviceName={spec.name} />
     </>
   );
 }

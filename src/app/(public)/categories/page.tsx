@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight, ChevronRight, LayoutGrid, Star } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { Icon } from "@/components/shared/icon";
-import { PageActionBar } from "@/components/shared/page-action-bar";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { divisionAccent } from "@/lib/division-accents";
@@ -44,14 +43,6 @@ export default function CategoriesPage() {
 
   return (
     <>
-      {/* ===================== PAGE ACTION BAR ===================== */}
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Categories" },
-        ]}
-      />
-
       {/* ============================ HEADER ============================ */}
       <section className="relative overflow-hidden bg-brand-ink py-16 text-white md:py-20">
         <div className="absolute inset-0 surface-grid" aria-hidden="true" />

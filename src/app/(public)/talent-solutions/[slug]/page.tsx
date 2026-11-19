@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TALENT_PAGE_SPECS, getTalentPage } from "@/data/pages/talent-pages";
 import { PageBuilderPage } from "@/components/page-builder/page-builder";
+import { BottomCTABar } from "@/components/shared/bottom-cta-bar";
 
 // ============================================================
 // TALENT SOLUTIONS OPTION PAGE — /talent-solutions/[slug]
@@ -34,5 +35,10 @@ export default async function TalentOptionPage({
   const { slug } = await params;
   const spec = getTalentPage(slug);
   if (!spec) notFound();
-  return <PageBuilderPage spec={spec} />;
+  return (
+    <>
+      <PageBuilderPage spec={spec} />
+      <BottomCTABar serviceName={spec.nav} />
+    </>
+  );
 }

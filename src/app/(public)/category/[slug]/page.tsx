@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getCategoryBySlug } from "@/data/categories";
 import { getDivisionSpec } from "@/data/pages/division-pages";
 import { DivisionLanding } from "@/components/division/division-landing";
-import { PageActionBar } from "@/components/shared/page-action-bar";
 import { Icon } from "@/components/shared/icon";
 import { divisionAccent } from "@/lib/division-accents";
 import { cn } from "@/lib/utils";
@@ -60,14 +59,6 @@ export default async function DivisionPage({
 
   return (
     <>
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Marketplace", href: "/marketplace" },
-          { label: category.name },
-        ]}
-        serviceName={category.name}
-      />
       <DivisionLanding spec={spec} />
     </>
   );

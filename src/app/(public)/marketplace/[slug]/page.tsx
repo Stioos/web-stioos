@@ -48,10 +48,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { PageActionBar } from "@/components/shared/page-action-bar";
 import { buildServiceInsights } from "@/lib/service-insights";
 import { ServiceOutcomes } from "@/components/marketplace/service-outcomes";
 import { ServiceUseCases } from "@/components/marketplace/service-use-cases";
+import { BottomCTABar } from "@/components/shared/bottom-cta-bar";
 
 // ============================================================
 // SERVICE DETAIL PAGE — /marketplace/[slug]
@@ -304,31 +304,6 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="pb-24 lg:pb-0">
-      {/* ---------- Page action bar ---------- */}
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          ...(category
-            ? [
-                {
-                  label: category.name,
-                  href: `/category/${category.slug}`,
-                },
-              ]
-            : []),
-          ...(subcategory && category
-            ? [
-                {
-                  label: subcategory.name,
-                  href: `/category/${category.slug}/${subcategory.slug}`,
-                },
-              ]
-            : []),
-          { label: service.name },
-        ]}
-        serviceName={service.name}
-      />
-
       {/* ============================ HERO ============================ */}
       <section id="hero" className="relative overflow-hidden border-b border-white/5 bg-brand-ink">
         <div className="pointer-events-none absolute inset-0 surface-grid opacity-40" aria-hidden="true" />
@@ -1275,6 +1250,9 @@ export default function ServiceDetailPage() {
           </div>
         </section>
       )}
+
+      {/* Bottom CTA bar — 3 conversion buttons (no background, bottom of page) */}
+      <BottomCTABar serviceName={service.name} />
 
       {/* Sticky mobile CTA */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 lg:hidden">

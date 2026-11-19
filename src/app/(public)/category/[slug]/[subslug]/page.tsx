@@ -24,7 +24,6 @@ import { divisionAccent } from "@/lib/division-accents";
 import { subIconFor } from "@/lib/sub-icons";
 import { deliveryLabel } from "@/lib/marketplace-utils";
 import { Icon } from "@/components/shared/icon";
-import { PageActionBar } from "@/components/shared/page-action-bar";
 import { ServiceCard } from "@/components/marketplace/service-card";
 import { RequestServiceDialog } from "@/components/marketplace/request-service-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -204,17 +203,6 @@ export default function SubcategoryPage() {
 
   return (
     <>
-      {/* ===================== PAGE ACTION BAR ===================== */}
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Categories", href: "/categories" },
-          { label: cat.name, href: `/category/${cat.slug}` },
-          { label: sub.name },
-        ]}
-        serviceName={sub.name}
-      />
-
       {/* ============================ HERO ============================ */}
       <section className="relative overflow-hidden border-b border-white/5 bg-brand-ink">
         <div className="pointer-events-none absolute inset-0 surface-grid opacity-40" aria-hidden="true" />

@@ -6,7 +6,6 @@ import { SearchX, Search, LayoutGrid, ChevronDown, Sparkles, Layers, Bot } from 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageActionBar } from "@/components/shared/page-action-bar";
 import { ServiceCard } from "@/components/marketplace/service-card";
 import { useAppStore } from "@/lib/store";
 import { useIncrementalList } from "@/hooks/use-incremental-list";
@@ -77,14 +76,6 @@ export default function ServicesPage() {
 
   return (
     <>
-      {/* ===================== PAGE ACTION BAR ===================== */}
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Services" },
-        ]}
-      />
-
       {/* ============================ HERO ============================ */}
       <section className="relative overflow-hidden bg-brand-ink py-12 text-white md:py-16">
         <div className="absolute inset-0 surface-grid opacity-40" aria-hidden="true" />

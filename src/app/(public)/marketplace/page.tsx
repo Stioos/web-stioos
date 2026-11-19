@@ -24,7 +24,6 @@ import { MarketplaceFilterBar } from "@/components/marketplace/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
-import { PageActionBar } from "@/components/shared/page-action-bar";
 
 interface FilterChip {
   key: string;
@@ -171,29 +170,8 @@ function MarketplaceContent() {
   if (filters.popularOnly)
     chips.push({ key: "popular", label: "Popular", clear: () => updateFilters({ popularOnly: false }) });
 
-  // Breadcrumb context for the page action bar (category / sub when filtered)
-  const barCategory = filters.category
-    ? categories.find((c) => c.slug === filters.category)
-    : undefined;
-  const barSub =
-    filters.subcategories.length === 1
-      ? getSubcategoryById(filters.subcategories[0])
-      : undefined;
-
   return (
     <div className="flex flex-col">
-      {/* ---------- Breadcrumb ---------- */}
-      <PageActionBar
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Marketplace", href: "/marketplace" },
-          ...(barCategory
-            ? [{ label: barCategory.name, href: `/category/${barCategory.slug}` }]
-            : []),
-          ...(barSub ? [{ label: barSub.name }] : []),
-        ]}
-      />
-
       {/* ---------- NEW secondary header: filter bar ---------- */}
       <MarketplaceFilterBar
         filters={filters}
