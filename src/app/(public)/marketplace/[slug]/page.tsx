@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Reveal } from "@/components/motion/reveal";
 import { format } from "date-fns";
+import { findServiceBySlug, getAllPublishedServices } from "@/lib/service-data";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -188,9 +189,16 @@ export default function ServiceDetailPage() {
   const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug;
 
-  const services = useAppStore((s) => s.services);
-  const catalogReady = useAppStore((s) => s.catalogReady);
-  const mounted = useIsHydrated();
+  // ── PERMANENT FIX: use STATIC data directly (not the store) so the page
+  // NEVER shows a skeleton. The 305 services are statically imported via
+  // src/lib/service-data.ts — always available, no dynamic imports, no
+  // store hydration dependency.
+  const allServices = useMemo(() => getAllPublishedServices(), []);
+  const service = useMemo(
+    () => findServiceBySlug(slug ?? ""),
+    [slug]
+  );
+
   const heroCtaPrimary = useAppStore((s) => s.marketplaceSettings.heroCtaPrimary);
   const heroCtaSecondary = useAppStore((s) => s.marketplaceSettings.heroCtaSecondary);
   const cardCtaPrimary = useAppStore((s) => s.marketplaceSettings.cardCtaPrimary);
@@ -198,66 +206,9 @@ export default function ServiceDetailPage() {
   const [requestServiceTarget, setRequestServiceTarget] = useState<Service | null>(null);
   const [heroLead, setHeroLead] = useState<LeadType | null>(null);
 
-  // Primary: find the service in the store's catalog.
-  const storeService = useMemo(
-    () => services.find((s) => s.slug === slug && s.status === "published"),
-    [services, slug]
-  );
-
-  // ── PERMANENT FIX: fallback to static data files if the store's deferred
-  // catalog hasn't loaded (the #1 cause of "service detail not visible").
-  // The page dynamically imports the 7 division data files directly —
-  // independent of the store's hydration state — so deep links ALWAYS
-  // resolve even if ensureFullCatalog() failed or is still pending.
-  const [staticService, setStaticService] = useState<Service | null>(null);
-  useEffect(() => {
-    if (storeService) return; // store has it — no fallback needed
-    let cancelled = false;
-    (async () => {
-      try {
-        const [core, agents, tech, cloud, marketing, business, multimedia, talent] =
-          await Promise.all([
-            import("@/data/services-core"),
-            import("@/data/services-agents"),
-            import("@/data/services-tech"),
-            import("@/data/services-cloud"),
-            import("@/data/services-marketing"),
-            import("@/data/services-business"),
-            import("@/data/services-multimedia"),
-            import("@/data/services-talent"),
-          ]);
-        if (cancelled) return;
-        const all: Service[] = [
-          ...core.CORE_SERVICES,
-          ...agents.AGENT_SERVICES,
-          ...tech.TECH_SERVICES,
-          ...cloud.CLOUD_SERVICES,
-          ...marketing.MARKETING_SERVICES,
-          ...business.BUSINESS_SERVICES,
-          ...multimedia.MULTIMEDIA_SERVICES,
-          ...talent.TALENT_SERVICES,
-        ];
-        // Also inject into the store so other components (related services,
-        // CTAs) benefit — idempotent via injectAutoServices' dedup.
-        const { ensureFullCatalog } = await import("@/lib/store");
-        ensureFullCatalog();
-        const found = all.find((s) => s.slug === slug && s.status === "published");
-        if (found && !cancelled) setStaticService(found);
-      } catch {
-        // If the dynamic imports fail, the store's catalogReady fallback
-        // (2s timer in StoreHydration) will eventually show the skeleton
-        // or not-found panel.
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [storeService, slug]);
-
-  // The effective service = store service OR static fallback.
-  const service = storeService ?? staticService ?? null;
-
   const related = useMemo(() => {
     if (!service) return [];
-    const others = services.filter((s) => s.status === "published" && s.id !== service.id);
+    const others = allServices.filter((s) => s.id !== service.id);
     const sameCategory = others
       .filter((s) => s.categoryId === service.categoryId)
       .sort((a, b) => b.popularity - a.popularity);
@@ -270,7 +221,7 @@ export default function ServiceDetailPage() {
       if (!picks.some((p) => p.id === candidate.id)) picks.push(candidate);
     }
     return picks.slice(0, 3);
-  }, [services, service]);
+  }, [allServices, service]);
 
   // Deterministic per-service infographic content (KPIs, bars, gauge, use cases, copy)
   const insights = useMemo(
@@ -278,8 +229,10 @@ export default function ServiceDetailPage() {
     [service]
   );
 
-  if (!mounted) return <DetailSkeleton />;
-  if (!service) return catalogReady ? <ServiceNotFoundPanel /> : <DetailSkeleton />;
+  // The service is ALWAYS available from static data — no skeleton, no
+  // waiting for store hydration. Only show "not found" if the slug truly
+  // doesn't match any published service in the catalog.
+  if (!service) return <ServiceNotFoundPanel />;
 
   const category = getCategoryById(service.categoryId);
   const subcategory = getSubcategoryById(service.subcategoryId);
