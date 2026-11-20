@@ -70,6 +70,61 @@ export interface CandidateFaq {
   a: string;
 }
 
+// ============================================================
+// SHARED SECTION CONTENT — used by the 5 new sections (8–12)
+// added to <CandidateSubPage />. Trust badges, comparison rows,
+// industries and guarantees are platform-wide (identical across
+// all 9 candidate sub-pages). Audiences vary by parent group.
+// ============================================================
+
+/** One trust badge in the horizontal trust strip (section 7). */
+export interface CandidateTrustBadge {
+  /** Lucide icon key resolved via <Icon name> registry */
+  icon: IconName;
+  label: string;
+}
+
+/** One row in the with/without comparison table (section 9). */
+export interface CandidateComparisonRow {
+  /** The dimension being compared, e.g. "Time to results" */
+  dimension: string;
+  /** The traditional / without-STIOOS side */
+  traditional: string;
+  /** The with-STIOOS side */
+  withUs: string;
+}
+
+/** One industry card (section 10). */
+export interface CandidateIndustry {
+  icon: IconName;
+  name: string;
+}
+
+/** One guarantee card (section 11). */
+export interface CandidateGuarantee {
+  icon: IconName;
+  title: string;
+  description: string;
+}
+
+/** One audience card — "For Job Seekers" or "For Employers" (section 8). */
+export interface CandidateAudience {
+  /** Lucide icon key resolved via <Icon name> registry */
+  icon: IconName;
+  /** Short kicker label, e.g. "For Job Seekers" */
+  kicker: string;
+  /** Card heading */
+  title: string;
+  /** One-line description */
+  description: string;
+  /** 4 bullet points */
+  bullets: string[];
+  /** CTA label */
+  ctaLabel: string;
+  /** CTA href */
+  ctaHref: string;
+}
+
 export interface CandidateSubPageContent {
   /** Parent group slug — "get-trained" | "get-placed" | "get-certified" */
   groupSlug: string;
@@ -1394,6 +1449,201 @@ const CONTENT: Record<string, CandidateSubPageContent> = {
     ctaKicker: "Code that hiring managers can run",
     ctaTitle: "Build a portfolio of real client-shaped projects",
   },
+};
+
+// ============================================================
+// SHARED SECTION CONTENT — platform-wide constants rendered by
+// the 5 new sections in <CandidateSubPage />. Identical across
+// all 9 candidate sub-pages because they describe the STIOOS
+// platform, not the specific sub-page.
+// ============================================================
+
+/** Section 7 — Trust bar. 6 platform-wide trust badges. */
+export const CANDIDATE_TRUST_BADGES: CandidateTrustBadge[] = [
+  { icon: "ShieldCheck", label: "ISO 27001 aligned" },
+  { icon: "Users", label: "2M+ assessed pool" },
+  { icon: "Clock", label: "48h shortlists" },
+  { icon: "RefreshCw", label: "90-day replacement" },
+  { icon: "Wallet", label: "Pay-after-join model" },
+  { icon: "Star", label: "4.9/5 candidate rating" },
+];
+
+/** Section 9 — Comparison. 6 rows comparing STIOOS vs traditional. */
+export const CANDIDATE_COMPARISON: CandidateComparisonRow[] = [
+  {
+    dimension: "Time to results",
+    traditional: "3–6 months of unstructured job hunting and generic applications.",
+    withUs: "48-hour shortlists, 8–12 week role-aligned ramps, placement within 60 days of capstone.",
+  },
+  {
+    dimension: "Cost model",
+    traditional: "Upfront bootcamp fees or recruiter commissions with no outcome guarantee.",
+    withUs: "Pay-after-join model — you settle placement fees only after you're hired and ramped.",
+  },
+  {
+    dimension: "Quality of signal",
+    traditional: "Self-reported skills, resume keywords and take-home tests nobody trusts.",
+    withUs: "AI-scored assessments plus mentor-verified competency profiles, portable to LinkedIn.",
+  },
+  {
+    dimension: "Support",
+    traditional: "Solo — you're on your own after the course ends.",
+    withUs: "Senior mentors, weekly checkpoint reviews and a placement specialist until day 90.",
+  },
+  {
+    dimension: "Scalability",
+    traditional: "One application, one role, one employer at a time.",
+    withUs: "500+ employers hiring, 2M+ assessed candidate pool, cross-track applications welcome.",
+  },
+  {
+    dimension: "Risk",
+    traditional: "All risk sits with you — fees, time, opportunity cost.",
+    withUs: "90-day replacement guarantee and written SLAs on every engagement, by contract.",
+  },
+];
+
+/** Section 10 — Industries. 8 verticals with domain-fluent delivery. */
+export const CANDIDATE_INDUSTRIES: CandidateIndustry[] = [
+  { icon: "Landmark", name: "Fintech & Banking" },
+  { icon: "HeartHandshake", name: "Healthcare & Life Sciences" },
+  { icon: "ShoppingCart", name: "Retail & E-commerce" },
+  { icon: "Cloud", name: "SaaS & Software" },
+  { icon: "Factory", name: "Manufacturing" },
+  { icon: "Package", name: "Logistics & Supply Chain" },
+  { icon: "GraduationCap", name: "Education & EdTech" },
+  { icon: "Radio", name: "Telecom & Media" },
+];
+
+/** Section 11 — Guarantees. 4 written commitments on every engagement. */
+export const CANDIDATE_GUARANTEES: CandidateGuarantee[] = [
+  {
+    icon: "RefreshCw",
+    title: "90-day replacement",
+    description:
+      "If a placement doesn't pass the 90-day ramp, we re-run the match and replace the candidate at no extra placement fee — in writing, not in marketing copy.",
+  },
+  {
+    icon: "Wallet",
+    title: "Pay-after-join model",
+    description:
+      "Placement fees settle only after the candidate joins and clears the ramp period. No upfront retainers for job seekers; employers pay on confirmed start dates.",
+  },
+  {
+    icon: "ShieldCheck",
+    title: "SLA-backed delivery",
+    description:
+      "Every engagement ships with a written SLA — response times, checkpoint cadence, capstone grading bar and replacement triggers. You can hold us to each clause.",
+  },
+  {
+    icon: "BarChart3",
+    title: "Weekly progress reporting",
+    description:
+      "Candidates and employers get a shared weekly report — sprint progress, checkpoint scores, placement pipeline status. No black boxes, no surprise endings.",
+  },
+];
+
+/**
+ * Section 8 — Audiences. Two cards per parent group (Job Seekers +
+ * Employers), varied by group so the copy stays relevant to the
+ * sub-page's focus (training vs placement vs certification).
+ */
+export const CANDIDATE_AUDIENCES: Record<string, CandidateAudience[]> = {
+  "get-trained": [
+    {
+      icon: "GraduationCap",
+      kicker: "For Job Seekers",
+      title: "Learn on your exact stack",
+      description:
+        "A mentor-led curriculum co-designed around your target role — not a generic bootcamp. You ship production-shaped code in the stack you'll be hired to work in.",
+      bullets: [
+        "Daily pairing with a senior mentor on your target stack",
+        "Weekly checkpoint reviews graded against real industry rubrics",
+        "Client-shaped capstone defended to mentor + client reviewers",
+        "Entry into the placement pool with a verified competency profile",
+      ],
+      ctaLabel: "Start your application",
+      ctaHref: "/contact",
+    },
+    {
+      icon: "Building2",
+      kicker: "For Employers",
+      title: "Hire job-ready graduates",
+      description:
+        "Sponsor a cohort or hire from our active graduate pool — candidates who've already shipped code in your stack, graded by industry practitioners.",
+      bullets: [
+        "Vetted cohorts trained on your exact stack and conventions",
+        "Stack-matched candidates with verified capstone portfolios",
+        "90-day replacement guarantee on every placement, by contract",
+        "Pay-after-join model — placement fees settle on confirmed start dates",
+      ],
+      ctaLabel: "Sponsor a cohort",
+      ctaHref: "/contact",
+    },
+  ],
+  "get-placed": [
+    {
+      icon: "Briefcase",
+      kicker: "For Job Seekers",
+      title: "Get matched to live roles",
+      description:
+        "AI-matched openings across 500+ employers hiring right now. You enter with a Recommended Candidate badge and leave with an offer — supported end-to-end.",
+      bullets: [
+        "AI match scoring against 500+ live employer openings",
+        "Recommended Candidate badge for 70%+ match roles",
+        "50+ mock interviews and 200+ company playbooks",
+        "Offer negotiation, document support and 90-day ramp plan",
+      ],
+      ctaLabel: "Browse open roles",
+      ctaHref: "/contact",
+    },
+    {
+      icon: "Building2",
+      kicker: "For Employers",
+      title: "Hire pre-screened talent",
+      description:
+        "Receive AI-ranked shortlists of verified candidates within 48 hours — competency profiles, capstone repos and reference checks already done.",
+      bullets: [
+        "48-hour shortlists with AI-ranked, mentor-verified candidates",
+        "Verified competency profiles and public capstone repos",
+        "Placement SLAs with 90-day replacement guarantee",
+        "Pay-after-join model — no upfront retainers, settle on start date",
+      ],
+      ctaLabel: "Request a shortlist",
+      ctaHref: "/contact",
+    },
+  ],
+  "get-certified": [
+    {
+      icon: "Award",
+      kicker: "For Job Seekers",
+      title: "Earn verifiable credentials",
+      description:
+        "AI-scored skills assessments, industry certifications and a public portfolio — cryptographically verified and portable to LinkedIn, your resume and employer ATS.",
+      bullets: [
+        "200+ skill tracks with AI-scored, cryptographically verified results",
+        "30+ industry certifications (AWS, Azure, GCP, K8s, PMP) with exam fees included",
+        "3+ real client-shaped portfolio projects in public repos",
+        "Portable verification links for LinkedIn, resumes and employer ATS",
+      ],
+      ctaLabel: "Get certified",
+      ctaHref: "/contact",
+    },
+    {
+      icon: "Building2",
+      kicker: "For Employers",
+      title: "Verify candidate skills",
+      description:
+        "Skip the take-home tests and self-reported skills — verify every candidate against a standardized, cryptographically signed competency benchmark.",
+      bullets: [
+        "Cryptographically verified assessment scores per candidate",
+        "Industry certification validation (AWS, Azure, GCP, K8s, PMP)",
+        "Public portfolio repos — read the code, run the app, no NDA needed",
+        "Standardized benchmarking across your entire candidate pipeline",
+      ],
+      ctaLabel: "Verify candidates",
+      ctaHref: "/contact",
+    },
+  ],
 };
 
 // ============================================================

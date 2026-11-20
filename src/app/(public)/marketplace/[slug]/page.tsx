@@ -481,20 +481,38 @@ export default function ServiceDetailPage() {
                               <span className="text-xl font-bold text-foreground">{insights.gauge.value}%</span>
                             </div>
                           </div>
-                          <span className="mt-0.5 text-center text-[8px] uppercase tracking-wider text-muted-foreground">{insights.gauge.caption}</span>
+                          <span className="mt-0.5 text-center text-[8px] uppercase tracking-tight text-muted-foreground leading-tight"
+                            style={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {insights.gauge.caption}
+                          </span>
                         </div>
 
                         {/* KPI before→after cards */}
-                        <div className="flex-1 space-y-1.5">
+                        <div className="flex-1 space-y-1.5 overflow-hidden">
                           {insights.kpis.slice(0, 3).map((kpi) => {
                             const delta = Math.round(Math.abs((kpi.after - kpi.before) / kpi.before * 100));
                             return (
-                              <div key={kpi.label} className="rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-2.5 py-1.5">
-                                <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">{kpi.label}</div>
-                                <div className="flex items-center gap-1.5">
+                              <div key={kpi.label} className="min-w-0 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-2.5 py-1.5">
+                                <div className="text-[8px] font-semibold uppercase tracking-tight text-muted-foreground leading-tight"
+                                  style={{
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                  }}
+                                >
+                                  {kpi.label}
+                                </div>
+                                <div className="mt-0.5 flex items-center gap-1 flex-wrap">
                                   <span className="text-[11px] text-muted-foreground line-through">{kpi.before}{kpi.unit}</span>
                                   <span className="text-[11px] font-bold text-foreground">{kpi.after}{kpi.unit}</span>
-                                  <span className="rounded-full bg-emerald-500/15 px-1 py-0.5 text-[8px] font-bold text-emerald-600">
+                                  <span className="shrink-0 rounded-full bg-emerald-500/15 px-1 py-0.5 text-[8px] font-bold text-emerald-600">
                                     {kpi.direction === "down" ? "-" : "+"}{delta}%
                                   </span>
                                 </div>
@@ -507,10 +525,19 @@ export default function ServiceDetailPage() {
                       {/* Progress bars */}
                       <div className="mt-3 space-y-2">
                         {insights.benefitBars.slice(0, 2).map((bar) => (
-                          <div key={bar.label}>
-                            <div className="flex items-center justify-between text-[8px]">
-                              <span className="font-semibold uppercase tracking-wider text-muted-foreground">{bar.label}</span>
-                              <span className="text-muted-foreground">{bar.before}{bar.unit} → <span className="font-bold text-foreground">{bar.after}{bar.unit}</span></span>
+                          <div key={bar.label} className="min-w-0">
+                            <div className="flex items-center justify-between gap-2 text-[8px]">
+                              <span className="font-semibold uppercase tracking-tight text-muted-foreground truncate"
+                                style={{
+                                  display: "-webkit-box",
+                                  WebkitLineClamp: 1,
+                                  WebkitBoxOrient: "vertical",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                {bar.label}
+                              </span>
+                              <span className="shrink-0 text-muted-foreground whitespace-nowrap">{bar.before}{bar.unit} → <span className="font-bold text-foreground">{bar.after}{bar.unit}</span></span>
                             </div>
                             <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
                               <div

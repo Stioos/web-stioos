@@ -4,10 +4,13 @@ import {
   ArrowLeft,
   ArrowUpRight,
   CalendarDays,
+  Check,
+  CheckCircle2,
   MessageSquare,
   ShieldCheck,
   Sparkles,
   Star,
+  XCircle,
 } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { Icon } from "@/components/shared/icon";
@@ -22,11 +25,18 @@ import type {
   TalentStripGroup,
   TalentSubPage,
 } from "@/data/talent-strip-groups";
-import type { CandidateSubPageContent } from "@/data/pages/talent-candidate-sub-pages";
+import {
+  CANDIDATE_AUDIENCES,
+  CANDIDATE_COMPARISON,
+  CANDIDATE_GUARANTEES,
+  CANDIDATE_INDUSTRIES,
+  CANDIDATE_TRUST_BADGES,
+  type CandidateSubPageContent,
+} from "@/data/pages/talent-candidate-sub-pages";
 
 // ============================================================
-// CANDIDATE SUB-PAGE — 7-section lighter template rendering for
-// the 9 candidate-focused Talent Solutions sub-pages at
+// CANDIDATE SUB-PAGE — 12-section template rendering for the 9
+// candidate-focused Talent Solutions sub-pages at
 // /talent-solutions/[group]/[sub].
 //
 // Server component (no "use client"). Scroll-triggered reveals
@@ -34,14 +44,19 @@ import type { CandidateSubPageContent } from "@/data/pages/talent-candidate-sub-
 // transition, no motion library shipped). The FAQ section uses
 // the shadcn/ui Accordion client component for interactivity.
 //
-// Sections (matching the design language of JoiningTermsPage):
-//   1. Hero       — eyebrow + title + subtitle + 2 CTAs + 3 stats
-//   2. Overview   — 2-paragraph description (alt bg)
-//   3. Capabilities — 6 cards "What you'll learn/get"
-//   4. Process    — 4-step timeline Apply → Screen → Engage → Result
-//   5. Benefits   — 4 outcome stat cards (alt bg)
-//   6. FAQ        — 5 AEO-optimized Q&As
-//   7. CTA band   — "Ready to get started?" with 2 CTAs
+// Sections (matching the design language of the PageBuilder hero):
+//    1. Hero        — two-column w/ Live Impact Signal panel
+//    2. Overview    — 2-paragraph description (alt bg)
+//    3. Capabilities — 6 cards "What you'll learn/get"
+//    4. Process     — 4-step timeline Apply → Screen → Engage → Result
+//    5. Benefits    — 4 outcome stat cards (alt bg)
+//    6. FAQ         — 5 AEO-optimized Q&As
+//    7. Trust bar   — 6 platform trust badges (strip)
+//    8. Audiences   — For Job Seekers + For Employers (2 cards)
+//    9. Comparison  — With STIOOS vs Without (6 rows)
+//   10. Industries  — 8 vertical cards w/ icons
+//   11. Guarantees  — 4 written commitment cards
+//   12. CTA band    — "Ready to get started?" with 2 CTAs (LAST)
 // ============================================================
 
 interface CandidateSubPageProps {
@@ -635,11 +650,298 @@ export function CandidateSubPage({
       </section>
 
       {/* ============================================================ */}
-      {/* 7. CTA BAND                                                   */}
+      {/* 7. TRUST BAR — 6 platform trust badges (slim strip)          */}
+      {/* ============================================================ */}
+      <section
+        id="trust-bar"
+        className="scroll-mt-36 border-y border-white/[0.06] bg-brand-ink py-5 text-white"
+        aria-label="Trust signals"
+      >
+        <div className={CONTAINER}>
+          <Reveal className="flex flex-wrap items-center justify-center gap-x-7 gap-y-3">
+            {CANDIDATE_TRUST_BADGES.map((b) => (
+              <span
+                key={b.label}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400"
+              >
+                <Icon
+                  name={b.icon}
+                  className="h-3.5 w-3.5 text-amber-400"
+                />
+                {b.label}
+              </span>
+            ))}
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 8. AUDIENCES — For Job Seekers + For Employers (2 cards)     */}
+      {/* ============================================================ */}
+      <section
+        id="audiences"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+        aria-label="Who this is for"
+      >
+        <div className={CONTAINER}>
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Built for both sides</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Who {subPage.stripLabel} is for
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                One program, two winning outcomes — whether you&apos;re chasing
+                your next role or your next great hire.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="mt-12 grid gap-5 lg:grid-cols-2">
+            {(CANDIDATE_AUDIENCES[group.slug] ?? []).map((aud, i) => (
+              <Reveal key={aud.title} delay={i * 0.08}>
+                <article className="group flex h-full flex-col rounded-2xl border border-white/10 bg-brand-ink p-6 shadow-xl shadow-black/30 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/40 md:p-7">
+                  <span
+                    className={`inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${
+                      i === 0
+                        ? "border-amber-400/30 bg-amber-400/10 text-amber-400"
+                        : "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                    }`}
+                  >
+                    <Icon
+                      name={aud.icon}
+                      className="h-3 w-3"
+                    />
+                    {aud.kicker}
+                  </span>
+                  <h3 className="mt-4 text-xl font-bold text-white md:text-2xl">
+                    {aud.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {aud.description}
+                  </p>
+                  <ul className="mt-5 flex flex-col gap-2.5">
+                    {aud.bullets.map((b) => (
+                      <li
+                        key={b}
+                        className="flex items-start gap-2.5 text-sm text-slate-300"
+                      >
+                        <span
+                          className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full ${
+                            i === 0
+                              ? "border-amber-400/30 bg-amber-400/10 text-amber-400"
+                              : "border-emerald-400/30 bg-emerald-400/10 text-emerald-300"
+                          }`}
+                        >
+                          <Check
+                            className="h-2.5 w-2.5"
+                            aria-hidden="true"
+                          />
+                        </span>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-auto pt-6">
+                    <Link
+                      href={aud.ctaHref}
+                      className="group/cta inline-flex items-center gap-1.5 text-sm font-bold text-amber-400 transition-colors hover:text-amber-300"
+                    >
+                      {aud.ctaLabel}
+                      <ArrowRight
+                        className="h-4 w-4 transition-transform group-hover/cta:translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 9. COMPARISON — With STIOOS vs Without (6 rows)              */}
+      {/* ============================================================ */}
+      <section
+        id="comparison"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+        aria-label="STIOOS compared to traditional approaches"
+      >
+        <div className={CONTAINER}>
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">The honest difference</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                With STIOOS vs without
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Side by side with the old way — the gap is exactly why
+                candidates and employers switch and never look back.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-brand-navy shadow-xl shadow-black/30">
+              {/* Header row */}
+              <div className="grid grid-cols-[1fr_1fr] border-b border-white/[0.07] bg-white/[0.03] text-[11px] font-bold uppercase tracking-wider text-slate-400 max-sm:text-[10px]">
+                <div className="px-4 py-3 md:px-6">Without STIOOS</div>
+                <div className="border-l border-white/[0.07] px-4 py-3 text-amber-400 md:px-6">
+                  With STIOOS
+                </div>
+              </div>
+              {/* Body rows */}
+              {CANDIDATE_COMPARISON.map((row, i) => (
+                <div
+                  key={row.dimension}
+                  className={`grid grid-cols-[1fr_1fr] max-sm:text-[12px] ${
+                    i !== CANDIDATE_COMPARISON.length - 1
+                      ? "border-b border-white/[0.05]"
+                      : ""
+                  }`}
+                >
+                  <div className="flex flex-col gap-1 px-4 py-3.5 md:px-6">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      {row.dimension}
+                    </span>
+                    <span className="flex items-start gap-2 text-slate-400">
+                      <XCircle
+                        className="mt-0.5 h-4 w-4 shrink-0 text-slate-600"
+                        aria-hidden="true"
+                      />
+                      <span className="leading-relaxed">{row.traditional}</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1 border-l border-white/[0.05] px-4 py-3.5 md:px-6">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">
+                      {row.dimension}
+                    </span>
+                    <span className="flex items-start gap-2 text-slate-200">
+                      <CheckCircle2
+                        className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
+                        aria-hidden="true"
+                      />
+                      <span className="leading-relaxed">{row.withUs}</span>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 10. INDUSTRIES — 8 vertical cards w/ icons                   */}
+      {/* ============================================================ */}
+      <section
+        id="industries"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+        aria-label="Industries we serve"
+      >
+        <div className={CONTAINER}>
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Cross-industry</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Industries we serve
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Domain-fluent talent and delivery — mapped to the realities of
+                your sector. Mentors and placement partners who&apos;ve shipped
+                in these verticals, not just read about them.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {CANDIDATE_INDUSTRIES.map((ind, idx) => (
+                <Reveal
+                  key={ind.name}
+                  delay={0.04 * (idx % 4)}
+                  as="article"
+                  className="group flex h-full flex-col items-start gap-3 rounded-2xl border border-white/10 bg-brand-ink p-5 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-xl hover:shadow-amber-500/5"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-400/10 ring-1 ring-amber-400/25">
+                    <Icon
+                      name={ind.icon}
+                      className="h-5 w-5 text-amber-400"
+                    />
+                  </span>
+                  <h3 className="text-sm font-semibold text-white">
+                    {ind.name}
+                  </h3>
+                  <p className="text-xs leading-relaxed text-slate-400">
+                    Mentors, playbooks and hiring partners active in this
+                    vertical today.
+                  </p>
+                </Reveal>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 11. GUARANTEES — 4 written commitment cards                  */}
+      {/* ============================================================ */}
+      <section
+        id="guarantees"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+        aria-label="Our guarantees"
+      >
+        <div className={CONTAINER}>
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow text-amber-400">Risk-free by contract</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Our guarantees
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                We put skin in the game — written commitments on every
+                engagement, not marketing promises. Four guarantees back every
+                {subPage.stripLabel.toLowerCase()} engagement.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {CANDIDATE_GUARANTEES.map((g, idx) => (
+                <Reveal
+                  key={g.title}
+                  delay={0.06 * idx}
+                  as="article"
+                  className="group flex h-full flex-col rounded-2xl border border-white/10 bg-brand-navy p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-xl hover:shadow-amber-500/5"
+                >
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-400/10 ring-1 ring-amber-400/25">
+                    <Icon
+                      name={g.icon}
+                      className="h-6 w-6 text-amber-400"
+                    />
+                  </span>
+                  <h3 className="mt-4 text-base font-semibold text-white">
+                    {g.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                    {g.description}
+                  </p>
+                </Reveal>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 12. CTA BAND                                                  */}
       {/* ============================================================ */}
       <section
         id="cta-band"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
         aria-label="Get in touch"
       >
         <div className={CONTAINER}>
