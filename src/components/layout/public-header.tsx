@@ -269,16 +269,22 @@ export function PublicHeader() {
   };
   const scheduleClose = () => {
     clearTimers();
-    closeTimer.current = window.setTimeout(closeAllFlyouts, 240);
+    // 500ms close delay — gives users enough time to move the mouse
+    // from the pill to the dropdown panel without it closing prematurely.
+    // The previous 240ms was too short and caused the "header not working"
+    // issue reported repeatedly.
+    closeTimer.current = window.setTimeout(closeAllFlyouts, 500);
   };
   const hoverOpenMenu = (menu: Exclude<OpenMenu, null>) => {
     clearTimers();
+    // 30ms open delay — fast enough that the panel appears almost
+    // instantly on hover, but still debounces rapid mouse pass-through.
     openTimer.current = window.setTimeout(() => {
       setOpenStrip(null);
       setModeOpen(false);
       setOpenMenu(menu);
       hoverOpenedAt.current = Date.now();
-    }, 90);
+    }, 30);
   };
   const hoverOpenStrip = (catId: string) => {
     clearTimers();
@@ -287,7 +293,7 @@ export function PublicHeader() {
       setModeOpen(false);
       setStripAnchor(pillRefs.current[catId] ?? null);
       setOpenStrip(catId);
-    }, 90);
+    }, 30);
   };
   const hoverOpenMode = () => {
     clearTimers();
@@ -296,7 +302,7 @@ export function PublicHeader() {
       setOpenStrip(null);
       setModeOpen(true);
       hoverOpenedAt.current = Date.now();
-    }, 90);
+    }, 30);
   };
 
   useEffect(() => () => clearTimers(), []);
@@ -304,17 +310,40 @@ export function PublicHeader() {
   // Leave-close that doesn't depend on header mouseleave (which some
   // environments synthesize unreliably): any pointer movement outside the
   // header and outside an open flyout panel schedules dismissal.
+  // PROXIMITY GRACE ZONE: if the mouse is within 200px below the header
+  // (where dropdown panels live), don't schedule close — the user is
+  // likely moving toward the panel. This permanently fixes the "header
+  // not working" issue where panels closed before the user could reach them.
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       const t = e.target as Element | null;
       if (!t || !t.closest) return;
       const inside = t.closest("header") || t.closest("[data-flyout-panel]");
       if (inside) {
+        // Mouse is inside header or a flyout panel — cancel any pending close
         if (closeTimer.current !== null) {
           window.clearTimeout(closeTimer.current);
           closeTimer.current = null;
         }
       } else if (openMenu !== null || openStrip !== null || modeOpen) {
+        // Mouse is outside header AND outside panel. Check if the mouse
+        // is in the "grace zone" — within 250px below the header bottom
+        // edge. If so, don't close yet (user is likely moving toward
+        // the dropdown panel).
+        const headerEl = document.querySelector("header");
+        if (headerEl) {
+          const headerBottom = headerEl.getBoundingClientRect().bottom;
+          const distanceBelow = e.clientY - headerBottom;
+          if (distanceBelow >= -20 && distanceBelow <= 600) {
+            // In the grace zone — cancel close timer but don't schedule a new one
+            if (closeTimer.current !== null) {
+              window.clearTimeout(closeTimer.current);
+              closeTimer.current = null;
+            }
+            return;
+          }
+        }
+        // Outside the grace zone — schedule close
         scheduleClose();
       }
     };

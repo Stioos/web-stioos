@@ -184,15 +184,129 @@ export function TalentAllServicesFlyout({
         </div>
 
         {/* Body — two-panel split (SWAPPED per user request):
-            LEFT  — the hovered service's 8 deep-dive sub-pages as a
-                    3-column card grid (the design previously used for
-                    the services grid).
-            RIGHT — all 9 services as a vertical list grouped by the
-                    three pillars (the design previously used for the
-                    deep-dive list). Hovering a row feeds the LEFT panel. */}
-        <div className="grid gap-0 lg:grid-cols-[1.55fr_1px_1fr]">
-          {/* ── LEFT — hovered service's 8 deep-dive sub-pages (card grid) ── */}
+            LEFT  — all 9 services as a vertical list grouped by the
+                    three pillars. Hovering a row feeds the RIGHT panel.
+            RIGHT — the hovered service's 8 deep-dive sub-pages as a
+                    3-column card grid. */}
+        <div className="grid gap-0 lg:grid-cols-[1fr_1px_1.55fr]">
+          {/* ── LEFT — all 9 services as a vertical list grouped by pillar ── */}
           <div className="px-5 py-4">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-slate-500">
+                Services · 9
+              </p>
+              <Link
+                href={hoveredRow.item.href}
+                onClick={() => setTimeout(onClose, 60)}
+                className={cn(
+                  "shrink-0 text-[10px] font-semibold transition-colors",
+                  hoveredAccent.link
+                )}
+              >
+                View active →
+              </Link>
+            </div>
+
+            <ul className="thin-scrollbar mt-3 flex max-h-[380px] flex-col gap-3 overflow-y-auto pr-1">
+              {TALENT_COLUMNS.map((col) => {
+                const accent = ACCENT[col.accent];
+                return (
+                  <li key={col.title} className="flex flex-col gap-1.5">
+                    <p
+                      className={cn(
+                        "px-1 text-[9px] font-bold uppercase tracking-[0.16em]",
+                        accent.heading
+                      )}
+                    >
+                      {col.title}
+                    </p>
+                    {col.items.map((item) => {
+                      const serviceSlug = item.href.replace(
+                        "/talent-solutions/",
+                        ""
+                      );
+                      const isActive = serviceSlug === activeServiceSlug;
+                      const isHovered = serviceSlug === hoveredSlug;
+                      return (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          onClick={() => setTimeout(onClose, 60)}
+                          onMouseEnter={() => setHoveredSlug(serviceSlug)}
+                          onFocus={() => setHoveredSlug(serviceSlug)}
+                          title={item.description}
+                          className={cn(
+                            "group/svc flex items-start gap-2.5 rounded-lg border p-2 transition-all duration-150",
+                            isHovered
+                              ? cn(accent.cardActiveBorder, accent.cardActiveBg, "shadow-[0_0_18px_-8px] shadow-amber-400/30")
+                              : "border-transparent hover:border-white/[0.12] hover:bg-white/[0.04]",
+                            isActive && "ring-1 ring-amber-400/40"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ring-1 transition-transform duration-150 group-hover/svc:scale-105",
+                              accent.tile
+                            )}
+                          >
+                            <item.icon className="h-[14px] w-[14px]" aria-hidden="true" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={cn(
+                                  "block truncate text-[11.5px] font-bold leading-snug transition-colors",
+                                  isHovered
+                                    ? "text-amber-300"
+                                    : "text-slate-200 group-hover/svc:text-white"
+                                )}
+                              >
+                                {item.name}
+                              </span>
+                              <span
+                                className={cn(
+                                  "shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold",
+                                  accent.chip
+                                )}
+                              >
+                                {item.tag}
+                              </span>
+                            </div>
+                            <span
+                              className="mt-0.5 block text-[10px] leading-relaxed text-slate-500"
+                              style={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                              }}
+                            >
+                              {item.description}
+                            </span>
+                          </div>
+                          <ChevronRight
+                            className={cn(
+                              "mt-2 h-3 w-3 shrink-0 transition-all duration-150",
+                              isHovered
+                                ? "translate-x-0 text-amber-300 opacity-100"
+                                : "-translate-x-1 text-slate-600 opacity-0 group-hover/svc:translate-x-0 group-hover/svc:text-amber-300 group-hover/svc:opacity-100"
+                            )}
+                            aria-hidden="true"
+                          />
+                        </Link>
+                      );
+                    })}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* 1px divider rail (lg only) */}
+          <div className="hidden bg-white/[0.07] lg:block" aria-hidden="true" />
+
+          {/* ── RIGHT — hovered service's 8 deep-dive sub-pages (card grid) ── */}
+          <div className="border-t border-white/[0.07] bg-white/[0.02] px-5 py-4 lg:border-t-0">
             <div className="flex items-baseline justify-between gap-3">
               <p
                 className={cn(
@@ -303,122 +417,6 @@ export function TalentAllServicesFlyout({
                 );
               })}
             </div>
-          </div>
-
-          {/* 1px divider rail (lg only) */}
-          <div className="hidden bg-white/[0.07] lg:block" aria-hidden="true" />
-
-          {/* ── RIGHT — all 9 services as a vertical list grouped by pillar ── */}
-          <div className="border-t border-white/[0.07] bg-white/[0.02] px-5 py-4 lg:border-t-0">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-slate-500">
-                Services · 9
-              </p>
-              <Link
-                href={hoveredRow.item.href}
-                onClick={() => setTimeout(onClose, 60)}
-                className={cn(
-                  "shrink-0 text-[10px] font-semibold transition-colors",
-                  hoveredAccent.link
-                )}
-              >
-                View active →
-              </Link>
-            </div>
-
-            <ul className="thin-scrollbar mt-3 flex max-h-[380px] flex-col gap-3 overflow-y-auto pr-1">
-              {TALENT_COLUMNS.map((col) => {
-                const accent = ACCENT[col.accent];
-                return (
-                  <li key={col.title} className="flex flex-col gap-1.5">
-                    <p
-                      className={cn(
-                        "px-1 text-[9px] font-bold uppercase tracking-[0.16em]",
-                        accent.heading
-                      )}
-                    >
-                      {col.title}
-                    </p>
-                    {col.items.map((item) => {
-                      const serviceSlug = item.href.replace(
-                        "/talent-solutions/",
-                        ""
-                      );
-                      const isActive = serviceSlug === activeServiceSlug;
-                      const isHovered = serviceSlug === hoveredSlug;
-                      return (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          onClick={() => setTimeout(onClose, 60)}
-                          onMouseEnter={() => setHoveredSlug(serviceSlug)}
-                          onFocus={() => setHoveredSlug(serviceSlug)}
-                          title={item.description}
-                          className={cn(
-                            "group/svc flex items-start gap-2.5 rounded-lg border p-2 transition-all duration-150",
-                            isHovered
-                              ? cn(accent.cardActiveBorder, accent.cardActiveBg, "shadow-[0_0_18px_-8px] shadow-amber-400/30")
-                              : "border-transparent hover:border-white/[0.12] hover:bg-white/[0.04]",
-                            isActive && "ring-1 ring-amber-400/40"
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md ring-1 transition-transform duration-150 group-hover/svc:scale-105",
-                              accent.tile
-                            )}
-                          >
-                            <item.icon className="h-[14px] w-[14px]" aria-hidden="true" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5">
-                              <span
-                                className={cn(
-                                  "block truncate text-[11.5px] font-bold leading-snug transition-colors",
-                                  isHovered
-                                    ? "text-amber-300"
-                                    : "text-slate-200 group-hover/svc:text-white"
-                                )}
-                              >
-                                {item.name}
-                              </span>
-                              <span
-                                className={cn(
-                                  "shrink-0 rounded border px-1 py-0.5 text-[8px] font-semibold",
-                                  accent.chip
-                                )}
-                              >
-                                {item.tag}
-                              </span>
-                            </div>
-                            <span
-                              className="mt-0.5 block text-[10px] leading-relaxed text-slate-500"
-                              style={{
-                                display: "-webkit-box",
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                              }}
-                            >
-                              {item.description}
-                            </span>
-                          </div>
-                          <ChevronRight
-                            className={cn(
-                              "mt-2 h-3 w-3 shrink-0 transition-all duration-150",
-                              isHovered
-                                ? "translate-x-0 text-amber-300 opacity-100"
-                                : "-translate-x-1 text-slate-600 opacity-0 group-hover/svc:translate-x-0 group-hover/svc:text-amber-300 group-hover/svc:opacity-100"
-                            )}
-                            aria-hidden="true"
-                          />
-                        </Link>
-                      );
-                    })}
-                  </li>
-                );
-              })}
-            </ul>
           </div>
         </div>
 

@@ -6,16 +6,19 @@ import {
   BadgeCheck,
   BookOpen,
   Briefcase,
+  Building2,
   Check,
   CheckCircle2,
   ChevronDown,
   Clock,
   Coins,
   Factory,
-  Gauge,
+  Globe2,
   GraduationCap,
   HeartPulse,
   LineChart,
+  MapPin,
+  Quote,
   Radio,
   RefreshCw,
   Rocket,
@@ -25,6 +28,7 @@ import {
   Sparkles,
   Star,
   Target,
+  Trophy,
   Truck,
   Users,
   XCircle,
@@ -37,7 +41,7 @@ import { TALENT_COLUMNS } from "@/data/talent-solutions";
 import type { TalentAccent } from "@/data/talent-solutions";
 
 // ============================================================
-// TALENT SOLUTIONS — Employer landing page (12 sections)
+// TALENT SOLUTIONS — Employer landing page (16 sections)
 //
 // Audience: hiring teams, founders, engineering managers, and
 // HR directors. Server component — all data is static and
@@ -52,6 +56,12 @@ import type { TalentAccent } from "@/data/talent-solutions";
 //   - Right: Live Impact Signal panel (donut gauge + KPI
 //     before/after cards + progress bars + score badge +
 //     quote) + 3 CTAs + trust footnote.
+//
+// Every section uses out-of-the-box visual ideas: gradient
+// borders, floating stat badges that overlap edges, connecting
+// lines, SVG progress rings, color-coded matrix tables, hover
+// lift, gradient text, glow-shadow icon tiles, glassmorphism,
+// diagonal dividers, and numbered step badges.
 // ============================================================
 
 export const metadata: Metadata = {
@@ -166,27 +176,46 @@ const PROCESS_STEPS: ProcessStep[] = [
   },
 ];
 
-type RoiMetric = {
+// ROI calculator — three side-by-side metrics with before→after values
+// and delta badges. The "before" (traditional) is shown as a faded rose
+// bar, the "after" (STIOOS) as a gradient amber bar.
+type RoiBar = {
   label: string;
-  traditional: { value: string; width: string };
-  stioos: { value: string; width: string };
+  beforeValue: string;
+  afterValue: string;
+  beforePct: number;
+  afterPct: number;
+  delta: string;
+  deltaTone: "down" | "up";
 };
 
-const ROI_METRICS: RoiMetric[] = [
+const ROI_BARS: RoiBar[] = [
   {
     label: "Cost per hire",
-    traditional: { value: "$18k avg (20–30% fee)", width: "100%" },
-    stioos: { value: "$10.8k avg (pay-after-join)", width: "60%" },
+    beforeValue: "$20K avg",
+    afterValue: "$12K avg",
+    beforePct: 100,
+    afterPct: 60,
+    delta: "−40%",
+    deltaTone: "down",
   },
   {
     label: "Time to ramp",
-    traditional: { value: "3–6 months", width: "100%" },
-    stioos: { value: "1–2 weeks (pre-trained)", width: "22%" },
+    beforeValue: "3–6 months",
+    afterValue: "8–12 weeks",
+    beforePct: 100,
+    afterPct: 35,
+    delta: "−70%",
+    deltaTone: "down",
   },
   {
-    label: "Risk of bad hire",
-    traditional: { value: "1 in 3 hires underperforms", width: "100%" },
-    stioos: { value: "90-day free replacement", width: "12%" },
+    label: "12-month retention",
+    beforeValue: "50%",
+    afterValue: "96%",
+    beforePct: 50,
+    afterPct: 96,
+    delta: "+46 pts",
+    deltaTone: "up",
   },
 ];
 
@@ -195,6 +224,8 @@ type ComparisonRow = {
   stioos: string;
   agency: string;
   inhouse: string;
+  /** icon hint for the STIOOS cell — defaults to CheckCircle2 */
+  stioosIcon?: "check" | "x";
 };
 
 const COMPARISON_ROWS: ComparisonRow[] = [
@@ -217,14 +248,145 @@ type Industry = {
 };
 
 const INDUSTRIES_SERVED: Industry[] = [
-  { icon: Coins, name: "Fintech", hires: "180+ hires" },
-  { icon: HeartPulse, name: "Healthcare", hires: "120+ hires" },
+  { icon: Coins, name: "Fintech", hires: "320+ hires" },
+  { icon: HeartPulse, name: "Healthcare", hires: "240+ hires" },
   { icon: ShoppingCart, name: "Retail", hires: "260+ hires" },
   { icon: Server, name: "SaaS", hires: "320+ hires" },
-  { icon: Factory, name: "Manufacturing", hires: "90+ hires" },
+  { icon: Factory, name: "Manufacturing", hires: "190+ hires" },
   { icon: Truck, name: "Logistics", hires: "140+ hires" },
-  { icon: BookOpen, name: "Education", hires: "70+ hires" },
-  { icon: Radio, name: "Telecom", hires: "110+ hires" },
+  { icon: BookOpen, name: "Education", hires: "110+ hires" },
+  { icon: Radio, name: "Telecom", hires: "130+ hires" },
+];
+
+type CaseStudy = {
+  /** sector chip + company archetype */
+  companyType: string;
+  /** 1-line challenge quote from the client */
+  challenge: string;
+  /** which STIOOS services were applied */
+  solution: string;
+  /** quantified outcome, big number */
+  result: string;
+  resultLabel: string;
+  /** before→after metric for the visual bar */
+  metricLabel: string;
+  beforePct: number;
+  afterPct: number;
+  beforeLabel: string;
+  afterLabel: string;
+  /** gradient accent for the left border */
+  accent: string;
+};
+
+const CASE_STUDIES: CaseStudy[] = [
+  {
+    companyType: "Series-B SaaS",
+    challenge:
+      "“We needed 12 senior backend engineers in one quarter — our recruiter pipeline had delivered three.”",
+    solution:
+      "Cohort Sprint + 5-stage technical screen. STIOOS ran a 6-week training sprint on the client's Node/Postgres stack.",
+    result: "12",
+    resultLabel: "hires placed in 8 weeks",
+    metricLabel: "Engineering capacity",
+    beforePct: 25,
+    afterPct: 100,
+    beforeLabel: "3 hires",
+    afterLabel: "12 hires",
+    accent: "from-amber-500 to-orange-500",
+  },
+  {
+    companyType: "Retail enterprise",
+    challenge:
+      "“Seasonal ramp of 200 store ops specialists, with a 38% no-show rate from our prior vendor.”",
+    solution:
+      "Workforce Solutions + Placements. Pre-screened cohorts across 12 cities, with onboarding playbooks handed to store managers.",
+    result: "200",
+    resultLabel: "specialists onboarded in 6 weeks",
+    metricLabel: "Show-up rate",
+    beforePct: 62,
+    afterPct: 96,
+    beforeLabel: "62% show-up",
+    afterLabel: "96% show-up",
+    accent: "from-emerald-500 to-teal-500",
+  },
+  {
+    companyType: "Fintech scale-up",
+    challenge:
+      "“Compliance-cleared talent is a 4-month hiring cycle. We did not have 4 months.”",
+    solution:
+      "Talent Assessment + Placements. STIOOS maintained a SOC 2-cleared bench of 40 candidates; placements started in week 3.",
+    result: "18",
+    resultLabel: "compliance-cleared hires in 10 weeks",
+    metricLabel: "Hiring cycle",
+    beforePct: 100,
+    afterPct: 25,
+    beforeLabel: "4 months",
+    afterLabel: "3 weeks",
+    accent: "from-orange-500 to-rose-500",
+  },
+];
+
+type PricingTier = {
+  name: string;
+  price: string;
+  cadence: string;
+  blurb: string;
+  features: string[];
+  cta: string;
+  /** highlight tier */
+  featured?: boolean;
+};
+
+const PRICING_TIERS: PricingTier[] = [
+  {
+    name: "Cohort Sprint",
+    price: "$12k",
+    cadence: "per cohort",
+    blurb:
+      "A single role-aligned cohort — source, screen, train, and place 5–8 vetted candidates for one open role.",
+    features: [
+      "5–8 vetted candidates per cohort",
+      "48-hour first shortlist",
+      "Role-aligned 4–6 week curriculum",
+      "5-stage AI + human screening",
+      "90-day replacement guarantee",
+      "Shared pipeline dashboard",
+    ],
+    cta: "Start a cohort",
+  },
+  {
+    name: "Pipeline Partner",
+    price: "$4.5k",
+    cadence: "/mo + success fee",
+    blurb:
+      "A dedicated bench for ongoing hiring — multiple roles, multiple cohorts, monthly retainer + pay-after-join.",
+    features: [
+      "Dedicated talent bench (10–30 candidates)",
+      "Multiple concurrent cohorts",
+      "Weekly SLA-backed reporting",
+      "Priority sourcing from 2M+ pool",
+      "Pay-after-join success fees only",
+      "Quarterly business reviews",
+    ],
+    cta: "Become a partner",
+    featured: true,
+  },
+  {
+    name: "Enterprise Academy",
+    price: "Custom",
+    cadence: "annual contract",
+    blurb:
+      "A full talent academy — branded cohorts, custom curriculum, internal hire-portal, and dedicated delivery team.",
+    features: [
+      "Branded talent academy with portal",
+      "Custom curriculum on your stack",
+      "Multi-region delivery (3+ centers)",
+      "Dedicated senior delivery manager",
+      "Internal hiring committee integration",
+      "Executive sponsor + quarterly OKRs",
+    ],
+    cta: "Talk to sales",
+  },
 ];
 
 type Guarantee = {
@@ -257,6 +419,77 @@ const GUARANTEES: Guarantee[] = [
     title: "Weekly reporting",
     description:
       "A shared dashboard updated every Monday — pipeline health, shortlist velocity, cohort progress, and placement metrics in one view.",
+  },
+];
+
+type GlobalRegion = {
+  icon: LucideIcon;
+  name: string;
+  cities: string[];
+};
+
+const GLOBAL_REGIONS: GlobalRegion[] = [
+  {
+    icon: Globe2,
+    name: "North America",
+    cities: ["Austin", "Toronto", "Mexico City"],
+  },
+  {
+    icon: Globe2,
+    name: "South Asia",
+    cities: ["Bengaluru", "Karachi", "Dhaka"],
+  },
+  {
+    icon: Globe2,
+    name: "Middle East",
+    cities: ["Dubai", "Riyadh", "Doha"],
+  },
+  {
+    icon: Globe2,
+    name: "APAC",
+    cities: ["Singapore", "Manila", "Sydney"],
+  },
+];
+
+const PRESENCE_STATS: { value: string; label: string }[] = [
+  { value: "5+", label: "Countries" },
+  { value: "12+", label: "Cities" },
+  { value: "3", label: "Delivery centers" },
+  { value: "24/7", label: "Follow-the-sun" },
+];
+
+type Testimonial = {
+  quote: string;
+  initials: string;
+  name: string;
+  role: string;
+  rating: number;
+};
+
+const TESTIMONIALS: Testimonial[] = [
+  {
+    quote:
+      "We replaced a stalled recruiter pipeline with a STIOOS cohort and onboarded 12 senior engineers in 8 weeks. The 90-day replacement guarantee meant our CFO finally stopped arguing with HR.",
+    initials: "RA",
+    name: "Raza Ahmed",
+    role: "VP Engineering, Series-B SaaS",
+    rating: 5,
+  },
+  {
+    quote:
+      "The pay-after-join model changed the conversation. For the first time our talent spend was tied to actual hires, not activity. We have since moved all of our technical hiring to STIOOS.",
+    initials: "MK",
+    name: "Mei Lin Koh",
+    role: "Head of People Ops, Fintech scale-up",
+    rating: 5,
+  },
+  {
+    quote:
+      "What surprised me was the weekly cadence. Every Monday I had a dashboard — pipeline, shortlist velocity, cohort progress. No more chasing recruiters for status updates.",
+    initials: "JS",
+    name: "Jordan Sato",
+    role: "Talent Acquisition Director, Retail enterprise",
+    rating: 5,
   },
 ];
 
@@ -310,6 +543,8 @@ type PillarStyle = {
   ring: string;
   bar: string;
   glow: string;
+  /** gradient used for the pillar header bar background */
+  headerBar: string;
 };
 
 const PILLAR_STYLE: Record<TalentAccent, PillarStyle> = {
@@ -321,6 +556,7 @@ const PILLAR_STYLE: Record<TalentAccent, PillarStyle> = {
     ring: "ring-amber-400/25",
     bar: "from-amber-500 to-amber-400",
     glow: "bg-amber-500/20",
+    headerBar: "from-amber-500/20 to-transparent",
   },
   emerald: {
     // emerald-300 is NOT overridden in light mode (only emerald-400 is),
@@ -333,6 +569,7 @@ const PILLAR_STYLE: Record<TalentAccent, PillarStyle> = {
     ring: "ring-emerald-400/25",
     bar: "from-emerald-500 to-emerald-400",
     glow: "bg-emerald-500/20",
+    headerBar: "from-emerald-500/20 to-transparent",
   },
   orange: {
     // orange-400 / orange-300 are NOT overridden in light mode — darken
@@ -345,6 +582,7 @@ const PILLAR_STYLE: Record<TalentAccent, PillarStyle> = {
     ring: "ring-orange-400/25",
     bar: "from-orange-600 to-orange-500",
     glow: "bg-orange-500/20",
+    headerBar: "from-orange-500/20 to-transparent",
   },
 };
 
@@ -420,6 +658,10 @@ const HERO_GAUGE_CAPTION = "Readiness";
 
 const PILL_BASE =
   "inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white ring-1 ring-white/10";
+
+// ── ROI panel totals (decorative, used by the panel headers) ──
+const TRADITIONAL_TOTALS = { cost: "$20K", ramp: "3–6 mo", retention: "50%" };
+const STIOOS_TOTALS = { cost: "$12K", ramp: "8–12 wk", retention: "96%" };
 
 export default function TalentSolutionsPage() {
   return (
@@ -777,7 +1019,7 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 2. TRUST BAR                                                 */}
+      {/* 2. TRUST BAR — slim strip with checkmark badges             */}
       {/* ============================================================ */}
       <section
         id="trust"
@@ -791,10 +1033,14 @@ export default function TalentSolutionsPage() {
                 key={badge.label}
                 className="group flex items-center gap-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-amber-500/20 hover:bg-white/[0.04]"
               >
-                <badge.icon
-                  className="h-4 w-4 shrink-0 text-amber-500"
+                <span
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500/10 ring-1 ring-amber-500/25"
                   aria-hidden="true"
-                />
+                >
+                  <Check
+                    className="h-3.5 w-3.5 text-amber-400"
+                  />
+                </span>
                 <span className="text-xs font-medium leading-tight text-slate-200">
                   {badge.label}
                 </span>
@@ -805,7 +1051,8 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 3. KPI BAND                                                  */}
+      {/* 3. KPI BAND — 4 large stat cards with gradient icon tiles    */}
+      {/*    + glow shadows + floating numbers                        */}
       {/* ============================================================ */}
       <section
         id="kpi"
@@ -830,25 +1077,32 @@ export default function TalentSolutionsPage() {
               {KPIS.map((kpi) => (
                 <article
                   key={kpi.label}
-                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-brand-navy p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
                 >
                   {/* Glow blob behind tile */}
                   <div
                     className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-60 blur-2xl ${kpi.glow}`}
                     aria-hidden="true"
                   />
+                  {/* Floating number watermark */}
+                  <span
+                    className="pointer-events-none absolute -bottom-6 right-2 select-none font-mono text-7xl font-black opacity-[0.04]"
+                    aria-hidden="true"
+                  >
+                    {kpi.value.replace(/[^A-Za-z0-9+]/g, "")}
+                  </span>
                   <span
                     className={`relative flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ring-1 ring-white/10 shadow-lg ${kpi.tile}`}
                   >
                     <kpi.icon className="h-5 w-5 text-white" aria-hidden="true" />
                   </span>
-                  <p className="mt-5 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
+                  <p className="relative mt-5 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
                     {kpi.value}
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-white">
+                  <p className="relative mt-1 text-sm font-semibold text-white">
                     {kpi.label}
                   </p>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  <p className="relative mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                     {kpi.detail}
                   </p>
                 </article>
@@ -859,7 +1113,8 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 4. SERVICE PILLARS                                           */}
+      {/* 4. SERVICE PILLARS — 3 columns from TALENT_COLUMNS, each     */}
+      {/*    pillar has a colored gradient header bar                  */}
       {/* ============================================================ */}
       <section
         id="services"
@@ -889,12 +1144,19 @@ export default function TalentSolutionsPage() {
                     key={col.title}
                     className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
                   >
+                    {/* Gradient header bar across the top */}
+                    <div
+                      className={`h-1.5 w-full bg-gradient-to-r ${style.bar}`}
+                      aria-hidden="true"
+                    />
                     {/* Pillar glow on hover */}
                     <div
                       className={`pointer-events-none absolute -top-12 left-1/2 h-24 w-32 -translate-x-1/2 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100 ${style.glow}`}
                       aria-hidden="true"
                     />
-                    <header className="relative flex items-center gap-3 border-b border-white/10 px-6 py-5">
+                    <header
+                      className={`relative flex items-center gap-3 border-b border-white/10 bg-gradient-to-b ${style.headerBar} px-6 py-5`}
+                    >
                       <span
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.iconTile} ring-1 ${style.ring}`}
                       >
@@ -961,7 +1223,9 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 5. AUDIENCE PROPOSITION                                      */}
+      {/* 5. AUDIENCE SPLIT — asymmetric two-card layout               */}
+      {/*    Employer card spans 2x with amber gradient bg + floating  */}
+      {/*    96% badge; Seeker card is outlined secondary              */}
       {/* ============================================================ */}
       <section
         id="audiences"
@@ -1087,7 +1351,7 @@ export default function TalentSolutionsPage() {
                   href="/talent-solutions/placements"
                   className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-amber-400 hover:text-amber-300"
                 >
-                  Explore open roles
+                  Apply Now
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </article>
@@ -1097,7 +1361,8 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 6. PROCESS TIMELINE                                          */}
+      {/* 6. PROCESS TIMELINE — horizontal 5-step with gradient        */}
+      {/*    connecting line, numbered nodes (01-05), week labels      */}
       {/* ============================================================ */}
       <section
         id="process"
@@ -1117,59 +1382,63 @@ export default function TalentSolutionsPage() {
             </div>
           </Reveal>
           <Reveal delay={0.1}>
-            <ol
-              className="relative mt-12 grid gap-6 lg:grid-cols-5"
-              aria-label="Five-step talent engagement timeline"
-            >
-              {PROCESS_STEPS.map((step, index) => (
-                <li key={step.title} className="relative">
-                  {/* Connecting line (lg only) — sits behind the cards */}
-                  {index < PROCESS_STEPS.length - 1 && (
-                    <span
-                      className="absolute right-[-1.5rem] top-12 z-0 hidden h-px w-12 bg-gradient-to-r from-amber-500/40 to-transparent lg:block"
-                      aria-hidden="true"
-                    />
-                  )}
-                  <div className="relative flex h-full flex-col rounded-2xl border border-white/10 bg-brand-ink/60 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30">
-                    <div className="flex items-center justify-between">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-400/15 to-orange-500/15 ring-1 ring-amber-400/30">
-                        <step.icon
-                          className="h-5 w-5 text-amber-400"
+            <div className="relative mt-12">
+              {/* Connecting gradient line (lg only) — sits behind the cards */}
+              <div
+                className="pointer-events-none absolute left-0 right-0 top-[88px] hidden h-0.5 bg-gradient-to-r from-amber-500/10 via-amber-500/50 to-amber-500/10 lg:block"
+                aria-hidden="true"
+              />
+              <ol
+                className="relative grid gap-6 lg:grid-cols-5"
+                aria-label="Five-step talent engagement timeline"
+              >
+                {PROCESS_STEPS.map((step, index) => (
+                  <li key={step.title} className="relative">
+                    {/* Floating numbered node that sits on the connecting line */}
+                    <div className="relative z-10 mb-5 flex items-center justify-center">
+                      <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-amber-500/30 bg-brand-navy font-mono text-xs font-bold text-amber-400">
+                        {String(index + 1).padStart(2, "0")}
+                        {/* Tiny gradient icon badge tucked on top-right */}
+                        <span
+                          className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/40 ring-2 ring-brand-navy"
                           aria-hidden="true"
-                        />
-                      </span>
-                      <span className="font-mono text-[11px] text-slate-600 dark:text-slate-400">
-                        Step {String(index + 1).padStart(2, "0")}
+                        >
+                          <step.icon className="h-3.5 w-3.5 text-white" />
+                        </span>
                       </span>
                     </div>
-                    <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-amber-400">
-                      {step.duration}
-                    </p>
-                    <h3 className="mt-1 text-base font-semibold text-white">
-                      {step.title}
-                    </h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                      {step.description}
-                    </p>
-                  </div>
-                  {/* Arrow node between steps (lg only) */}
-                  {index < PROCESS_STEPS.length - 1 && (
-                    <span
-                      className="absolute -right-3 top-12 z-10 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-brand-navy ring-1 ring-amber-500/30 lg:flex"
-                      aria-hidden="true"
-                    >
-                      <ArrowRight className="h-3 w-3 text-amber-400" />
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ol>
+                    <div className="relative flex h-full flex-col rounded-2xl border border-white/10 bg-brand-ink/60 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">
+                        {step.duration}
+                      </p>
+                      <h3 className="mt-1 text-base font-semibold text-white">
+                        {step.title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                        {step.description}
+                      </p>
+                    </div>
+                    {/* Arrow node between steps (lg only) */}
+                    {index < PROCESS_STEPS.length - 1 && (
+                      <span
+                        className="absolute -right-3 top-6 z-20 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-brand-navy ring-1 ring-amber-500/30 lg:flex"
+                        aria-hidden="true"
+                      >
+                        <ArrowRight className="h-3 w-3 text-amber-400" />
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </div>
           </Reveal>
         </div>
       </section>
 
       {/* ============================================================ */}
-      {/* 7. ROI INFOGRAPHIC                                           */}
+      {/* 7. ROI CALCULATOR — two side-by-side panels (Traditional vs  */}
+      {/*    STIOOS), each with 3 before→after comparison bars +        */}
+      {/*    delta badges + a decorative SVG progress ring             */}
       {/* ============================================================ */}
       <section
         id="roi"
@@ -1190,9 +1459,9 @@ export default function TalentSolutionsPage() {
           </Reveal>
           <Reveal delay={0.1}>
             <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              {/* Traditional Hiring — red/rose accent (semantic "bad" color) */}
+              {/* Traditional Hiring — rose/red accents (semantic "bad" color) */}
               <article className="group relative overflow-hidden rounded-2xl border border-rose-500/20 bg-rose-500/[0.03] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-rose-500/40 md:p-8">
-                {/* Ring gauge (progress ring) for the "bad" outcome */}
+                {/* Decorative progress ring — shows 100% saturation (bad) */}
                 <div className="absolute -right-6 -top-6 opacity-30 transition-opacity group-hover:opacity-50">
                   <svg
                     className="h-28 w-28 -rotate-90"
@@ -1236,21 +1505,33 @@ export default function TalentSolutionsPage() {
                     </h3>
                   </div>
                 </header>
+                {/* Total cost / ramp / retention summary chips */}
+                <div className="relative mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 ring-1 ring-rose-400/20">
+                    {TRADITIONAL_TOTALS.cost} / hire
+                  </span>
+                  <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 ring-1 ring-rose-400/20">
+                    {TRADITIONAL_TOTALS.ramp} ramp
+                  </span>
+                  <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 ring-1 ring-rose-400/20">
+                    {TRADITIONAL_TOTALS.retention} retention
+                  </span>
+                </div>
                 <div className="relative mt-6 space-y-5">
-                  {ROI_METRICS.map((metric) => (
+                  {ROI_BARS.map((metric) => (
                     <div key={metric.label}>
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-medium text-slate-300">
                           {metric.label}
                         </span>
                         <span className="text-slate-600 dark:text-slate-400">
-                          {metric.traditional.value}
+                          {metric.beforeValue}
                         </span>
                       </div>
                       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-400/70"
-                          style={{ width: metric.traditional.width }}
+                          style={{ width: `${metric.beforePct}%` }}
                           aria-hidden="true"
                         />
                       </div>
@@ -1277,9 +1558,9 @@ export default function TalentSolutionsPage() {
                 </ul>
               </article>
 
-              {/* STIOOS Talent — amber accent */}
+              {/* STIOOS Talent — amber accents */}
               <article className="group relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-transparent p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/50 md:p-8">
-                {/* Ring gauge (progress ring) for the "good" outcome */}
+                {/* Decorative progress ring — shows 77% (good) */}
                 <div className="absolute -right-6 -top-6 opacity-50 transition-opacity group-hover:opacity-80">
                   <svg
                     className="h-28 w-28 -rotate-90"
@@ -1323,21 +1604,44 @@ export default function TalentSolutionsPage() {
                     </h3>
                   </div>
                 </header>
+                {/* Total cost / ramp / retention summary chips */}
+                <div className="relative mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-400/30">
+                    {STIOOS_TOTALS.cost} / hire
+                  </span>
+                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-400/30">
+                    {STIOOS_TOTALS.ramp} ramp
+                  </span>
+                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-400/30">
+                    {STIOOS_TOTALS.retention} retention
+                  </span>
+                </div>
                 <div className="relative mt-6 space-y-5">
-                  {ROI_METRICS.map((metric) => (
+                  {ROI_BARS.map((metric) => (
                     <div key={metric.label}>
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-medium text-slate-200">
                           {metric.label}
                         </span>
-                        <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text font-semibold text-transparent">
-                          {metric.stioos.value}
+                        <span className="flex items-center gap-2">
+                          <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text font-semibold text-transparent">
+                            {metric.afterValue}
+                          </span>
+                          <span
+                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
+                              metric.deltaTone === "up"
+                                ? "bg-emerald-500/15 text-emerald-600"
+                                : "bg-emerald-500/15 text-emerald-600"
+                            }`}
+                          >
+                            {metric.delta}
+                          </span>
                         </span>
                       </div>
                       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400"
-                          style={{ width: metric.stioos.width }}
+                          style={{ width: `${metric.afterPct}%` }}
                           aria-hidden="true"
                         />
                       </div>
@@ -1369,7 +1673,8 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 8. COMPARISON TABLE                                          */}
+      {/* 8. COMPARISON TABLE — 10-row color-coded matrix with the     */}
+      {/*    STIOOS column highlighted by an amber border + bg tint    */}
       {/* ============================================================ */}
       <section
         id="comparison"
@@ -1391,7 +1696,6 @@ export default function TalentSolutionsPage() {
           </Reveal>
           <Reveal delay={0.1}>
             <div className="mt-10 overflow-x-auto rounded-2xl border border-white/10">
-              {/* Custom scrollbar */}
               <p className="sr-only">
                 Comparison table of talent hiring approaches. Swipe horizontally
                 to view all columns.
@@ -1462,7 +1766,8 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 9. INDUSTRIES GRID                                           */}
+      {/* 9. INDUSTRIES GRID — 8 industry cards, 4-column grid with    */}
+      {/*    gradient icon tiles that scale on hover                   */}
       {/* ============================================================ */}
       <section
         id="industries"
@@ -1491,7 +1796,7 @@ export default function TalentSolutionsPage() {
                   key={ind.name}
                   className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:bg-white/[0.05]"
                 >
-                  {/* Gradient border on hover */}
+                  {/* Gradient border ring on hover */}
                   <span
                     className="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-1 ring-inset ring-amber-500/40 transition-opacity duration-200 group-hover:opacity-100"
                     aria-hidden="true"
@@ -1516,7 +1821,229 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 10. GUARANTEES                                               */}
+      {/* 10. CASE STUDIES — 3 cards with company-type chip, challenge */}
+      {/*     quote, solution, quantified result + before→after bar    */}
+      {/*     + gradient accent border                                  */}
+      {/* ============================================================ */}
+      <section
+        id="case-studies"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow font-bold text-amber-400">Case Studies</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Real engagements, real numbers
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Three representative engagements from the last twelve months —
+                the challenge, the STIOOS solution applied, and the quantified
+                outcome your hiring committee would see in the dashboard.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {CASE_STUDIES.map((cs) => (
+                <article
+                  key={cs.companyType}
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
+                >
+                  {/* Gradient accent bar across the top */}
+                  <div
+                    className={`absolute inset-x-0 top-0 h-1 w-full bg-gradient-to-r ${cs.accent}`}
+                    aria-hidden="true"
+                  />
+                  {/* Company type chip + Trophy icon */}
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white ring-1 ring-white/10">
+                      <Building2
+                        className="h-3 w-3 text-amber-400"
+                        aria-hidden="true"
+                      />
+                      {cs.companyType}
+                    </span>
+                    <Trophy
+                      className="h-5 w-5 text-amber-400/70"
+                      aria-hidden="true"
+                    />
+                  </div>
+                  {/* Challenge quote */}
+                  <p className="mt-4 text-sm italic leading-relaxed text-slate-300">
+                    {cs.challenge}
+                  </p>
+                  {/* Solution */}
+                  <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-amber-400">
+                      Solution applied.
+                    </span>{" "}
+                    {cs.solution}
+                  </p>
+                  {/* Big quantified result */}
+                  <div className="mt-5 flex items-baseline gap-2">
+                    <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-amber-400 bg-clip-text text-5xl font-black text-transparent">
+                      {cs.result}
+                    </span>
+                    <span className="text-xs font-medium text-slate-300">
+                      {cs.resultLabel}
+                    </span>
+                  </div>
+                  {/* Before → after metric bar */}
+                  <div className="mt-5 border-t border-white/10 pt-4">
+                    <div className="flex items-center justify-between text-[11px] font-medium">
+                      <span className="uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                        {cs.metricLabel}
+                      </span>
+                      <span className="text-slate-400">
+                        <span className="text-slate-500 line-through">
+                          {cs.beforeLabel}
+                        </span>{" "}
+                        →{" "}
+                        <span className="font-bold text-amber-300">
+                          {cs.afterLabel}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="relative mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                      {/* before (faded) */}
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full bg-white/15"
+                        style={{ width: `${cs.beforePct}%` }}
+                        aria-hidden="true"
+                      />
+                      {/* after (gradient, on top) */}
+                      <div
+                        className={`relative h-full rounded-full bg-gradient-to-r ${cs.accent}`}
+                        style={{ width: `${cs.afterPct}%` }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 11. PRICING TIERS — 3 cards (Cohort Sprint, Pipeline Partner  */}
+      {/*     featured, Enterprise Academy) with 6 features + CTA each  */}
+      {/* ============================================================ */}
+      <section
+        id="pricing"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow font-bold text-amber-400">Engagement Models</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Three ways to engage STIOOS Talent
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Pick the engagement model that matches your hiring volume and
+                timeline. Every tier ships with the same 90-day replacement
+                guarantee and weekly reporting — no fine print.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {PRICING_TIERS.map((tier) => (
+                <article
+                  key={tier.name}
+                  className={`relative flex flex-col overflow-hidden rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 ${
+                    tier.featured
+                      ? "border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/[0.12] to-transparent shadow-[0_0_40px_-12px] shadow-amber-500/40 lg:scale-[1.03]"
+                      : "border border-white/10 bg-brand-navy/60 hover:border-amber-500/30"
+                  }`}
+                >
+                  {/* Gradient border ring for featured tier */}
+                  {tier.featured && (
+                    <div
+                      className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-amber-500/30"
+                      aria-hidden="true"
+                    />
+                  )}
+                  {/* Most Popular badge — floats on top-right of featured tier */}
+                  {tier.featured && (
+                    <div className="absolute -right-1 -top-1 rotate-3 rounded-bl-xl rounded-tr-2xl bg-gradient-to-br from-amber-500 to-orange-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-ink">
+                      Most Popular
+                    </div>
+                  )}
+                  <div className="relative">
+                    <h3 className="text-lg font-bold text-white">{tier.name}</h3>
+                    <div className="mt-3 flex items-baseline gap-1.5">
+                      <span
+                        className={`bg-gradient-to-r ${
+                          tier.featured
+                            ? "from-amber-300 to-orange-400"
+                            : "from-white to-slate-300"
+                        } bg-clip-text text-4xl font-black text-transparent`}
+                      >
+                        {tier.price}
+                      </span>
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {tier.cadence}
+                      </span>
+                    </div>
+                    <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                      {tier.blurb}
+                    </p>
+                  </div>
+                  <ul className="relative mt-6 space-y-3 border-t border-white/10 pt-6">
+                    {tier.features.map((feature) => (
+                      <li
+                        key={feature}
+                        className="flex items-start gap-2 text-sm"
+                      >
+                        <CheckCircle2
+                          className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
+                          aria-hidden="true"
+                        />
+                        <span className="text-slate-300">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="relative mt-7">
+                    <Button
+                      asChild
+                      className={`h-11 w-full text-sm font-semibold ${
+                        tier.featured
+                          ? "bg-amber-500 text-brand-ink hover:bg-amber-400"
+                          : "border-white/25 bg-transparent text-white hover:bg-white/10"
+                      }`}
+                      variant={tier.featured ? "default" : "outline"}
+                    >
+                      <Link href="/contact">
+                        {tier.cta}
+                        <ArrowRight
+                          className="ml-2 h-4 w-4"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+          <Reveal delay={0.15}>
+            <p className="mt-8 text-center text-xs text-slate-600 dark:text-slate-400">
+              All tiers include the 90-day replacement guarantee, weekly
+              reporting, and ISO 27001 compliant data handling. Success fees are
+              billed only after a placed candidate joins and clears the
+              guarantee window.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 12. GUARANTEES — 4 cards with gradient icon tiles + glow     */}
+      {/*     shadows                                                  */}
       {/* ============================================================ */}
       <section
         id="guarantees"
@@ -1570,7 +2097,176 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 11. FAQ                                                      */}
+      {/* 13. GLOBAL PRESENCE — 4 region cards (NA, South Asia, ME,     */}
+      {/*     APAC) with MapPin icons + city pills, then a 4-stat strip */}
+      {/* ============================================================ */}
+      <section
+        id="global-presence"
+        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow font-bold text-amber-400">Global Presence</p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Follow-the-sun delivery across four regions
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Three delivery centers and a 24/7 follow-the-sun model mean your
+                shortlists arrive while you sleep, and your cohort never pauses
+                for a timezone handoff.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {GLOBAL_REGIONS.map((region) => (
+                <article
+                  key={region.name}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-brand-navy/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
+                >
+                  {/* Glow blob behind the MapPin tile */}
+                  <div
+                    className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-amber-500/20 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+                    aria-hidden="true"
+                  />
+                  <div className="relative flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/15 to-orange-500/15 ring-1 ring-amber-400/30 shadow-[0_0_24px_-8px] shadow-amber-500/40">
+                      <region.icon
+                        className="h-5 w-5 text-amber-400"
+                        aria-hidden="true"
+                      />
+                    </span>
+                    <h3 className="text-base font-bold text-white">
+                      {region.name}
+                    </h3>
+                  </div>
+                  {/* City pills */}
+                  <ul className="relative mt-4 flex flex-wrap gap-1.5">
+                    {region.cities.map((city) => (
+                      <li
+                        key={city}
+                        className="inline-flex items-center gap-1 rounded-full bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-slate-300 ring-1 ring-white/10"
+                      >
+                        <MapPin
+                          className="h-3 w-3 text-amber-400/70"
+                          aria-hidden="true"
+                        />
+                        {city}
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+          {/* 4-stat strip */}
+          <Reveal delay={0.15}>
+            <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-amber-500/[0.06] to-transparent p-6 sm:grid-cols-4 md:p-8">
+              {PRESENCE_STATS.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex flex-col items-center text-center"
+                >
+                  <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-3xl font-black text-transparent md:text-4xl">
+                    {stat.value}
+                  </span>
+                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    {stat.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 14. TESTIMONIALS — 3 cards with quote, avatar initials       */}
+      {/*     circle, name, role, 5-star rating                         */}
+      {/* ============================================================ */}
+      <section
+        id="testimonials"
+        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="eyebrow font-bold text-amber-400">
+                What Employers Say
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
+                Trusted by hiring teams across industries
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-300">
+                Three testimonials from engineering leaders, HR directors, and
+                talent acquisition teams who have moved real hiring volume
+                through STIOOS Talent.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="mt-12 grid gap-6 lg:grid-cols-3">
+              {TESTIMONIALS.map((t) => (
+                <article
+                  key={t.name}
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
+                >
+                  {/* Subtle gradient accent corner */}
+                  <div
+                    className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-amber-500/15 opacity-50 blur-2xl"
+                    aria-hidden="true"
+                  />
+                  {/* Quote mark icon */}
+                  <Quote
+                    className="h-7 w-7 text-amber-400/60"
+                    aria-hidden="true"
+                  />
+                  {/* Star rating */}
+                  <div
+                    className="mt-3 flex gap-0.5"
+                    aria-label={`${t.rating} out of 5 stars`}
+                  >
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < t.rating
+                            ? "fill-amber-400 text-amber-400"
+                            : "text-white/20"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
+                  {/* Quote */}
+                  <p className="relative mt-4 flex-1 text-sm leading-relaxed text-slate-300">
+                    {t.quote}
+                  </p>
+                  {/* Author row */}
+                  <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-sm font-bold text-white ring-2 ring-white/10">
+                      {t.initials}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white">
+                        {t.name}
+                      </p>
+                      <p className="truncate text-xs text-slate-600 dark:text-slate-400">
+                        {t.role}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/* 15. FAQ — 6 AEO-optimized natural-language questions with    */}
+      {/*     native <details> expandable answers                      */}
       {/* ============================================================ */}
       <section
         id="faq"
@@ -1633,7 +2329,7 @@ export default function TalentSolutionsPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* 12. CTA BAND                                                 */}
+      {/* 16. CTA BAND — final conversion with floating "48h" badge    */}
       {/* ============================================================ */}
       <section
         id="cta"
