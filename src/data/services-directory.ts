@@ -87,23 +87,23 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "violet",
     services: [
       svc(
-        "Operations & Process Automation",
+        "AI-Powered Operations & Process Automation for Streamlined Business Workflows",
         "Automate repetitive business operations and back-office processes with AI-driven workflows."
       ),
       svc(
-        "Digital Sales & AI Marketing Automation",
+        "AI Marketing & Sales Automation for Full-Funnel Pipeline Generation",
         "End-to-end AI automation for sales and marketing pipelines — from lead gen to nurture."
       ),
       svc(
-        "Data, Analytics & Decision Intelligence",
+        "AI Data Analytics & Decision Intelligence for Real-Time Business Insights",
         "AI-powered data pipelines, analytics dashboards, and decision intelligence platforms."
       ),
       svc(
-        "Supply Chain, Procurement & Management Automation",
+        "AI Supply Chain & Procurement Automation for Resilient Vendor Operations",
         "Automate supply chain workflows, procurement approvals, and vendor management with AI."
       ),
       svc(
-        "HR & Workforce Automation",
+        "AI HR & Workforce Automation for Modern Talent and People Operations",
         "AI automation for HR processes — screening, onboarding, scheduling, and people analytics."
       ),
     ],
@@ -117,23 +117,23 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "amber",
     services: [
       svc(
-        "Conversational & Support Agents",
+        "Custom Conversational AI Support Agents for 24/7 Customer Service Automation",
         "Custom AI agents for customer support — resolve, escalate, and learn across every channel."
       ),
       svc(
-        "Integration & Orchestration Agents",
+        "AI Agent Integration & Orchestration Across CRM, ERP, and SaaS Stacks",
         "AI agents that integrate and orchestrate across your CRM, ERP, and internal tools."
       ),
       svc(
-        "Analytical & Decision-Making Agents",
+        "AI Analytical Agents for Autonomous Data-Driven Decision Making",
         "AI agents that analyze data, surface insights, and make recommendations autonomously."
       ),
       svc(
-        "Process & Task Automation Agents",
+        "AI Process Automation Agents for End-to-End Task Execution Workflows",
         "Purpose-built AI agents that execute multi-step business processes end-to-end."
       ),
       svc(
-        "Multi-Agent Systems & Agent Fleets",
+        "Multi-Agent AI Systems and Agent Fleets for Enterprise-Scale Automation",
         "Governed fleets of cooperating AI agents for enterprise-scale automation."
       ),
     ],
@@ -147,28 +147,28 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "sky",
     services: [
       svc(
-        "Ready-to-Use Tools & SaaS Apps",
+        "Customizable SaaS Apps & Ready-to-Use Tools for Fast Deployment",
         "Pre-built SaaS tools and applications, customized and deployed for your business."
       ),
       svc(
-        "Cloud Hosting & Deployment",
+        "Cloud Hosting & Deployment Automation on AWS, GCP, and Azure",
         "Cloud hosting, deployment automation, and infrastructure management on AWS, GCP, Azure."
       ),
       svc(
-        "Mobile Apps Design & Development",
+        "iOS & Android Mobile App Design and Development for High-Performance Applications",
         "iOS and Android mobile app design and development built for performance and scale."
       ),
       svc(
-        "Software Design & Development",
+        "Custom Software Design & Development for Scalable Enterprise Applications",
         "Custom software products, internal systems, and enterprise applications built by senior teams."
       ),
       svc(
-        "API Development & Integration",
+        "API Development & Integration Services for Connected System Stacks",
         "API strategy, development, and integration services for connecting your entire stack."
       ),
       // ── Merged from Branding & Marketing Strategy ──
       svc(
-        "Faster Time-to-Market",
+        "Brand Launch Systems for Faster Time-to-Market and Rapid Activation",
         "Brand systems and activation plans built for faster time-to-market — launch in weeks, not quarters."
       ),
     ],
@@ -182,32 +182,32 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "fuchsia",
     services: [
       svc(
-        "Graphic Design & Branding",
+        "Graphic Design & Branding Services for Distinctive Visual Identity",
         "Brand identity, logo design, and graphic design services for digital and print."
       ),
       svc(
-        "Multimedia Production Services",
+        "Multimedia Production Services for Video, Audio, and Motion Graphics",
         "Full-cycle multimedia production — video, audio, motion graphics, and animation."
       ),
       svc(
-        "Visual Content & Marketing Assets",
+        "Visual Content & Marketing Assets for High-Conversion Paid Campaigns",
         "High-volume visual content and marketing assets for paid and organic campaigns."
       ),
       svc(
-        "UI/UX & Digital Design Services",
+        "UI/UX & Digital Design Services for Web, Mobile, and SaaS Products",
         "Research-driven UI/UX design for web, mobile, and SaaS products."
       ),
       svc(
-        "AI Video & Audio Production",
+        "AI Video & Audio Production for Synthetic Voiceovers and Ad Creative",
         "AI-generated video ads, synthetic voiceovers, music, and podcast production."
       ),
       // ── Merged from Branding & Marketing Strategy ──
       svc(
-        "Brand Identity Design & Strategy Development",
+        "Brand Identity Design & Strategy Development for Cohesive Visual Systems",
         "Brand identity design and strategy development — name, logo, voice, and visual system from positioning."
       ),
       svc(
-        "Brand Positioning & Rebranding Services",
+        "Brand Positioning & Rebranding Services for Established Companies",
         "Brand positioning and rebranding services for established companies — reposition without losing equity."
       ),
     ],
@@ -221,44 +221,44 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "rose",
     services: [
       svc(
-        "AI-Driven Marketing & Personalization",
+        "AI-Driven Marketing Personalization for Email, Web, and Ad Channels",
         "AI-powered marketing personalization across email, web, and ad channels."
       ),
       svc(
-        "AI-Powered Sales Enablement",
+        "AI-Powered Sales Enablement with SDRs and Outbound Pipeline Engines",
         "AI SDRs, sales intelligence, and outbound pipeline engines for revenue teams."
       ),
       svc(
-        "Conversational & Engagement Automation",
+        "Conversational Marketing & Engagement Automation for Lead Nurturing",
         "Chatbots, conversational marketing, and customer engagement automation."
       ),
       svc(
-        "Analytics, Insights & ROI Optimization",
+        "Marketing Analytics & ROI Optimization for Multi-Channel Attribution",
         "Marketing analytics, attribution, and ROI optimization for every channel."
       ),
       svc(
-        "SEO & Answer Engine Optimization",
+        "SEO & Answer Engine Optimization (AEO) for Google AI Overviews and Perplexity",
         "SEO and AEO (Answer Engine Optimization) for Google, Perplexity, ChatGPT, and AI overviews."
       ),
       // ── Merged from Branding & Marketing Strategy ──
       svc(
-        "Jataye Blogs & News",
+        "Jataye Blogs & News Content for SEO Authority and Organic Traffic",
         "Branded blogs and news content that builds authority, supports SEO, and earns organic traffic."
       ),
       svc(
-        "Dedicated Sales Teams",
+        "Dedicated Sales Teams for Outbound Pipeline and Revenue Growth",
         "Dedicated, brand-aligned sales teams that carry your narrative into every conversation."
       ),
       svc(
-        "Marketing Specialist",
+        "Dedicated Marketing Specialists for Channel Execution and Strategy",
         "Dedicated marketing specialists embedded in your team — channel owners who execute the strategy."
       ),
       svc(
-        "Build Social Media Branding",
+        "Social Media Branding Services for Consistent Platform Presence",
         "Build social media branding that is consistent, on-voice, and built for each platform."
       ),
       svc(
-        "Digital Marketing Integration & Enhancement",
+        "Digital Marketing Integration & Enhancement Across Every Channel",
         "Integrate and enhance your brand across every digital marketing channel — one brand, every touchpoint."
       ),
     ],
@@ -272,23 +272,23 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "emerald",
     services: [
       svc(
-        "Process & Workflow Automation",
+        "Business Process & Workflow Automation for Operations and Finance",
         "Automate business processes and workflows across operations, finance, and admin."
       ),
       svc(
-        "Customer, Sales & Experience Management",
+        "Customer Experience & Sales Management for Enterprise CRM Programs",
         "CRM, CX programs, and customer experience management for enterprise teams."
       ),
       svc(
-        "Data, Analytics & Business Intelligence",
+        "Business Intelligence & Data Analytics for Enterprise Decision Making",
         "Data pipelines, warehouses, BI dashboards, and decision analytics platforms."
       ),
       svc(
-        "Compliance, Security & Risk Management",
+        "Compliance, Security & Risk Management for Regulated Industries",
         "Cybersecurity, compliance programs, and risk management for regulated industries."
       ),
       svc(
-        "CRM & ERP Implementation",
+        "CRM & ERP Implementation Services for Salesforce, HubSpot, SAP, and Oracle",
         "CRM and ERP selection, implementation, and integration — Salesforce, HubSpot, SAP, Oracle."
       ),
     ],
@@ -302,52 +302,52 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "orange",
     services: [
       svc(
-        "Operational & Performance Solutions",
+        "Operational Consulting & Performance Solutions for Growing Businesses",
         "Operational consulting and performance improvement programs for growing businesses."
       ),
       svc(
-        "Compliance, Risk & Governance Consulting",
+        "Governance, Risk & Compliance Consulting for Enterprise Organizations",
         "Governance, risk, and compliance consulting for regulated and enterprise organizations."
       ),
       svc(
-        "Business & Strategy Consulting",
+        "Business Strategy & Consulting Services for Market Entry and Growth",
         "Business strategy, market entry, and growth consulting from senior practitioners."
       ),
       svc(
-        "Branding & Identity Services",
+        "Branding & Identity Services for Startups and Enterprise Positioning",
         "Brand strategy, identity design, and positioning for startups and enterprises."
       ),
       svc(
-        "Digital Transformation Consulting",
+        "Digital Transformation Consulting for Enterprise Modernization Programs",
         "End-to-end digital transformation strategy and execution for enterprise modernization."
       ),
       // ── Merged from Branding & Marketing Strategy ──
       svc(
-        "Industries Experience",
+        "Industry-Specific Brand Experience Programs for Vertical Markets",
         "Industry-specific brand experience programs — tailored messaging, assets, and proof per vertical."
       ),
       svc(
-        "Market Research & Analysts",
+        "Market Research & Analyst Programs for Brand Bet De-Risking",
         "Market research and analyst programs that quantify opportunity and de-risk brand bets."
       ),
       svc(
-        "Humanity, Ethic & Emotion of Brand",
+        "Brand Humanity, Ethics & Emotion Strategy for Lasting Customer Loyalty",
         "Define and express the humanity, ethics, and emotion of your brand — the why behind the loyalty."
       ),
       svc(
-        "Strategic Root Positioning of Brand",
+        "Strategic Root Brand Positioning for Audience Clarity and Differentiation",
         "Strategic root positioning that defines who the brand is for, what it stands for, and how it differs."
       ),
       svc(
-        "Emotional Attach Brand Connection",
+        "Emotional Brand Connection Programs for Community and Loyalty",
         "Programs that build emotional attachment — community, content, experiences — for lasting loyalty."
       ),
       svc(
-        "Market Segment Differentiation",
+        "Market Segment Differentiation for Multi-Audience Brand Positioning",
         "Differentiate your brand across market segments — tailored positioning per audience you serve."
       ),
       svc(
-        "Competitor Analysis & Market Reach",
+        "Competitor Analysis & Market Reach for Whitespace Opportunity Capture",
         "Competitor analysis and market reach programs — map the field, find the gap, and own the whitespace."
       ),
     ],
@@ -361,23 +361,23 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     accent: "teal",
     services: [
       svc(
-        "Bookkeeping & Financial Management",
+        "Automated Bookkeeping & Financial Management Services for Small Businesses",
         "Bookkeeping automation, financial reporting, and day-to-day financial management."
       ),
       svc(
-        "Financial Advisory & Growth Planning",
+        "Financial Advisory & Growth Planning for Startup FP&A and Scaling",
         "Financial advisory, FP&A, and growth planning for startups and SMBs."
       ),
       svc(
-        "Business Formation & Compliance",
+        "Business Formation & Compliance Services for New Entity Setup",
         "Business formation, entity setup, and regulatory compliance for new companies."
       ),
       svc(
-        "Tax Planning & Regulatory Compliance",
+        "Tax Planning & Regulatory Compliance Services for Businesses",
         "Tax planning, preparation, and regulatory compliance services for businesses."
       ),
       svc(
-        "Fractional CFO & Controller Services",
+        "Fractional CFO & Controller Services for Startups Without a Finance Team",
         "Fractional CFO and controller services for startups without a full-time finance team."
       ),
     ],

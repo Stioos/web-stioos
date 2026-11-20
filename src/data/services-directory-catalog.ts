@@ -86,7 +86,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 1
   srv(1, {
-    name: "Operations & Process Automation",
+    name: "AI-Powered Operations & Process Automation for Streamlined Business Workflows",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-process",
     icon: "Workflow",
@@ -138,7 +138,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 2
   srv(2, {
-    name: "Digital Sales & AI Marketing Automation",
+    name: "AI Marketing & Sales Automation for Full-Funnel Pipeline Generation",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-sales",
     icon: "Megaphone",
@@ -189,7 +189,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 3
   srv(3, {
-    name: "Data, Analytics & Decision Intelligence",
+    name: "AI Data Analytics & Decision Intelligence for Real-Time Business Insights",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-enterprise",
     icon: "BarChart3",
@@ -240,7 +240,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 4
   srv(4, {
-    name: "Supply Chain, Procurement & Management Automation",
+    name: "AI Supply Chain & Procurement Automation for Resilient Vendor Operations",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-process",
     icon: "Truck",
@@ -291,7 +291,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 5
   srv(5, {
-    name: "HR & Workforce Automation",
+    name: "AI HR & Workforce Automation for Modern Talent and People Operations",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-process",
     icon: "Users",
@@ -346,7 +346,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 6
   srv(6, {
-    name: "Conversational & Support Agents",
+    name: "Custom Conversational AI Support Agents for 24/7 Customer Service Automation",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-support",
     icon: "Bot",
@@ -398,7 +398,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 7
   srv(7, {
-    name: "Integration & Orchestration Agents",
+    name: "AI Agent Integration & Orchestration Across CRM, ERP, and SaaS Stacks",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-custom",
     icon: "Plug",
@@ -449,7 +449,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 8
   srv(8, {
-    name: "Analytical & Decision-Making Agents",
+    name: "AI Analytical Agents for Autonomous Data-Driven Decision Making",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-enterprise",
     icon: "BrainCircuit",
@@ -500,7 +500,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 9
   srv(9, {
-    name: "Process & Task Automation Agents",
+    name: "AI Process Automation Agents for End-to-End Task Execution Workflows",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-process",
     icon: "ListChecks",
@@ -551,7 +551,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 10
   srv(10, {
-    name: "Multi-Agent Systems & Agent Fleets",
+    name: "Multi-Agent AI Systems and Agent Fleets for Enterprise-Scale Automation",
     categoryId: "cat-ai-agents",
     subcategoryId: "sub-agents-enterprise",
     icon: "Network",
@@ -606,7 +606,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 11
   srv(11, {
-    name: "Ready-to-Use Tools & SaaS Apps",
+    name: "Customizable SaaS Apps & Ready-to-Use Tools for Fast Deployment",
     categoryId: "cat-tech-programming",
     subcategoryId: "sub-tech-software",
     icon: "Boxes",
@@ -657,7 +657,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 12
   srv(12, {
-    name: "Cloud Hosting & Deployment",
+    name: "Cloud Hosting & Deployment Automation on AWS, GCP, and Azure",
     categoryId: "cat-tech-programming",
     subcategoryId: "sub-tech-api",
     icon: "Cloud",
@@ -708,7 +708,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 13
   srv(13, {
-    name: "Mobile Apps Design & Development",
+    name: "iOS & Android Mobile App Design and Development for High-Performance Applications",
     categoryId: "cat-tech-programming",
     subcategoryId: "sub-tech-mobile",
     icon: "Smartphone",
@@ -760,7 +760,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 14
   srv(14, {
-    name: "Software Design & Development",
+    name: "Custom Software Design & Development for Scalable Enterprise Applications",
     categoryId: "cat-tech-programming",
     subcategoryId: "sub-tech-software",
     icon: "Code2",
@@ -811,7 +811,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 15
   srv(15, {
-    name: "API Development & Integration",
+    name: "API Development & Integration Services for Connected System Stacks",
     categoryId: "cat-tech-programming",
     subcategoryId: "sub-tech-api",
     icon: "Plug",
@@ -866,7 +866,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 16
   srv(16, {
-    name: "Graphic Design & Branding",
+    name: "Graphic Design & Branding Services for Distinctive Visual Identity",
     categoryId: "cat-multimedia-ai",
     subcategoryId: "sub-mm-social",
     icon: "Palette",
@@ -917,7 +917,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 17
   srv(17, {
-    name: "Multimedia Production Services",
+    name: "Multimedia Production Services for Video, Audio, and Motion Graphics",
     categoryId: "cat-multimedia-ai",
     subcategoryId: "sub-mm-video",
     icon: "Clapperboard",
@@ -968,7 +968,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 18
   srv(18, {
-    name: "Visual Content & Marketing Assets",
+    name: "Visual Content & Marketing Assets for High-Conversion Paid Campaigns",
     categoryId: "cat-multimedia-ai",
     subcategoryId: "sub-mm-image",
     icon: "Image",
@@ -1019,7 +1019,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 19
   srv(19, {
-    name: "UI/UX & Digital Design Services",
+    name: "UI/UX & Digital Design Services for Web, Mobile, and SaaS Products",
     categoryId: "cat-tech-programming",
     subcategoryId: "sub-brand-uiux",
     icon: "Figma",
@@ -1070,7 +1070,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 20
   srv(20, {
-    name: "AI Video & Audio Production",
+    name: "AI Video & Audio Production for Synthetic Voiceovers and Ad Creative",
     categoryId: "cat-multimedia-ai",
     subcategoryId: "sub-mm-audio",
     icon: "Video",
@@ -1125,7 +1125,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 21
   srv(21, {
-    name: "AI-Driven Marketing & Personalization",
+    name: "AI-Driven Marketing Personalization for Email, Web, and Ad Channels",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-lifecycle",
     icon: "Megaphone",
@@ -1176,7 +1176,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 22
   srv(22, {
-    name: "AI-Powered Sales Enablement",
+    name: "AI-Powered Sales Enablement with SDRs and Outbound Pipeline Engines",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-aisdr",
     icon: "TrendingUp",
@@ -1228,7 +1228,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 23
   srv(23, {
-    name: "Conversational & Engagement Automation",
+    name: "Conversational Marketing & Engagement Automation for Lead Nurturing",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "MessageSquare",
@@ -1279,7 +1279,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 24
   srv(24, {
-    name: "Analytics, Insights & ROI Optimization",
+    name: "Marketing Analytics & ROI Optimization for Multi-Channel Attribution",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-cro",
     icon: "BarChart3",
@@ -1330,7 +1330,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 25
   srv(25, {
-    name: "SEO & Answer Engine Optimization",
+    name: "SEO & Answer Engine Optimization (AEO) for Google AI Overviews and Perplexity",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-seo",
     icon: "Search",
@@ -1385,7 +1385,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 26
   srv(26, {
-    name: "Process & Workflow Automation",
+    name: "Business Process & Workflow Automation for Operations and Finance",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-crm",
     icon: "Workflow",
@@ -1436,7 +1436,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 27
   srv(27, {
-    name: "Customer, Sales & Experience Management",
+    name: "Customer Experience & Sales Management for Enterprise CRM Programs",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-cx",
     icon: "HeartHandshake",
@@ -1487,7 +1487,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 28
   srv(28, {
-    name: "Data, Analytics & Business Intelligence",
+    name: "Business Intelligence & Data Analytics for Enterprise Decision Making",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-bi",
     icon: "Database",
@@ -1539,7 +1539,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 29
   srv(29, {
-    name: "Compliance, Security & Risk Management",
+    name: "Compliance, Security & Risk Management for Regulated Industries",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-security",
     icon: "ShieldCheck",
@@ -1590,7 +1590,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 30
   srv(30, {
-    name: "CRM & ERP Implementation",
+    name: "CRM & ERP Implementation Services for Salesforce, HubSpot, SAP, and Oracle",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-erp",
     icon: "Building2",
@@ -1645,7 +1645,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 31
   srv(31, {
-    name: "Operational & Performance Solutions",
+    name: "Operational Consulting & Performance Solutions for Growing Businesses",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-cx",
     icon: "Gauge",
@@ -1696,7 +1696,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 32
   srv(32, {
-    name: "Compliance, Risk & Governance Consulting",
+    name: "Governance, Risk & Compliance Consulting for Enterprise Organizations",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-security",
     icon: "Scale",
@@ -1747,7 +1747,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 33
   srv(33, {
-    name: "Business & Strategy Consulting",
+    name: "Business Strategy & Consulting Services for Market Entry and Growth",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-crm",
     icon: "Lightbulb",
@@ -1798,7 +1798,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 34
   srv(34, {
-    name: "Branding & Identity Services",
+    name: "Branding & Identity Services for Startups and Enterprise Positioning",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-cx",
     icon: "Stamp",
@@ -1849,7 +1849,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 35
   srv(35, {
-    name: "Digital Transformation Consulting",
+    name: "Digital Transformation Consulting for Enterprise Modernization Programs",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-crm",
     icon: "Rocket",
@@ -1904,7 +1904,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 36
   srv(36, {
-    name: "Bookkeeping & Financial Management",
+    name: "Automated Bookkeeping & Financial Management Services for Small Businesses",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-start-financial",
     icon: "BookOpen",
@@ -1955,7 +1955,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 37
   srv(37, {
-    name: "Financial Advisory & Growth Planning",
+    name: "Financial Advisory & Growth Planning for Startup FP&A and Scaling",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-start-financial",
     icon: "TrendingUp",
@@ -2006,7 +2006,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 38
   srv(38, {
-    name: "Business Formation & Compliance",
+    name: "Business Formation & Compliance Services for New Entity Setup",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-be-security",
     icon: "FileCheck",
@@ -2057,7 +2057,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 39
   srv(39, {
-    name: "Tax Planning & Regulatory Compliance",
+    name: "Tax Planning & Regulatory Compliance Services for Businesses",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-start-financial",
     icon: "Receipt",
@@ -2108,7 +2108,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 40
   srv(40, {
-    name: "Fractional CFO & Controller Services",
+    name: "Fractional CFO & Controller Services for Startups Without a Finance Team",
     categoryId: "cat-business-enterprise",
     subcategoryId: "sub-start-financial",
     icon: "Wallet",
@@ -2164,7 +2164,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 41
   srv(41, {
-    name: "Jataye Blogs & News",
+    name: "Jataye Blogs & News Content for SEO Authority and Organic Traffic",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "Newspaper",
@@ -2215,7 +2215,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 42
   srv(42, {
-    name: "Industries Experience",
+    name: "Industry-Specific Brand Experience Programs for Vertical Markets",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "Layers",
@@ -2266,7 +2266,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 43
   srv(43, {
-    name: "Dedicated Sales Teams",
+    name: "Dedicated Sales Teams for Outbound Pipeline and Revenue Growth",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-aisdr",
     icon: "Users",
@@ -2317,7 +2317,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 44
   srv(44, {
-    name: "Market Research & Analysts",
+    name: "Market Research & Analyst Programs for Brand Bet De-Risking",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-cro",
     icon: "Microscope",
@@ -2368,7 +2368,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 45
   srv(45, {
-    name: "Marketing Specialist",
+    name: "Dedicated Marketing Specialists for Channel Execution and Strategy",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "UserCog",
@@ -2419,7 +2419,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 46
   srv(46, {
-    name: "Humanity, Ethic & Emotion of Brand",
+    name: "Brand Humanity, Ethics & Emotion Strategy for Lasting Customer Loyalty",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "Heart",
@@ -2470,7 +2470,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 47
   srv(47, {
-    name: "Strategic Root Positioning of Brand",
+    name: "Strategic Root Brand Positioning for Audience Clarity and Differentiation",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "Compass",
@@ -2521,7 +2521,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 48
   srv(48, {
-    name: "Emotional Attach Brand Connection",
+    name: "Emotional Brand Connection Programs for Community and Loyalty",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "Sparkles",
@@ -2572,7 +2572,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 49
   srv(49, {
-    name: "Market Segment Differentiation",
+    name: "Market Segment Differentiation for Multi-Audience Brand Positioning",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-cro",
     icon: "Split",
@@ -2623,7 +2623,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 50
   srv(50, {
-    name: "Faster Time-to-Market",
+    name: "Brand Launch Systems for Faster Time-to-Market and Rapid Activation",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-aisdr",
     icon: "Zap",
@@ -2674,7 +2674,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 51 — flagship in cat-multimedia-ai
   srv(51, {
-    name: "Brand Identity Design & Strategy Development",
+    name: "Brand Identity Design & Strategy Development for Cohesive Visual Systems",
     categoryId: "cat-multimedia-ai",
     subcategoryId: "sub-mm-social",
     icon: "Palette",
@@ -2726,7 +2726,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 52
   srv(52, {
-    name: "Brand Positioning & Rebranding Services",
+    name: "Brand Positioning & Rebranding Services for Established Companies",
     categoryId: "cat-multimedia-ai",
     subcategoryId: "sub-mm-social",
     icon: "RefreshCw",
@@ -2777,7 +2777,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 53
   srv(53, {
-    name: "Build Social Media Branding",
+    name: "Social Media Branding Services for Consistent Platform Presence",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-social",
     icon: "Share2",
@@ -2828,7 +2828,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 54
   srv(54, {
-    name: "Digital Marketing Integration & Enhancement",
+    name: "Digital Marketing Integration & Enhancement Across Every Channel",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-lifecycle",
     icon: "Plug",
@@ -2879,7 +2879,7 @@ export const DIRECTORY_SERVICES: Service[] = [
 
   // 55
   srv(55, {
-    name: "Competitor Analysis & Market Reach",
+    name: "Competitor Analysis & Market Reach for Whitespace Opportunity Capture",
     categoryId: "cat-digital-sales-marketing",
     subcategoryId: "sub-dsm-cro",
     icon: "Target",

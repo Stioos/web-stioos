@@ -81,9 +81,11 @@ export function ServicesDirectory() {
           aria-hidden="true"
         />
 
-        {/* 4-column grid of divisions — 2 rows × 4 columns = 8 divisions */}
+        {/* 3-column grid of divisions — 3+3+2 = 8 divisions across 3 rows.
+            All division cards share equal column width; height is driven
+            by content (service count varies per division). */}
         <Reveal delay={0.1}>
-          <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
             {SERVICES_DIRECTORY.map((division) => {
               const iconAccent = ACCENT_ICON[division.accent];
               const hoverAccent = ACCENT_HOVER[division.accent];
@@ -91,7 +93,7 @@ export function ServicesDirectory() {
               return (
                 <div
                   key={division.id}
-                  className="flex flex-col"
+                  className="flex flex-col rounded-xl border border-white/[0.06] bg-white/[0.02] p-4"
                 >
                   {/* Division header — icon + uppercase name */}
                   <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
