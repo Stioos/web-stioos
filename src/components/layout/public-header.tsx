@@ -44,6 +44,9 @@ import {
 } from "@/data/solutions";
 import { SolutionCard } from "@/components/shared/solution-card";
 import type { Category, Service, Subcategory } from "@/types";
+import { getAllPublishedServices } from "@/lib/service-data";
+import { TALENT_PAGE_SPECS } from "@/data/pages/talent-pages";
+import { TALENT_STRIP_GROUPS } from "@/data/talent-strip-groups";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight, ChevronDown, LayoutDashboard, LayoutGrid, Layers, LogIn, LogOut, Menu, Search, ShoppingBag, Sparkles, Users, X, UserRound,
@@ -1997,10 +2000,6 @@ function HeaderSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [activeIdx, setActiveIdx] = useState(-1);
-  // The suggestions panel must clear the secondary strip so it never paints
-  // over the division pills (a covered control is a dead control). On lg+
-  // screens with the strip visible the panel drops below the whole header
-  // block — the same anchor line the mega menus use.
   const [isDesktop, setIsDesktop] = useState(false);
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -2010,7 +2009,10 @@ function HeaderSearch({
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  const services = useAppStore((s) => s.services);
+  // Use STATIC data (all 360+ services) instead of the store's deferred
+  // catalog. This ensures the search ALWAYS has the full catalog available
+  // immediately — no waiting for ensureFullCatalog() to load.
+  const allServices = useMemo(() => getAllPublishedServices(), []);
   const categories = useAppStore((s) => s.categories);
 
   // Ctrl/Cmd + K focuses the search field
@@ -2025,9 +2027,9 @@ function HeaderSearch({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const { serviceItems, categoryItems } = useMemo(() => {
+  const { serviceItems, categoryItems, talentItems } = useMemo(() => {
     const query = q.trim().toLowerCase();
-    if (!query) return { serviceItems: [], categoryItems: [] };
+    if (!query) return { serviceItems: [], categoryItems: [], talentItems: [] };
 
     const terms = query.split(/\s+/).filter(Boolean);
     const matchSvc = (s: Service) => {
@@ -2036,8 +2038,7 @@ function HeaderSearch({
         .toLowerCase();
       return terms.every((t) => hay.includes(t));
     };
-    const svc: SearchItem[] = services
-      .filter((s) => s.status === "published")
+    const svc: SearchItem[] = allServices
       .filter(matchSvc)
       .sort((a, b) => Number(b.featured) - Number(a.featured) || b.popularity - a.popularity)
       .slice(0, 5)
@@ -2062,12 +2063,88 @@ function HeaderSearch({
         icon: c.icon,
       }));
 
-    return { serviceItems: svc, categoryItems: cats };
-  }, [q, services, categories]);
+    // Talent solutions search — includes talent service pages, group pages,
+    // info pages, and sub-pages. Each is searchable by name and description.
+    const talent: SearchItem[] = [];
+
+    // 9 talent service pages (train-to-hire, hire-to-train, etc.)
+    TALENT_PAGE_SPECS.forEach((spec) => {
+      const hay = `${spec.nav} ${spec.title} ${spec.highlight} ${spec.subtitle} ${spec.eyebrow}`.toLowerCase();
+      if (terms.every((t) => hay.includes(t))) {
+        talent.push({
+          key: `talent-${spec.slug}`,
+          title: spec.nav,
+          sub: "Talent Solutions",
+          href: `/talent-solutions/${spec.slug}`,
+          icon: "Users",
+          accent: "from-amber-500 to-orange-500",
+        });
+      }
+    });
+
+    // 6 talent group pages + their sub-pages
+    TALENT_STRIP_GROUPS.forEach((group) => {
+      const groupHay = `${group.name} ${group.stripLabel} ${group.tagline}`.toLowerCase();
+      if (terms.every((t) => groupHay.includes(t))) {
+        talent.push({
+          key: `group-${group.slug}`,
+          title: group.name,
+          sub: "Talent Solutions Group",
+          href: `/talent-solutions/${group.slug}`,
+          icon: "Users",
+          accent: "from-amber-500 to-orange-500",
+        });
+      }
+      // Sub-pages
+      group.subPages?.forEach((sub) => {
+        const subHay = `${sub.title} ${sub.stripLabel} ${sub.description}`.toLowerCase();
+        if (terms.every((t) => subHay.includes(t))) {
+          talent.push({
+            key: `sub-${group.slug}-${sub.slug}`,
+            title: sub.stripLabel,
+            sub: `${group.name} · Talent Solutions`,
+            href: `/talent-solutions/${group.slug}/${sub.slug}`,
+            icon: "Users",
+            accent: "from-amber-500 to-orange-500",
+          });
+        }
+      });
+    });
+
+    // 2 info pages + their sub-pages
+    TALENT_INFO_PAGES.forEach((info) => {
+      const infoHay = `${info.name} ${info.stripLabel} ${info.tagline} ${info.description}`.toLowerCase();
+      if (terms.every((t) => infoHay.includes(t))) {
+        talent.push({
+          key: `info-${info.slug}`,
+          title: info.name,
+          sub: "Talent Solutions Info",
+          href: `/talent-solutions/${info.slug}`,
+          icon: "FileText",
+          accent: "from-amber-500 to-orange-500",
+        });
+      }
+      info.subPages?.forEach((sub) => {
+        const subHay = `${sub.title} ${sub.stripLabel} ${sub.description}`.toLowerCase();
+        if (terms.every((t) => subHay.includes(t))) {
+          talent.push({
+            key: `info-sub-${info.slug}-${sub.slug}`,
+            title: sub.stripLabel,
+            sub: `${info.name} · Talent Solutions`,
+            href: `/talent-solutions/${info.slug}/${sub.slug}`,
+            icon: "FileText",
+            accent: "from-amber-500 to-orange-500",
+          });
+        }
+      });
+    });
+
+    return { serviceItems: svc, categoryItems: cats, talentItems: talent.slice(0, 5) };
+  }, [q, allServices, categories]);
 
   const flat = useMemo(
-    () => [...serviceItems, ...categoryItems],
-    [serviceItems, categoryItems]
+    () => [...serviceItems, ...talentItems, ...categoryItems],
+    [serviceItems, talentItems, categoryItems]
   );
   const showPanel = open;
   const hasQuery = q.trim().length > 0;
@@ -2106,8 +2183,7 @@ function HeaderSearch({
 
   const popularServices = useMemo(
     () =>
-      [...services]
-        .filter((s) => s.status === "published")
+      [...allServices]
         .sort((a, b) => b.popularity - a.popularity)
         .slice(0, 3)
         .map(
@@ -2120,7 +2196,7 @@ function HeaderSearch({
             accent: s.accent,
           })
         ),
-    [services]
+    [allServices]
   );
 
   const row = (item: SearchItem, idx: number | null) => {
@@ -2297,12 +2373,21 @@ function HeaderSearch({
               </div>
             )}
 
+            {hasQuery && talentItems.length > 0 && (
+              <div className="p-1.5 pt-0.5">
+                <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-400">
+                  Talent Solutions
+                </p>
+                {talentItems.map((item, i) => row(item, serviceItems.length + i))}
+              </div>
+            )}
+
             {hasQuery && categoryItems.length > 0 && (
               <div className="p-1.5 pt-0.5">
                 <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Categories
                 </p>
-                {categoryItems.map((item, i) => row(item, serviceItems.length + i))}
+                {categoryItems.map((item, i) => row(item, serviceItems.length + talentItems.length + i))}
               </div>
             )}
 
