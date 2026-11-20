@@ -641,37 +641,28 @@ export function PublicHeader() {
               }
               className="flex h-[46px] items-center border-t border-white/[0.07]"
             >
-              <div className="flex min-w-0 flex-1 items-center justify-between gap-1 xl:gap-1.5">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 xl:gap-2">
                 {isTalentSection
                   ? (() => {
-                      // Talent Solutions secondary header — 6 grouped
-                      // options split into two equal halves with a visual
-                      // divider: 3 candidate-side (left) + 3 employer-side
-                      // (right). Each pill opens a vertical flyout on its
-                      // RIGHT side listing the existing talent services
-                      // that belong to that group.
+                      // Talent Solutions secondary header — ALL pills in a
+                      // SINGLE flat flex container with consistent gap.
+                      // No group wrappers, no justify-between, no dividers.
+                      // This eliminates the uneven spacing gaps between
+                      // groups that the user reported.
                       const GROUP_ACCENT_TILE: Record<string, string> = {
                         blue: "text-sky-300",
                         emerald: "text-emerald-300",
                         orange: "text-orange-300",
                       };
-                      const GROUP_ACCENT_BORDER: Record<
-                        string,
-                        string
-                      > = {
+                      const GROUP_ACCENT_BORDER: Record<string, string> = {
                         blue: "hover:border-sky-400/50",
                         emerald: "hover:border-emerald-400/50",
                         orange: "hover:border-orange-400/50",
                       };
-                      const GROUP_ACCENT_ACTIVE: Record<
-                        string,
-                        string
-                      > = {
+                      const GROUP_ACCENT_ACTIVE: Record<string, string> = {
                         blue: "border-sky-400/60 bg-sky-400/[0.10]",
-                        emerald:
-                          "border-emerald-400/60 bg-emerald-400/[0.10]",
-                        orange:
-                          "border-orange-400/60 bg-orange-400/[0.10]",
+                        emerald: "border-emerald-400/60 bg-emerald-400/[0.10]",
+                        orange: "border-orange-400/60 bg-orange-400/[0.10]",
                       };
                       const renderGroupPill = (
                         group: (typeof TALENT_STRIP_GROUPS)[number],
@@ -691,10 +682,6 @@ export function PublicHeader() {
                             <Link
                               href={`/talent-solutions/${group.slug}`}
                               onClick={() => {
-                                // Always navigate on click — the hover
-                                // flyout (onMouseEnter) provides a desktop
-                                // preview; on touch devices tapping goes
-                                // straight to the page.
                                 dismissFlyouts();
                               }}
                               tabIndex={showStrip ? 0 : -1}
@@ -725,8 +712,6 @@ export function PublicHeader() {
                               />
                             </Link>
 
-                            {/* Vertical flyout — opens on the RIGHT side of
-                                the pill, listing the group's services */}
                             {openStrip === menuId && showStrip && (
                               <TalentVerticalFlyout
                                 anchorEl={stripAnchor}
@@ -743,16 +728,54 @@ export function PublicHeader() {
                         );
                       };
 
+                      const renderInfoPill = (info: (typeof TALENT_INFO_PAGES)[number]) => {
+                        const INFO_ACCENT_TILE: Record<string, string> = {
+                          blue: "text-sky-300",
+                          emerald: "text-emerald-300",
+                          orange: "text-orange-300",
+                        };
+                        const INFO_ACCENT_BORDER: Record<string, string> = {
+                          blue: "hover:border-sky-400/50",
+                          emerald: "hover:border-emerald-400/50",
+                          orange: "hover:border-orange-400/50",
+                        };
+                        const isActiveInfo = talentActiveOption === info.slug;
+                        return (
+                          <Link
+                            key={info.slug}
+                            href={`/talent-solutions/${info.slug}`}
+                            onClick={() => {
+                              dismissFlyouts();
+                            }}
+                            tabIndex={showStrip ? 0 : -1}
+                            title={info.name}
+                            aria-current={isActiveInfo ? "page" : undefined}
+                            className={cn(
+                              "group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.05] px-2.5 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
+                              INFO_ACCENT_BORDER[info.accent],
+                              isActiveInfo && info.accent === "blue" && "border-sky-400/60 bg-sky-400/[0.10]",
+                              isActiveInfo && info.accent === "emerald" && "border-emerald-400/60 bg-emerald-400/[0.10]",
+                              isActiveInfo && info.accent === "orange" && "border-orange-400/60 bg-orange-400/[0.10]"
+                            )}
+                          >
+                            <info.icon
+                              className={cn(
+                                "h-3.5 w-3.5 shrink-0",
+                                INFO_ACCENT_TILE[info.accent]
+                              )}
+                            />
+                            <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
+                              {info.stripLabel}
+                            </span>
+                          </Link>
+                        );
+                      };
+
+                      // FLAT list — all pills rendered directly in the
+                      // container, no group wrappers, consistent gap.
                       return (
                         <>
-                          {/* PREMIUM TALENT SOLUTIONS — left-most pill, opens
-                              a wide mega menu (Browse-Categories pattern)
-                              with deep-dive page cards on the left + a
-                              vertical services list on the right. Premium
-                              styling (deeper amber gradient + gold accents)
-                              and wider button so it reads as the marquee
-                              entry point and matches the header's horizontal
-                              rhythm. */}
+                          {/* Premium Talent Solutions pill */}
                           <div
                             ref={(el) => {
                               pillRefs.current["talent-all-services"] = el;
@@ -788,7 +811,6 @@ export function PublicHeader() {
                               />
                             </Link>
 
-                            {/* Mega flyout — deep-dive page cards + vertical services list */}
                             {openStrip === "talent-all-services" && showStrip && (
                               <TalentAllServicesFlyout
                                 anchorEl={stripAnchor}
@@ -801,72 +823,12 @@ export function PublicHeader() {
                             )}
                           </div>
 
-                          {/* CANDIDATE GROUPS (3) — Get Trained, Get Placed,
-                              Get Certified. No dividers — flat standard
-                              header strip. */}
-                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
-                            {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
-                          </div>
+                          {/* All 6 group pills — flat, no group wrappers */}
+                          {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
+                          {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
 
-                          {/* EMPLOYER GROUPS (3) — Build Talent, Hire Talent,
-                              Scale Workforce. Added back per user request.
-                              No divider — flat standard header strip. */}
-                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
-                            {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
-                          </div>
-
-                          {/* INFO PILLS (2) — Joining Terms + Learning Terms.
-                              No divider — flat standard header strip. */}
-                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
-                            {TALENT_INFO_PAGES.map((info) => {
-                              const INFO_ACCENT_TILE: Record<string, string> = {
-                                blue: "text-sky-300",
-                                emerald: "text-emerald-300",
-                                orange: "text-orange-300",
-                              };
-                              const INFO_ACCENT_BORDER: Record<string, string> = {
-                                blue: "hover:border-sky-400/50",
-                                emerald: "hover:border-emerald-400/50",
-                                orange: "hover:border-orange-400/50",
-                              };
-                              const isActiveInfo = talentActiveOption === info.slug;
-                              return (
-                                <Link
-                                  key={info.slug}
-                                  href={`/talent-solutions/${info.slug}`}
-                                  onClick={() => {
-                                    dismissFlyouts();
-                                  }}
-                                  tabIndex={showStrip ? 0 : -1}
-                                  title={info.name}
-                                  aria-current={isActiveInfo ? "page" : undefined}
-                                  className={cn(
-                                    "group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.05] px-2.5 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
-                                    INFO_ACCENT_BORDER[info.accent],
-                                    isActiveInfo &&
-                                      info.accent === "blue" &&
-                                      "border-sky-400/60 bg-sky-400/[0.10]",
-                                    isActiveInfo &&
-                                      info.accent === "emerald" &&
-                                      "border-emerald-400/60 bg-emerald-400/[0.10]",
-                                    isActiveInfo &&
-                                      info.accent === "orange" &&
-                                      "border-orange-400/60 bg-orange-400/[0.10]"
-                                  )}
-                                >
-                                  <info.icon
-                                    className={cn(
-                                      "h-3.5 w-3.5 shrink-0",
-                                      INFO_ACCENT_TILE[info.accent]
-                                    )}
-                                  />
-                                  <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
-                                    {info.stripLabel}
-                                  </span>
-                                </Link>
-                              );
-                            })}
-                          </div>
+                          {/* Info pills — flat, no group wrappers */}
+                          {TALENT_INFO_PAGES.map(renderInfoPill)}
                         </>
                       );
                     })()
