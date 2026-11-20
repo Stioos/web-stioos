@@ -15,20 +15,24 @@ import {
   Factory,
   Globe2,
   GraduationCap,
+  Headset,
   HeartPulse,
+  HelpCircle,
   LineChart,
   MapPin,
+  MessagesSquare,
+  PhoneCall,
   Quote,
   Radio,
   RefreshCw,
   Rocket,
+  Scale,
   Server,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
   Star,
   Target,
-  Trophy,
   Truck,
   Users,
   XCircle,
@@ -41,27 +45,21 @@ import { TALENT_COLUMNS } from "@/data/talent-solutions";
 import type { TalentAccent } from "@/data/talent-solutions";
 
 // ============================================================
-// TALENT SOLUTIONS — Employer landing page (16 sections)
+// TALENT SOLUTIONS — Employer landing page (16 innovative sections)
 //
-// Audience: hiring teams, founders, engineering managers, and
-// HR directors. Server component — all data is static and
-// lives in this file or in @/data/talent-solutions.
-// Scroll-triggered reveals are gated client-side by <Reveal>
-// (IntersectionObserver + CSS transition, no motion library).
+// Every section uses an out-of-the-box visual idea: diagonal
+// merged hero card, marquee trust bar, gradient-mesh KPI tiles,
+// CSS-only tabbed pillars, asymmetric audience split, vertical
+// zigzag timeline, overlapping ROI panels, 3-column comparison
+// cards, honeycomb industry circles, staggered case-study cards,
+// elevated pricing tier, 2x2 guarantee grid, radiating global
+// presence map, glassmorphism testimonial overlap, premium
+// two-column FAQ, and a mesh-gradient CTA band.
 //
-// HERO matches the two-column layout used on the individual
-// talent service pages (e.g. /talent-solutions/talent-assessment):
-//   - Left: breadcrumb pills + gradient icon tile + title +
-//     subtitle + feature tags + 4-cell stats row + description.
-//   - Right: Live Impact Signal panel (donut gauge + KPI
-//     before/after cards + progress bars + score badge +
-//     quote) + 3 CTAs + trust footnote.
-//
-// Every section uses out-of-the-box visual ideas: gradient
-// borders, floating stat badges that overlap edges, connecting
-// lines, SVG progress rings, color-coded matrix tables, hover
-// lift, gradient text, glow-shadow icon tiles, glassmorphism,
-// diagonal dividers, and numbered step badges.
+// Server component — no "use client". Scroll-triggered reveals
+// are gated by the <Reveal> client component (IntersectionObserver
+// + CSS transition). The service-pillar tabs use a CSS-only
+// radio + :checked pattern; the FAQ uses native <details>.
 // ============================================================
 
 export const metadata: Metadata = {
@@ -84,16 +82,21 @@ const TRUST_BADGES: TrustBadge[] = [
   { icon: Clock, label: "48h shortlists" },
   { icon: RefreshCw, label: "90-day replacement" },
   { icon: Star, label: "4.9/5 employer rating" },
+  { icon: Users, label: "2M+ screened pool" },
+  { icon: Globe2, label: "5+ country delivery" },
 ];
+
+type KpiAccent = "amber" | "emerald" | "sky" | "rose";
 
 type Kpi = {
   icon: LucideIcon;
   value: string;
   label: string;
   detail: string;
-  /** gradient tile classes (icon background) */
-  tile: string;
-  glow: string;
+  accent: KpiAccent;
+  /** "of target" progress fill */
+  progress: number;
+  target: string;
 };
 
 const KPIS: Kpi[] = [
@@ -102,34 +105,72 @@ const KPIS: Kpi[] = [
     value: "2M+",
     label: "Candidate pool",
     detail: "AI-sourced, screened, and ranked against your role spec.",
-    tile: "from-amber-400 to-orange-500 shadow-amber-500/40",
-    glow: "bg-amber-500/30",
+    accent: "amber",
+    progress: 80,
+    target: "of 2.5M goal",
   },
   {
     icon: GraduationCap,
-    value: "12,000+",
+    value: "12K+",
     label: "Trained talent",
-    detail: "Industry-aligned curricula delivered across 200+ skill tracks.",
-    tile: "from-emerald-400 to-teal-500 shadow-emerald-500/40",
-    glow: "bg-emerald-500/30",
+    detail: "Industry-aligned curricula across 200+ skill tracks.",
+    accent: "emerald",
+    progress: 80,
+    target: "of 15K goal",
   },
   {
     icon: Target,
     value: "96%",
     label: "Placement rate",
     detail: "Of cohort graduates placed within 60 days of completion.",
-    tile: "from-orange-400 to-rose-500 shadow-orange-500/40",
-    glow: "bg-orange-500/30",
+    accent: "sky",
+    progress: 96,
+    target: "of 100% target",
   },
   {
     icon: Coins,
     value: "40%",
     label: "Lower cost-per-hire",
     detail: "Versus 20–30% traditional agency fees on first-year salary.",
-    tile: "from-amber-400 to-rose-500 shadow-amber-500/40",
-    glow: "bg-amber-500/30",
+    accent: "rose",
+    progress: 80,
+    target: "of 50% target",
   },
 ];
+
+const KPI_STYLE: Record<
+  KpiAccent,
+  { tile: string; text: string; glow: string; mesh: string; bar: string }
+> = {
+  amber: {
+    tile: "from-amber-400 to-orange-500 shadow-amber-500/40",
+    text: "from-amber-300 to-orange-400",
+    glow: "bg-amber-500/25",
+    mesh: "from-amber-500/[0.14] via-orange-500/[0.06] to-transparent",
+    bar: "from-amber-400 to-orange-500",
+  },
+  emerald: {
+    tile: "from-emerald-400 to-teal-500 shadow-emerald-500/40",
+    text: "from-emerald-300 to-teal-400",
+    glow: "bg-emerald-500/25",
+    mesh: "from-emerald-500/[0.14] via-teal-500/[0.06] to-transparent",
+    bar: "from-emerald-400 to-teal-500",
+  },
+  sky: {
+    tile: "from-sky-400 to-cyan-500 shadow-sky-500/40",
+    text: "from-sky-300 to-cyan-400",
+    glow: "bg-sky-500/25",
+    mesh: "from-sky-500/[0.14] via-cyan-500/[0.06] to-transparent",
+    bar: "from-sky-400 to-cyan-500",
+  },
+  rose: {
+    tile: "from-rose-400 to-pink-500 shadow-rose-500/40",
+    text: "from-rose-300 to-pink-400",
+    glow: "bg-rose-500/25",
+    mesh: "from-rose-500/[0.14] via-pink-500/[0.06] to-transparent",
+    bar: "from-rose-400 to-pink-500",
+  },
+};
 
 type ProcessStep = {
   icon: LucideIcon;
@@ -176,9 +217,7 @@ const PROCESS_STEPS: ProcessStep[] = [
   },
 ];
 
-// ROI calculator — three side-by-side metrics with before→after values
-// and delta badges. The "before" (traditional) is shown as a faded rose
-// bar, the "after" (STIOOS) as a gradient amber bar.
+// ROI calculator — three metrics with before→after values and deltas.
 type RoiBar = {
   label: string;
   beforeValue: string;
@@ -224,8 +263,9 @@ type ComparisonRow = {
   stioos: string;
   agency: string;
   inhouse: string;
-  /** icon hint for the STIOOS cell — defaults to CheckCircle2 */
-  stioosIcon?: "check" | "x";
+  /** whether agency/in-house cells are positive */
+  agencyOk?: boolean;
+  inhouseOk?: boolean;
 };
 
 const COMPARISON_ROWS: ComparisonRow[] = [
@@ -237,8 +277,6 @@ const COMPARISON_ROWS: ComparisonRow[] = [
   { feature: "Talent pool size", stioos: "2M+ screened", agency: "Agency CRM", inhouse: "Inbound applicants" },
   { feature: "Dedicated bench", stioos: "Optional", agency: "No", inhouse: "No" },
   { feature: "Reporting cadence", stioos: "Weekly + SLA-backed", agency: "Monthly, ad hoc", inhouse: "Internal only" },
-  { feature: "Ramp time", stioos: "1–2 weeks", agency: "3–6 months", inhouse: "3–6 months" },
-  { feature: "Best for", stioos: "Scale + quality", agency: "One-off hires", inhouse: "Brand-led hiring" },
 ];
 
 type Industry = {
@@ -258,24 +296,30 @@ const INDUSTRIES_SERVED: Industry[] = [
   { icon: Radio, name: "Telecom", hires: "130+ hires" },
 ];
 
+const INDUSTRY_TILES = [
+  "from-amber-400 to-orange-500",
+  "from-emerald-400 to-teal-500",
+  "from-rose-400 to-pink-500",
+  "from-sky-400 to-cyan-500",
+  "from-orange-400 to-amber-500",
+  "from-teal-400 to-emerald-500",
+  "from-pink-400 to-rose-500",
+  "from-cyan-400 to-sky-500",
+];
+
 type CaseStudy = {
-  /** sector chip + company archetype */
   companyType: string;
-  /** 1-line challenge quote from the client */
   challenge: string;
-  /** which STIOOS services were applied */
   solution: string;
-  /** quantified outcome, big number */
   result: string;
   resultLabel: string;
-  /** before→after metric for the visual bar */
   metricLabel: string;
   beforePct: number;
   afterPct: number;
   beforeLabel: string;
   afterLabel: string;
-  /** gradient accent for the left border */
   accent: string;
+  offset: string;
 };
 
 const CASE_STUDIES: CaseStudy[] = [
@@ -293,6 +337,7 @@ const CASE_STUDIES: CaseStudy[] = [
     beforeLabel: "3 hires",
     afterLabel: "12 hires",
     accent: "from-amber-500 to-orange-500",
+    offset: "lg:mt-0",
   },
   {
     companyType: "Retail enterprise",
@@ -308,6 +353,7 @@ const CASE_STUDIES: CaseStudy[] = [
     beforeLabel: "62% show-up",
     afterLabel: "96% show-up",
     accent: "from-emerald-500 to-teal-500",
+    offset: "lg:mt-16",
   },
   {
     companyType: "Fintech scale-up",
@@ -323,6 +369,7 @@ const CASE_STUDIES: CaseStudy[] = [
     beforeLabel: "4 months",
     afterLabel: "3 weeks",
     accent: "from-orange-500 to-rose-500",
+    offset: "lg:mt-8",
   },
 ];
 
@@ -333,8 +380,9 @@ type PricingTier = {
   blurb: string;
   features: string[];
   cta: string;
-  /** highlight tier */
   featured?: boolean;
+  /** background gradient for the card */
+  bg: string;
 };
 
 const PRICING_TIERS: PricingTier[] = [
@@ -353,6 +401,7 @@ const PRICING_TIERS: PricingTier[] = [
       "Shared pipeline dashboard",
     ],
     cta: "Start a cohort",
+    bg: "from-white/[0.04] to-white/[0.01]",
   },
   {
     name: "Pipeline Partner",
@@ -370,6 +419,7 @@ const PRICING_TIERS: PricingTier[] = [
     ],
     cta: "Become a partner",
     featured: true,
+    bg: "from-amber-500/[0.12] to-orange-500/[0.04]",
   },
   {
     name: "Enterprise Academy",
@@ -386,6 +436,7 @@ const PRICING_TIERS: PricingTier[] = [
       "Executive sponsor + quarterly OKRs",
     ],
     cta: "Talk to sales",
+    bg: "from-white/[0.04] to-white/[0.01]",
   },
 ];
 
@@ -393,6 +444,7 @@ type Guarantee = {
   icon: LucideIcon;
   title: string;
   description: string;
+  accent: "amber" | "emerald" | "sky" | "rose";
 };
 
 const GUARANTEES: Guarantee[] = [
@@ -401,54 +453,41 @@ const GUARANTEES: Guarantee[] = [
     title: "90-day replacement",
     description:
       "If a placed candidate leaves or underperforms within 90 days, we source and place a replacement at no additional fee — no questions asked.",
+    accent: "amber",
   },
   {
     icon: Coins,
     title: "Pay-after-join",
     description:
       "You only pay for hires that actually join and stay past the guarantee window. No upfront fees for sourcing or training, ever.",
+    accent: "emerald",
   },
   {
     icon: ShieldCheck,
     title: "SLA-backed delivery",
     description:
       "Every engagement ships with a written service-level agreement covering shortlist turnaround, candidate quality, and response times.",
+    accent: "sky",
   },
   {
     icon: LineChart,
     title: "Weekly reporting",
     description:
       "A shared dashboard updated every Monday — pipeline health, shortlist velocity, cohort progress, and placement metrics in one view.",
+    accent: "rose",
   },
 ];
 
 type GlobalRegion = {
-  icon: LucideIcon;
   name: string;
   cities: string[];
 };
 
 const GLOBAL_REGIONS: GlobalRegion[] = [
-  {
-    icon: Globe2,
-    name: "North America",
-    cities: ["Austin", "Toronto", "Mexico City"],
-  },
-  {
-    icon: Globe2,
-    name: "South Asia",
-    cities: ["Bengaluru", "Karachi", "Dhaka"],
-  },
-  {
-    icon: Globe2,
-    name: "Middle East",
-    cities: ["Dubai", "Riyadh", "Doha"],
-  },
-  {
-    icon: Globe2,
-    name: "APAC",
-    cities: ["Singapore", "Manila", "Sydney"],
-  },
+  { name: "North America", cities: ["Austin", "Toronto", "Mexico City"] },
+  { name: "South Asia", cities: ["Bengaluru", "Karachi", "Dhaka"] },
+  { name: "Middle East", cities: ["Dubai", "Riyadh", "Doha"] },
+  { name: "APAC", cities: ["Singapore", "Manila", "Sydney"] },
 ];
 
 const PRESENCE_STATS: { value: string; label: string }[] = [
@@ -533,484 +572,448 @@ const EMPLOYER_FAQS: FaqItem[] = [
 
 // Per-pillar visual identity. The data model defines three accents
 // (blue / emerald / orange); we remap "blue" to amber here to honor
-// the project's no-blue-primary color rule while keeping three
-// distinct, scannable column identities.
+// the project's no-blue-primary color rule.
 type PillarStyle = {
-  headerText: string;
-  headerChip: string;
-  iconTile: string;
+  text: string;
+  chip: string;
+  tile: string;
   iconText: string;
   ring: string;
-  bar: string;
+  underline: string;
   glow: string;
-  /** gradient used for the pillar header bar background */
-  headerBar: string;
 };
 
 const PILLAR_STYLE: Record<TalentAccent, PillarStyle> = {
   blue: {
-    headerText: "text-amber-400",
-    headerChip: "bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/25",
-    iconTile: "bg-amber-400/10",
+    text: "text-amber-400",
+    chip: "bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/25",
+    tile: "bg-gradient-to-br from-amber-400/25 to-orange-500/15 ring-1 ring-amber-400/30",
     iconText: "text-amber-300",
-    ring: "ring-amber-400/25",
-    bar: "from-amber-500 to-amber-400",
+    ring: "ring-amber-400/30",
+    underline: "from-amber-400 to-orange-500",
     glow: "bg-amber-500/20",
-    headerBar: "from-amber-500/20 to-transparent",
   },
   emerald: {
-    // emerald-300 is NOT overridden in light mode (only emerald-400 is),
-    // so we darken to emerald-600/700 for light and keep -300/-400 for dark.
-    headerText: "text-emerald-400",
-    headerChip:
+    text: "text-emerald-400",
+    chip:
       "bg-emerald-400/10 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-400/25",
-    iconTile: "bg-emerald-400/10",
+    tile: "bg-gradient-to-br from-emerald-400/25 to-teal-500/15 ring-1 ring-emerald-400/30",
     iconText: "text-emerald-600 dark:text-emerald-300",
-    ring: "ring-emerald-400/25",
-    bar: "from-emerald-500 to-emerald-400",
+    ring: "ring-emerald-400/30",
+    underline: "from-emerald-400 to-teal-500",
     glow: "bg-emerald-500/20",
-    headerBar: "from-emerald-500/20 to-transparent",
   },
   orange: {
-    // orange-400 / orange-300 are NOT overridden in light mode — darken
-    // to orange-600/700 for light, keep -300/-400 for dark.
-    headerText: "text-orange-600 dark:text-orange-400",
-    headerChip:
+    text: "text-orange-600 dark:text-orange-400",
+    chip:
       "bg-orange-400/10 text-orange-700 dark:text-orange-300 ring-1 ring-orange-400/25",
-    iconTile: "bg-orange-400/10",
+    tile: "bg-gradient-to-br from-orange-400/25 to-rose-500/15 ring-1 ring-orange-400/30",
     iconText: "text-orange-600 dark:text-orange-300",
-    ring: "ring-orange-400/25",
-    bar: "from-orange-600 to-orange-500",
+    ring: "ring-orange-400/30",
+    underline: "from-orange-400 to-rose-500",
     glow: "bg-orange-500/20",
-    headerBar: "from-orange-500/20 to-transparent",
   },
 };
 
-const PILLAR_ICON: Record<TalentAccent, LucideIcon> = {
-  blue: GraduationCap,
-  emerald: Users,
-  orange: BadgeCheck,
-};
-
-// ── HERO data ──────────────────────────────────────────────
-// Hardcoded for the landing page (no PageSpec). The two-column hero
-// follows the exact structure of HeroSection from
-// src/components/page-builder/hero.tsx so the visual identity is
-// consistent with /talent-solutions/talent-assessment et al.
-
-const HERO_FEATURE_TAGS: string[] = [
-  "AI Sourcing",
-  "5-Stage Screening",
-  "Stack Training",
-  "90-Day Replacement",
+// Hero — feature pills, mini-stats, and the Live Impact Signal panel.
+const HERO_FEATURES = [
+  { icon: Clock, label: "48h shortlists" },
+  { icon: RefreshCw, label: "90-day replacement" },
+  { icon: Coins, label: "Pay-after-join" },
+  { icon: ShieldCheck, label: "5-stage vetting" },
 ];
 
-const HERO_STATS: { value: string; label: string }[] = [
-  { value: "2M+", label: "Candidate pool" },
-  { value: "48h", label: "Shortlists" },
-  { value: "96%", label: "Retention" },
-  { value: "On request", label: "Timeline" },
+const HERO_STATS = [
+  { value: "2M+", label: "Pool" },
+  { value: "48h", label: "Shortlist" },
+  { value: "96%", label: "Placement" },
+  { value: "40%", label: "Lower cost" },
 ];
 
-const HERO_KPI_CARDS: {
-  label: string;
-  before: string;
-  after: string;
-  unit: string;
-  delta: number;
-}[] = [
+// Live Impact Signal panel — donut gauge + 3 KPI before/after cards + 2 bars.
+const HERO_GAUGE_PCT = 85;
+const HERO_KPI_CARDS = [
   {
-    label: "Placement rate",
-    before: "54",
-    after: "96",
-    unit: "%",
-    delta: 78,
+    label: "Cost per hire",
+    before: "$20K",
+    after: "$12K",
+    delta: "−40%",
+    tone: "down" as const,
   },
   {
-    label: "Time-to-shortlist",
-    before: "21",
-    after: "48",
-    unit: "h",
-    delta: 56,
+    label: "Time to ramp",
+    before: "6 mo",
+    after: "10 wk",
+    delta: "−60%",
+    tone: "down" as const,
   },
   {
-    label: "Cost-per-hire",
-    before: "100",
-    after: "60",
-    unit: "%",
-    delta: 40,
+    label: "Retention",
+    before: "50%",
+    after: "96%",
+    delta: "+46 pts",
+    tone: "up" as const,
   },
 ];
-
-const HERO_PROGRESS_BARS: {
-  label: string;
-  before: string;
-  after: string;
-  unit: string;
-  width: number;
-}[] = [
-  { label: "Retention", before: "54%", after: "96%", unit: "", width: 96 },
-  { label: "Ramp speed", before: "20%", after: "92%", unit: "", width: 92 },
+const HERO_BARS = [
+  { label: "Pipeline health", value: 92 },
+  { label: "Cohort readiness", value: 88 },
 ];
 
-const HERO_GAUGE_VALUE = 85;
-const HERO_GAUGE_CAPTION = "Readiness";
+// Audience split — employer + seeker bullets.
+const EMPLOYER_BENEFITS = [
+  "Shortlists of 5–8 vetted profiles within 48 hours",
+  "Pay-after-join — no upfront sourcing or training fees",
+  "90-day replacement guarantee on every placement",
+  "Dedicated bench + weekly SLA-backed reporting",
+];
+const SEEKER_BENEFITS = [
+  "Live roles across AI, tech & business",
+  "Free, cohort-based upskilling on real stacks",
+  "AI-matched roles aligned to your goals",
+  "Direct line to 500+ hiring employers",
+];
 
-const PILL_BASE =
-  "inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white ring-1 ring-white/10";
+// CTA band — three trust items + floating response badge.
+const CTA_TRUST = [
+  { icon: Clock, label: "48-hour response" },
+  { icon: ShieldCheck, label: "ISO 27001 secure" },
+  { icon: MessagesSquare, label: "No-obligation consult" },
+];
 
-// ── ROI panel totals (decorative, used by the panel headers) ──
-const TRADITIONAL_TOTALS = { cost: "$20K", ramp: "3–6 mo", retention: "50%" };
-const STIOOS_TOTALS = { cost: "$12K", ramp: "8–12 wk", retention: "96%" };
+// ----------------------------------------------------------------------
+// Inline <style> — marquee, service-pillar tabs, FAQ details polish.
+// Kept small and scoped with prefixed classes so it never leaks.
+// ----------------------------------------------------------------------
+const PAGE_STYLES = `
+@keyframes ts-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.ts-marquee-track {
+  animation: ts-marquee 34s linear infinite;
+  will-change: transform;
+}
+.ts-marquee-track:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .ts-marquee-track { animation: none; }
+}
 
+/* CSS-only service-pillar tabs (radio + :checked). */
+.ts-tabs > input[type="radio"] {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0; pointer-events: none;
+}
+.ts-tabs > .ts-panel { display: none; }
+.ts-tabs > #ts-pillar-0:checked ~ .ts-panel-0,
+.ts-tabs > #ts-pillar-1:checked ~ .ts-panel-1,
+.ts-tabs > #ts-pillar-2:checked ~ .ts-panel-2 { display: block; }
+
+.ts-tabs > #ts-pillar-0:checked ~ .ts-tab-row label[for="ts-pillar-0"],
+.ts-tabs > #ts-pillar-1:checked ~ .ts-tab-row label[for="ts-pillar-1"],
+.ts-tabs > #ts-pillar-2:checked ~ .ts-tab-row label[for="ts-pillar-2"] {
+  color: rgb(255 255 255);
+  background: rgb(255 255 255 / 0.06);
+}
+.ts-tabs > #ts-pillar-0:checked ~ .ts-tab-row label[for="ts-pillar-0"] .ts-tab-underline,
+.ts-tabs > #ts-pillar-1:checked ~ .ts-tab-row label[for="ts-pillar-1"] .ts-tab-underline,
+.ts-tabs > #ts-pillar-2:checked ~ .ts-tab-row label[for="ts-pillar-2"] .ts-tab-underline {
+  transform: scaleX(1);
+}
+
+/* FAQ premium details */
+.ts-faq details > summary { list-style: none; }
+.ts-faq details > summary::-webkit-details-marker { display: none; }
+.ts-faq details[open] > summary .ts-faq-chevron { transform: rotate(180deg); }
+`;
+
+// Helper — render a row of stars.
+function Stars({ n }: { n: number }) {
+  return (
+    <div className="flex gap-0.5" aria-label={`${n} out of 5 stars`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={
+            i < n
+              ? "h-3.5 w-3.5 fill-amber-400 text-amber-400"
+              : "h-3.5 w-3.5 text-slate-600"
+          }
+          aria-hidden="true"
+        />
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// PAGE
+// ============================================================
 export default function TalentSolutionsPage() {
   return (
     <main className="bg-brand-ink text-white">
-      {/* ============================================================ */}
-      {/* 1. HERO — Two-column layout matching the reference design    */}
-      {/* ============================================================ */}
+      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLES }} />
+
+      {/* ============================================================
+          1. HERO — Two-column merged card + Live Impact Signal
+          ============================================================ */}
       <section
         id="hero"
-        className="relative scroll-mt-36 overflow-hidden border-b border-white/5 bg-brand-ink text-white"
+        className="relative scroll-mt-36 overflow-hidden border-b border-white/5 bg-brand-ink"
       >
-        {/* Backdrop — grid + accent orbs */}
         <div
           className="pointer-events-none absolute inset-0 surface-grid opacity-40"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute inset-0 radial-fade"
+          className="pointer-events-none absolute inset-0"
           aria-hidden="true"
           style={{
             background:
-              "radial-gradient(ellipse 55% 75% at 35% 0%, rgba(245,158,11,0.22), transparent 70%)",
+              "radial-gradient(ellipse 55% 75% at 30% 0%, rgba(245,158,11,0.22), transparent 70%)",
           }}
         />
         <div
-          className="pointer-events-none absolute -right-24 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full opacity-25 blur-3xl"
+          className="pointer-events-none absolute -right-24 top-1/3 h-72 w-72 rounded-full opacity-25 blur-3xl"
           aria-hidden="true"
           style={{ background: "rgba(245,158,11,0.4)" }}
         />
 
-        <div className="relative mx-auto w-full max-w-[1600px] px-4 pt-4 pb-12 sm:px-6 sm:pt-6 sm:pb-16 lg:px-8">
-          {/* Merged hero card — identity + Live Impact Signal panel */}
-          <Reveal delay={0.05} className="relative">
+        <div className="relative mx-auto w-full max-w-[1600px] px-4 pb-16 pt-6 sm:px-6 sm:pb-20 lg:px-8">
+          <Reveal delay={0.05}>
             <div
-              className="pointer-events-none absolute -inset-5 hidden rounded-3xl opacity-40 blur-2xl sm:block"
+              className="pointer-events-none absolute -inset-4 hidden rounded-3xl opacity-40 blur-2xl sm:block"
               style={{ background: "rgba(245,158,11,0.18)" }}
               aria-hidden="true"
             />
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm">
-              <div className="grid lg:grid-cols-[1.35fr_1px_1fr]">
-                {/* ── Left — routing pills + identity + stats + description ── */}
-                <div className="flex flex-col p-5 sm:p-7 lg:p-8">
-                  {/* Routing pills — division + audience */}
-                  <Reveal delay={0.08}>
-                    <div className="mb-4 flex flex-wrap items-center gap-2 sm:mb-5 sm:gap-3">
-                      <Link
-                        href="/talent-solutions"
-                        className={`${PILL_BASE} group transition-colors hover:bg-white/10`}
-                        aria-label="Talent Solutions"
-                      >
-                        <Sparkles
-                          className="h-3.5 w-3.5 text-amber-400"
-                          aria-hidden="true"
-                        />
-                        Talent Solutions
-                        <ArrowUpRight
-                          className="h-3.5 w-3.5 text-slate-400 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
-                          aria-hidden="true"
-                        />
-                      </Link>
-                      <span className={PILL_BASE}>
-                        <Briefcase
-                          className="h-3.5 w-3.5 text-amber-400"
-                          aria-hidden="true"
-                        />
-                        For Employers
-                      </span>
+              <div className="grid lg:grid-cols-[1.3fr_1fr]">
+                {/* ── LEFT — identity + stats + description ── */}
+                <div className="flex flex-col gap-5 border-b border-white/10 p-5 sm:p-7 lg:border-b-0 lg:border-r lg:p-8">
+                  {/* Breadcrumb pills */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-slate-300 ring-1 ring-white/10">
+                      <Sparkles className="h-3 w-3 text-amber-400" aria-hidden="true" />
+                      Talent Solutions
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-1 text-[11px] font-medium text-amber-400 ring-1 ring-amber-400/25">
+                      <Briefcase className="h-3 w-3" aria-hidden="true" />
+                      For Employers
+                    </span>
+                    <span className="text-[11px] text-slate-500">/ hiring teams & HR directors</span>
+                  </div>
+
+                  {/* Gradient icon tile + headline */}
+                  <div className="flex items-start gap-4">
+                    <div
+                      className="grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/40"
+                      aria-hidden="true"
+                    >
+                      <Users className="h-7 w-7 text-brand-ink" />
                     </div>
-                  </Reveal>
-
-                  {/* Identity row — gradient tile + title */}
-                  <Reveal delay={0.12}>
-                    <div className="flex items-center gap-4 sm:gap-5">
-                      <span
-                        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/30 ring-1 sm:h-[72px] sm:w-[72px]"
-                        aria-hidden="true"
-                      >
-                        <Users className="h-8 w-8 text-white sm:h-9 sm:w-9" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <h1 className="line-clamp-2 text-xl font-bold leading-snug tracking-tight text-white sm:text-2xl lg:text-[26px]">
-                          Hire job-ready talent,{" "}
-                          <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-amber-400 bg-clip-text text-transparent">
-                            not resumes.
-                          </span>
-                        </h1>
-                      </div>
-                    </div>
-                  </Reveal>
-
-                  {/* Subtitle */}
-                  <Reveal delay={0.16}>
-                    <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
-                      STIOOS trains, screens, and places candidates against your
-                      exact role spec — so every hire is ramped on your stack,
-                      covered by a 90-day replacement guarantee, and delivered
-                      40% cheaper than agency hiring.
-                    </p>
-                  </Reveal>
-
-                  {/* Feature pills / tags */}
-                  <Reveal delay={0.2}>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {HERO_FEATURE_TAGS.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/70"
-                        >
-                          {tag}
+                    <div>
+                      <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-[2.7rem]">
+                        Hire{" "}
+                        <span className="bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                          job-ready talent
                         </span>
-                      ))}
+                        , not resumes.
+                      </h1>
+                      <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                        STIOOS trains, screens, and places candidates against your exact role
+                        spec — 48-hour shortlists, 90-day replacement, 40% lower cost-per-hire.
+                      </p>
                     </div>
-                  </Reveal>
+                  </div>
 
-                  {/* Stats row — 4 cells */}
-                  <Reveal delay={0.24}>
-                    <div className="mt-5 flex items-stretch gap-2">
-                      {HERO_STATS.map((stat) => (
-                        <div
-                          key={stat.label}
-                          className="flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center"
-                        >
-                          <span className="text-base font-bold text-amber-400">
-                            {stat.value}
-                          </span>
-                          <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">
-                            {stat.label}
-                          </span>
+                  {/* Feature pills */}
+                  <div className="flex flex-wrap gap-2">
+                    {HERO_FEATURES.map((f) => (
+                      <span
+                        key={f.label}
+                        className="inline-flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 ring-1 ring-white/10"
+                      >
+                        <f.icon className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+                        {f.label}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* 4 mini stat cards */}
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {HERO_STATS.map((s) => (
+                      <div
+                        key={s.label}
+                        className="rounded-lg border border-white/10 bg-white/[0.03] p-3"
+                      >
+                        <div className="bg-gradient-to-br from-amber-300 to-orange-400 bg-clip-text text-xl font-bold text-transparent">
+                          {s.value}
                         </div>
-                      ))}
-                    </div>
-                  </Reveal>
+                        <div className="mt-0.5 text-[11px] uppercase tracking-wider text-slate-400">
+                          {s.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
-                  {/* Engaging description paragraph */}
-                  <Reveal delay={0.28}>
-                    <div className="mt-auto pt-6">
-                      <p className="text-[13px] leading-relaxed text-slate-300">
-                        <span className="font-semibold text-white">
-                          STIOOS Talent Solutions delivers measurable outcomes
-                          — not just activity.
-                        </span>{" "}
-                        Every engagement is scoped, staffed by senior
-                        practitioners, and backed by delivery SLAs you can hold
-                        us to. Fixed-scope proposals in 48 hours — timelines
-                        tailored to your requirements. Transparent pricing,
-                        weekly demos, and complete documentation at handover.
-                      </p>
-                      <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-                        Scoped to your requirements after a free discovery call
-                        — clear deliverables, no surprises.
-                      </p>
-                    </div>
-                  </Reveal>
+                  {/* Description */}
+                  <p className="text-sm leading-relaxed text-slate-400">
+                    We run a 5-stage AI + human screen against your role scorecard, train the
+                    finalists on your stack, and place them with a 90-day replacement guarantee —
+                    so your next hire is productive in days, not months.
+                  </p>
                 </div>
 
-                {/* Divider rail (lg only) */}
-                <div
-                  className="hidden bg-white/[0.07] lg:block"
-                  aria-hidden="true"
-                />
+                {/* ── RIGHT — Live Impact Signal panel ── */}
+                <div className="relative flex flex-col gap-5 bg-gradient-to-br from-amber-500/[0.06] to-orange-500/[0.02] p-5 sm:p-7 lg:p-8">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex size-2.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+                      </span>
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-300">
+                        Live Impact Signal
+                      </span>
+                    </div>
+                    <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-medium text-slate-400 ring-1 ring-white/10">
+                      last 90 days
+                    </span>
+                  </div>
 
-                {/* ── Right — Live Impact Signal panel + CTAs ── */}
-                <div className="flex flex-col border-t border-white/[0.07] bg-white/[0.02] p-5 sm:p-7 lg:border-t-0 lg:p-8">
-                  <Reveal delay={0.2}>
-                    {/* Live Impact Signal panel */}
-                    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-card p-4 text-foreground">
-                      {/* Header */}
-                      <div className="flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-foreground">
-                          <span
-                            className="h-2 w-2 rounded-full bg-amber-500"
-                            aria-hidden="true"
-                          />
-                          Live Impact Signal
-                        </span>
-                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-semibold text-amber-600">
-                          {HERO_GAUGE_CAPTION}
-                        </span>
-                      </div>
-
-                      {/* Gauge + KPI cards */}
-                      <div className="mt-3 flex gap-3">
-                        {/* Donut gauge */}
-                        <div className="flex shrink-0 flex-col items-center justify-center">
-                          <div className="relative h-20 w-20">
-                            <svg
-                              className="h-full w-full -rotate-90"
-                              viewBox="0 0 100 100"
-                              aria-hidden="true"
-                            >
-                              <circle
-                                cx="50"
-                                cy="50"
-                                r="40"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="9"
-                                className="text-muted/30"
-                              />
-                              <circle
-                                cx="50"
-                                cy="50"
-                                r="40"
-                                fill="none"
-                                stroke="url(#talentHeroGauge)"
-                                strokeWidth="9"
-                                strokeLinecap="round"
-                                strokeDasharray={`${HERO_GAUGE_VALUE * 2.51} 251`}
-                              />
-                              <defs>
-                                <linearGradient
-                                  id="talentHeroGauge"
-                                  x1="0"
-                                  y1="0"
-                                  x2="1"
-                                  y2="1"
-                                >
-                                  <stop offset="0%" stopColor="#f97316" />
-                                  <stop offset="100%" stopColor="#f59e0b" />
-                                </linearGradient>
-                              </defs>
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-xl font-bold text-foreground">
-                                {HERO_GAUGE_VALUE}%
-                              </span>
-                            </div>
+                  {/* Donut gauge */}
+                  <div className="flex items-center gap-5">
+                    <div className="relative size-28 shrink-0">
+                      <svg viewBox="0 0 120 120" className="size-28 -rotate-90" aria-hidden="true">
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="52"
+                          fill="none"
+                          stroke="rgba(255,255,255,0.10)"
+                          strokeWidth="10"
+                        />
+                        <defs>
+                          <linearGradient id="hero-gauge" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#fbbf24" />
+                            <stop offset="100%" stopColor="#f97316" />
+                          </linearGradient>
+                        </defs>
+                        <circle
+                          cx="60"
+                          cy="60"
+                          r="52"
+                          fill="none"
+                          stroke="url(#hero-gauge)"
+                          strokeWidth="10"
+                          strokeLinecap="round"
+                          strokeDasharray={`${(HERO_GAUGE_PCT / 100) * 2 * Math.PI * 52} ${
+                            2 * Math.PI * 52
+                          }`}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 grid place-items-center">
+                        <div className="text-center">
+                          <div className="bg-gradient-to-br from-amber-300 to-orange-400 bg-clip-text text-2xl font-bold text-transparent">
+                            {HERO_GAUGE_PCT}%
                           </div>
-                          <span className="mt-0.5 text-center text-[8px] uppercase tracking-wider text-muted-foreground">
-                            {HERO_GAUGE_CAPTION}
+                          <div className="text-[9px] uppercase tracking-wider text-slate-400">
+                            ready
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-white">
+                        Placement readiness
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                        Of cohort graduates hit productive ramp within 60 days of placement,
+                        measured against your role scorecard.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 3 KPI before → after cards */}
+                  <div className="grid gap-2.5">
+                    {HERO_KPI_CARDS.map((k) => (
+                      <div
+                        key={k.label}
+                        className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2"
+                      >
+                        <span className="text-xs font-medium text-slate-300">{k.label}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500 line-through">{k.before}</span>
+                          <ArrowRight className="h-3 w-3 text-slate-500" aria-hidden="true" />
+                          <span className="text-sm font-semibold text-white">{k.after}</span>
+                          <span
+                            className={
+                              "rounded-full px-1.5 py-0.5 text-[10px] font-bold " +
+                              (k.tone === "down"
+                                ? "bg-emerald-400/15 text-emerald-300"
+                                : "bg-amber-400/15 text-amber-300")
+                            }
+                          >
+                            {k.delta}
                           </span>
                         </div>
+                      </div>
+                    ))}
+                  </div>
 
-                        {/* KPI before→after cards */}
-                        <div className="flex-1 space-y-1.5">
-                          {HERO_KPI_CARDS.map((kpi) => (
-                            <div
-                              key={kpi.label}
-                              className="rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-2.5 py-1.5"
-                            >
-                              <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                {kpi.label}
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] text-muted-foreground line-through">
-                                  {kpi.before}
-                                  {kpi.unit}
-                                </span>
-                                <span className="text-[11px] font-bold text-foreground">
-                                  {kpi.after}
-                                  {kpi.unit}
-                                </span>
-                                <span className="rounded-full bg-emerald-500/15 px-1 py-0.5 text-[8px] font-bold text-emerald-600">
-                                  +{kpi.delta}%
-                                </span>
-                              </div>
-                            </div>
-                          ))}
+                  {/* 2 progress bars */}
+                  <div className="grid gap-3">
+                    {HERO_BARS.map((b) => (
+                      <div key={b.label}>
+                        <div className="mb-1 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400">{b.label}</span>
+                          <span className="font-semibold text-white">{b.value}%</span>
                         </div>
-                      </div>
-
-                      {/* Progress bars */}
-                      <div className="mt-3 space-y-2">
-                        {HERO_PROGRESS_BARS.map((bar) => (
-                          <div key={bar.label}>
-                            <div className="flex items-center justify-between text-[8px]">
-                              <span className="font-semibold uppercase tracking-wider text-muted-foreground">
-                                {bar.label}
-                              </span>
-                              <span className="text-muted-foreground">
-                                {bar.before} →{" "}
-                                <span className="font-bold text-foreground">
-                                  {bar.after}
-                                </span>
-                              </span>
-                            </div>
-                            <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
-                              <div
-                                className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
-                                style={{ width: `${bar.width}%` }}
-                                aria-hidden="true"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Score badge + quote */}
-                      <div className="mt-3 flex items-center gap-2 border-t border-border pt-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-xs font-bold text-white">
-                          {HERO_GAUGE_VALUE}
-                        </div>
-                        <p className="text-[10px] italic leading-snug text-amber-600">
-                          &ldquo;STIOOS transformed our talent pipeline —
-                          measurable results, delivered on schedule.&rdquo;
-                        </p>
-                      </div>
-                    </div>
-                  </Reveal>
-
-                  {/* CTAs — 3 buttons matching the service detail hero */}
-                  <Reveal delay={0.28}>
-                    <div className="mt-4 grid gap-2.5">
-                      {/* Primary CTA — full width */}
-                      <Link
-                        href="/contact"
-                        className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
-                      >
-                        Hire Talent Now
-                        <ArrowRight
-                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                          aria-hidden="true"
-                        />
-                      </Link>
-
-                      {/* Two CTAs — single line, equal width */}
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <Link
-                          href="/contact"
-                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
-                        >
-                          Get a Quote
-                          <ArrowRight
-                            className="h-4 w-4"
-                            aria-hidden="true"
+                        <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+                            style={{ width: `${b.value}%` }}
                           />
-                        </Link>
-                        <Link
-                          href="/contact"
-                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] font-semibold text-white transition-colors hover:bg-white/10"
-                        >
-                          Schedule Consultation
-                        </Link>
+                        </div>
                       </div>
-                    </div>
-                  </Reveal>
+                    ))}
+                  </div>
 
-                  {/* Trust reinforcement footnote */}
-                  <Reveal delay={0.34}>
-                    <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-slate-500">
-                      <ShieldCheck
-                        className="mt-0.5 h-3.5 w-3.5 shrink-0"
-                        aria-hidden="true"
-                      />
-                      Backed by written SLAs, replacement guarantees and weekly
-                      performance reporting — scoped to your goals on a free
-                      discovery call.
+                  {/* Score badge + quote */}
+                  <div className="flex items-start gap-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3">
+                    <div className="grid size-8 shrink-0 place-items-center rounded-md bg-gradient-to-br from-amber-400 to-orange-500">
+                      <Quote className="h-4 w-4 text-brand-ink" aria-hidden="true" />
+                    </div>
+                    <p className="text-xs italic leading-relaxed text-slate-300">
+                      “We onboarded 12 senior engineers in 8 weeks — and our CFO finally stopped
+                      arguing with HR.”
+                      <span className="mt-1 block text-[10px] not-italic text-slate-500">
+                        — Raza Ahmed, VP Engineering
+                      </span>
                     </p>
-                  </Reveal>
+                  </div>
+
+                  {/* 3 CTAs */}
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" className="bg-amber-500 text-brand-ink hover:bg-amber-400">
+                      <Link href="/talent-solutions/staffing-solutions">
+                        Hire Talent Now <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+                      <Link href="/contact">Book a Discovery Call</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="ghost" className="text-slate-300 hover:bg-white/5 hover:text-white">
+                      <Link href="#pricing">View Pricing</Link>
+                    </Button>
+                  </div>
+
+                  {/* Trust footnote */}
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                    ISO 27001 certified · Mutual NDA on every engagement
+                  </div>
                 </div>
               </div>
             </div>
@@ -1018,203 +1021,229 @@ export default function TalentSolutionsPage() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 2. TRUST BAR — slim strip with checkmark badges             */}
-      {/* ============================================================ */}
+      {/* ============================================================
+          2. TRUST BAR — Marquee of 8 trust badges
+          ============================================================ */}
       <section
         id="trust"
-        className="scroll-mt-36 overflow-hidden border-y border-white/[0.06] bg-brand-navy py-6"
-        aria-label="Employer trust signals"
+        className="scroll-mt-36 overflow-hidden border-b border-white/5 bg-brand-navy py-8"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <ul className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-6">
-            {TRUST_BADGES.map((badge) => (
-              <li
-                key={badge.label}
-                className="group flex items-center gap-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 transition-colors hover:border-amber-500/20 hover:bg-white/[0.04]"
-              >
-                <span
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500/10 ring-1 ring-amber-500/25"
-                  aria-hidden="true"
-                >
-                  <Check
-                    className="h-3.5 w-3.5 text-amber-400"
-                  />
-                </span>
-                <span className="text-xs font-medium leading-tight text-slate-200">
-                  {badge.label}
-                </span>
-              </li>
+        <div className="mx-auto mb-5 max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Trusted by 500+ hiring teams worldwide
+          </p>
+        </div>
+        <div className="relative">
+          {/* edge fades */}
+          <div
+            className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-brand-navy to-transparent"
+            aria-hidden="true"
+          />
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-brand-navy to-transparent"
+            aria-hidden="true"
+          />
+          <div className="ts-marquee-track flex w-max gap-0">
+            {[0, 1].map((dup) => (
+              <div key={dup} className="flex items-center gap-8 pr-8" aria-hidden={dup === 1}>
+                {TRUST_BADGES.map((b) => (
+                  <div key={b.label} className="flex items-center gap-8">
+                    <div className="group flex items-center gap-3 transition-all duration-300 hover:scale-105">
+                      <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-amber-400/20 to-orange-500/10 ring-1 ring-amber-400/25 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-amber-500/30">
+                        <Check className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                      </span>
+                      <span className="whitespace-nowrap text-sm font-medium text-slate-300 transition-colors group-hover:text-white">
+                        {b.label}
+                      </span>
+                    </div>
+                    <span className="size-1.5 rounded-full bg-amber-400/40" aria-hidden="true" />
+                  </div>
+                ))}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 3. KPI BAND — 4 large stat cards with gradient icon tiles    */}
-      {/*    + glow shadows + floating numbers                        */}
-      {/* ============================================================ */}
-      <section
-        id="kpi"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">By the Numbers</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Outcomes that move your hiring metrics
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Every engagement is measured against the four numbers that
-                matter to your hiring committee — pool depth, training volume,
-                placement rate, and cost.
-              </p>
-            </div>
+      {/* ============================================================
+          3. KPI BAND — Gradient-mesh stat cards
+          ============================================================ */}
+      <section id="kpi" className="scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              By the numbers
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              Outcomes that move your hiring metrics
+            </h2>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {KPIS.map((kpi) => (
-                <article
-                  key={kpi.label}
-                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
-                >
-                  {/* Glow blob behind tile */}
-                  <div
-                    className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-60 blur-2xl ${kpi.glow}`}
-                    aria-hidden="true"
-                  />
-                  {/* Floating number watermark */}
-                  <span
-                    className="pointer-events-none absolute -bottom-6 right-2 select-none font-mono text-7xl font-black opacity-[0.04]"
-                    aria-hidden="true"
-                  >
-                    {kpi.value.replace(/[^A-Za-z0-9+]/g, "")}
-                  </span>
-                  <span
-                    className={`relative flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br ring-1 ring-white/10 shadow-lg ${kpi.tile}`}
-                  >
-                    <kpi.icon className="h-5 w-5 text-white" aria-hidden="true" />
-                  </span>
-                  <p className="relative mt-5 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-5xl">
-                    {kpi.value}
-                  </p>
-                  <p className="relative mt-1 text-sm font-semibold text-white">
-                    {kpi.label}
-                  </p>
-                  <p className="relative mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                    {kpi.detail}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </Reveal>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {KPIS.map((k, i) => {
+              const s = KPI_STYLE[k.accent];
+              return (
+                <Reveal key={k.label} delay={i * 0.08}>
+                  <div className="group relative h-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20">
+                    {/* gradient mesh background */}
+                    <div
+                      className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${s.mesh} opacity-80`}
+                      aria-hidden="true"
+                    />
+                    {/* glow orb */}
+                    <div
+                      className={`pointer-events-none absolute -right-8 -top-8 size-24 rounded-full ${s.glow} blur-2xl`}
+                      aria-hidden="true"
+                    />
+                    <div className="relative flex flex-col gap-4">
+                      <div className="flex items-start justify-between">
+                        <div
+                          className={`grid size-12 place-items-center rounded-xl bg-gradient-to-br ${s.tile} shadow-lg`}
+                          aria-hidden="true"
+                        >
+                          <k.icon className="h-6 w-6 text-brand-ink" />
+                        </div>
+                        <div
+                          className={`bg-gradient-to-br ${s.text} bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl`}
+                        >
+                          {k.value}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-white">{k.label}</div>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-400">{k.detail}</p>
+                      </div>
+                      {/* thin progress bar — "of target" */}
+                      <div>
+                        <div className="mb-1 flex items-center justify-between text-[10px]">
+                          <span className="text-slate-500">{k.target}</span>
+                          <span className="font-medium text-slate-300">{k.progress}%</span>
+                        </div>
+                        <div className="h-1 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className={`h-full rounded-full bg-gradient-to-r ${s.bar}`}
+                            style={{ width: `${k.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 4. SERVICE PILLARS — 3 columns from TALENT_COLUMNS, each     */}
-      {/*    pillar has a colored gradient header bar                  */}
-      {/* ============================================================ */}
-      <section
-        id="services"
-        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">Capabilities</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                One partner across the talent lifecycle
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Three pillars, nine services — pick the entry point that matches
-                where you are in the hiring funnel, or let our talent team
-                stitch them into a single engagement.
-              </p>
-            </div>
+      {/* ============================================================
+          4. SERVICE PILLARS — CSS-only tabbed interface
+          ============================================================ */}
+      <section id="services" className="scroll-mt-36 border-b border-white/5 bg-brand-navy py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Three pillars
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              One partner across the talent lifecycle
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-400">
+              Pick a pillar to explore the services underneath — every service ships with a
+              48-hour first shortlist and a 90-day replacement guarantee.
+            </p>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {TALENT_COLUMNS.map((col) => {
-                const style = PILLAR_STYLE[col.accent];
-                const PillarIcon = PILLAR_ICON[col.accent];
-                return (
-                  <article
-                    key={col.title}
-                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
-                  >
-                    {/* Gradient header bar across the top */}
-                    <div
-                      className={`h-1.5 w-full bg-gradient-to-r ${style.bar}`}
-                      aria-hidden="true"
-                    />
-                    {/* Pillar glow on hover */}
-                    <div
-                      className={`pointer-events-none absolute -top-12 left-1/2 h-24 w-32 -translate-x-1/2 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100 ${style.glow}`}
-                      aria-hidden="true"
-                    />
-                    <header
-                      className={`relative flex items-center gap-3 border-b border-white/10 bg-gradient-to-b ${style.headerBar} px-6 py-5`}
+
+          <Reveal>
+            <div className="ts-tabs relative">
+              {/* hidden radios */}
+              <input type="radio" name="ts-pillars" id="ts-pillar-0" defaultChecked />
+              <input type="radio" name="ts-pillars" id="ts-pillar-1" />
+              <input type="radio" name="ts-pillars" id="ts-pillar-2" />
+
+              {/* tab row */}
+              <div className="ts-tab-row flex flex-wrap gap-1 border-b border-white/10 sm:gap-2">
+                {TALENT_COLUMNS.map((col, i) => {
+                  const s = PILLAR_STYLE[col.accent];
+                  const Icon = col.items[0]?.icon ?? Sparkles;
+                  return (
+                    <label
+                      key={col.title}
+                      htmlFor={`ts-pillar-${i}`}
+                      className="group relative flex cursor-pointer items-center gap-2.5 rounded-t-lg px-4 py-3 text-sm font-medium text-slate-400 transition-colors hover:text-white sm:px-5"
                     >
                       <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.iconTile} ring-1 ${style.ring}`}
+                        className={`grid size-7 place-items-center rounded-md ${s.tile}`}
+                        aria-hidden="true"
                       >
-                        <PillarIcon
-                          className={`h-5 w-5 ${style.iconText}`}
-                          aria-hidden="true"
-                        />
+                        <Icon className={`h-4 w-4 ${s.iconText}`} />
                       </span>
-                      <div>
-                        <p className={`eyebrow font-bold ${style.headerText}`}>
-                          {col.accent}
-                        </p>
-                        <h3 className="text-lg font-bold text-white">
-                          {col.title}
-                        </h3>
-                      </div>
-                    </header>
-                    <ul className="divide-y divide-white/5">
-                      {col.items.map((item) => (
-                        <li key={item.href}>
-                          <Link
-                            href={item.href}
-                            className="group/item block px-6 py-5 transition-colors hover:bg-white/[0.03]"
+                      <span>{col.title}</span>
+                      <span className="hidden text-[10px] text-slate-500 sm:inline">
+                        {col.items.length} services
+                      </span>
+                      {/* gradient underline (scaleX 0 → 1 when active) */}
+                      <span
+                        className={`ts-tab-underline absolute inset-x-0 -bottom-px h-0.5 origin-left scale-x-0 bg-gradient-to-r ${s.underline} transition-transform duration-300`}
+                        aria-hidden="true"
+                      />
+                    </label>
+                  );
+                })}
+              </div>
+
+              {/* panels */}
+              {TALENT_COLUMNS.map((col, i) => {
+                const s = PILLAR_STYLE[col.accent];
+                return (
+                  <div key={col.title} className={`ts-panel ts-panel-${i} pt-6`}>
+                    <div className="grid gap-4 md:grid-cols-3">
+                      {col.items.map((item, j) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05]"
+                        >
+                          <div
+                            className={`pointer-events-none absolute -right-10 -top-10 size-24 rounded-full ${s.glow} opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100`}
+                            aria-hidden="true"
+                          />
+                          <div className="relative flex items-center justify-between">
+                            <span
+                              className={`grid size-11 place-items-center rounded-lg ${s.tile}`}
+                              aria-hidden="true"
+                            >
+                              <item.icon className={`h-5 w-5 ${s.iconText}`} />
+                            </span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${s.chip}`}
+                            >
+                              {item.tag}
+                            </span>
+                          </div>
+                          <div className="relative">
+                            <h3 className="text-base font-semibold text-white">{item.name}</h3>
+                            <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
+                              {item.description}
+                            </p>
+                          </div>
+                          <div className="relative mt-auto flex items-center gap-1 text-xs font-medium text-slate-300 transition-colors group-hover:text-white">
+                            Explore
+                            <ArrowRight
+                              className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                              aria-hidden="true"
+                            />
+                          </div>
+                          {/* numbered step badge floating between cards */}
+                          <span
+                            className="absolute -left-2 -top-2 grid size-6 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[10px] font-bold text-brand-ink shadow-lg shadow-amber-500/30"
+                            aria-hidden="true"
                           >
-                            <div className="flex items-start gap-3">
-                              <span
-                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${style.iconTile} ring-1 ${style.ring}`}
-                              >
-                                <item.icon
-                                  className={`h-4 w-4 ${style.iconText}`}
-                                  aria-hidden="true"
-                                />
-                              </span>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2">
-                                  <h4 className="text-sm font-semibold text-white">
-                                    {item.name}
-                                  </h4>
-                                  <ArrowUpRight
-                                    className="h-4 w-4 shrink-0 text-slate-600 dark:text-slate-400 transition-colors group-hover/item:text-amber-400"
-                                    aria-hidden="true"
-                                  />
-                                </div>
-                                <p
-                                  className={`mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${style.headerChip}`}
-                                >
-                                  {item.tag}
-                                </p>
-                                <p className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                                  {item.description}
-                                </p>
-                              </div>
-                            </div>
-                          </Link>
-                        </li>
+                            {String(j + 1).padStart(2, "0")}
+                          </span>
+                        </Link>
                       ))}
-                    </ul>
-                  </article>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -1222,958 +1251,447 @@ export default function TalentSolutionsPage() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 5. AUDIENCE SPLIT — asymmetric two-card layout               */}
-      {/*    Employer card spans 2x with amber gradient bg + floating  */}
-      {/*    96% badge; Seeker card is outlined secondary              */}
-      {/* ============================================================ */}
-      <section
-        id="audiences"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">Who This Is For</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Built for employers. Open to talent.
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Every engagement is engineered around the employer outcome — but
-                the same pipeline powers job seekers who want a real career, not
-                just a job.
-              </p>
-            </div>
+      {/* ============================================================
+          5. AUDIENCE SPLIT — Asymmetric 2/3 + 1/3 cards
+          ============================================================ */}
+      <section id="audiences" className="scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Two audiences, one platform
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              Built for hiring teams and career seekers
+            </h2>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {/* Employer card — PRIMARY (spans 2 cols on lg) */}
-              <article className="relative flex flex-col overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-transparent p-8 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/50 lg:col-span-2">
-                {/* Floating stat badge — overlaps the top edge */}
-                <div className="absolute -right-4 -top-4 rotate-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-right backdrop-blur-sm">
-                  <p className="text-lg font-bold text-amber-400">96%</p>
-                  <p className="text-[9px] uppercase tracking-wider text-amber-200/80">
-                    Placement
-                  </p>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* For Employers — 2/3 width, amber gradient, floating 96% badge */}
+            <Reveal className="lg:col-span-2" delay={0.05}>
+              <div className="relative h-full overflow-hidden rounded-2xl border border-amber-400/20 bg-gradient-to-br from-amber-500/[0.12] to-orange-500/[0.04] p-6 sm:p-8">
+                <div
+                  className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-amber-500/20 blur-3xl"
+                  aria-hidden="true"
+                />
+                {/* floating 96% badge */}
+                <div className="absolute -right-4 -top-4 grid size-20 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-center shadow-xl shadow-amber-500/40 sm:size-24">
+                  <div>
+                    <div className="text-xl font-bold text-brand-ink sm:text-2xl">96%</div>
+                    <div className="text-[9px] font-semibold uppercase text-brand-ink/70">
+                      placement
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-3">
-                  <p className="eyebrow font-bold text-amber-400">
+
+                <div className="relative max-w-xl">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-amber-300 ring-1 ring-amber-400/25">
+                    <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                     For Employers
-                  </p>
-                  <span className="rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-ink">
-                    Primary audience
-                  </span>
-                </div>
-                <h3 className="mt-4 text-2xl font-bold text-white">
-                  Hire trained, vetted talent ramped on your stack
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-300">
-                  Tell us the roles. We source from a 2M+ pool, screen with a
-                  5-stage rubric, train the finalists on your codebase, and
-                  place them with a 90-day replacement guarantee — at 40% lower
-                  cost-per-hire than agency hiring.
-                </p>
-                <ul className="mt-6 grid gap-3 sm:grid-cols-2">
-                  {[
-                    "48-hour shortlists of 5–8 vetted profiles",
-                    "Pre-trained on your stack, ramped in 1–2 weeks",
-                    "Pay-after-join — you only pay for hires that stick",
-                    "SLA-backed weekly reporting and dashboards",
-                  ].map((benefit) => (
-                    <li
-                      key={benefit}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <CheckCircle2
-                        className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
-                        aria-hidden="true"
-                      />
-                      <span className="text-slate-200">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    asChild
-                    className="h-11 bg-amber-500 px-6 text-sm font-semibold text-brand-ink hover:bg-amber-400"
-                  >
-                    <Link href="/contact">
-                      Hire Talent Now
-                      <ArrowRight
-                        className="ml-2 h-4 w-4"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 border-white/25 bg-transparent px-6 text-sm font-medium text-white hover:bg-white/10"
-                  >
-                    <Link href="#services">Explore Services</Link>
-                  </Button>
-                </div>
-              </article>
-
-              {/* Seeker card — secondary */}
-              <article className="relative flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-8 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30">
-                <p className="eyebrow font-bold text-slate-600 dark:text-slate-400">
-                  For Job Seekers
-                </p>
-                <h3 className="mt-4 text-xl font-bold text-white">
-                  Get trained, placed, paid
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                  Join a cohort, get trained on real production stacks, and walk
-                  into a role with a hiring partner already lined up. Free
-                  training for accepted candidates.
-                </p>
-                <ul className="mt-6 space-y-3">
-                  {[
-                    "Free training for accepted cohort candidates",
-                    "Placement support with 500+ hiring partners",
-                    "Career coaching for the first 12 months",
-                    "Stack-aligned projects on real codebases",
-                  ].map((benefit) => (
-                    <li
-                      key={benefit}
-                      className="flex items-start gap-2 text-sm"
-                    >
-                      <Check
-                        className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400"
-                        aria-hidden="true"
-                      />
-                      <span className="text-slate-300">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/talent-solutions/placements"
-                  className="mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold text-amber-400 hover:text-amber-300"
-                >
-                  Apply Now
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </Link>
-              </article>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 6. PROCESS TIMELINE — horizontal 5-step with gradient        */}
-      {/*    connecting line, numbered nodes (01-05), week labels      */}
-      {/* ============================================================ */}
-      <section
-        id="process"
-        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">How It Works</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                From discovery call to placement in 10 weeks
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                A predictable, SLA-backed engagement — you always know which week
-                you are in and what happens next.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="relative mt-12">
-              {/* Connecting gradient line (lg only) — sits behind the cards */}
-              <div
-                className="pointer-events-none absolute left-0 right-0 top-[88px] hidden h-0.5 bg-gradient-to-r from-amber-500/10 via-amber-500/50 to-amber-500/10 lg:block"
-                aria-hidden="true"
-              />
-              <ol
-                className="relative grid gap-6 lg:grid-cols-5"
-                aria-label="Five-step talent engagement timeline"
-              >
-                {PROCESS_STEPS.map((step, index) => (
-                  <li key={step.title} className="relative">
-                    {/* Floating numbered node that sits on the connecting line */}
-                    <div className="relative z-10 mb-5 flex items-center justify-center">
-                      <span className="relative flex h-12 w-12 items-center justify-center rounded-full border border-amber-500/30 bg-brand-navy font-mono text-xs font-bold text-amber-400">
-                        {String(index + 1).padStart(2, "0")}
-                        {/* Tiny gradient icon badge tucked on top-right */}
-                        <span
-                          className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/40 ring-2 ring-brand-navy"
-                          aria-hidden="true"
-                        >
-                          <step.icon className="h-3.5 w-3.5 text-white" />
-                        </span>
-                      </span>
-                    </div>
-                    <div className="relative flex h-full flex-col rounded-2xl border border-white/10 bg-brand-ink/60 p-5 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-amber-400">
-                        {step.duration}
-                      </p>
-                      <h3 className="mt-1 text-base font-semibold text-white">
-                        {step.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                        {step.description}
-                      </p>
-                    </div>
-                    {/* Arrow node between steps (lg only) */}
-                    {index < PROCESS_STEPS.length - 1 && (
-                      <span
-                        className="absolute -right-3 top-6 z-20 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-brand-navy ring-1 ring-amber-500/30 lg:flex"
-                        aria-hidden="true"
-                      >
-                        <ArrowRight className="h-3 w-3 text-amber-400" />
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 7. ROI CALCULATOR — two side-by-side panels (Traditional vs  */}
-      {/*    STIOOS), each with 3 before→after comparison bars +        */}
-      {/*    delta badges + a decorative SVG progress ring             */}
-      {/* ============================================================ */}
-      <section
-        id="roi"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">The ROI Math</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                What you save by hiring through STIOOS
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                The same three numbers your CFO tracks — cost, time, and risk —
-                compared side by side against the traditional hiring path.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 lg:grid-cols-2">
-              {/* Traditional Hiring — rose/red accents (semantic "bad" color) */}
-              <article className="group relative overflow-hidden rounded-2xl border border-rose-500/20 bg-rose-500/[0.03] p-6 transition-all duration-200 hover:-translate-y-1 hover:border-rose-500/40 md:p-8">
-                {/* Decorative progress ring — shows 100% saturation (bad) */}
-                <div className="absolute -right-6 -top-6 opacity-30 transition-opacity group-hover:opacity-50">
-                  <svg
-                    className="h-28 w-28 -rotate-90"
-                    viewBox="0 0 100 100"
-                    aria-hidden="true"
-                  >
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="42"
-                      fill="none"
-                      stroke="rgba(244,63,94,0.15)"
-                      strokeWidth="6"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="42"
-                      fill="none"
-                      stroke="rgba(244,63,94,0.7)"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      strokeDasharray="263"
-                      strokeDashoffset="0"
-                    />
-                  </svg>
-                </div>
-                <header className="relative flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-500/10 ring-1 ring-rose-400/30">
-                    <Coins
-                      className="h-5 w-5 text-rose-400"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <div>
-                    <p className="eyebrow font-bold text-rose-400">
-                      The old way
-                    </p>
-                    <h3 className="text-lg font-bold text-white">
-                      Traditional Hiring
-                    </h3>
                   </div>
-                </header>
-                {/* Total cost / ramp / retention summary chips */}
-                <div className="relative mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 ring-1 ring-rose-400/20">
-                    {TRADITIONAL_TOTALS.cost} / hire
-                  </span>
-                  <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 ring-1 ring-rose-400/20">
-                    {TRADITIONAL_TOTALS.ramp} ramp
-                  </span>
-                  <span className="rounded-full bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 ring-1 ring-rose-400/20">
-                    {TRADITIONAL_TOTALS.retention} retention
-                  </span>
-                </div>
-                <div className="relative mt-6 space-y-5">
-                  {ROI_BARS.map((metric) => (
-                    <div key={metric.label}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-slate-300">
-                          {metric.label}
-                        </span>
-                        <span className="text-slate-600 dark:text-slate-400">
-                          {metric.beforeValue}
-                        </span>
-                      </div>
-                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-400/70"
-                          style={{ width: `${metric.beforePct}%` }}
-                          aria-hidden="true"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <ul className="relative mt-6 space-y-2 border-t border-white/10 pt-5 text-sm">
-                  {[
-                    "20–30% agency fee on first-year salary",
-                    "3–6 months of onboarding before productivity",
-                    "Bad-hire risk absorbed entirely by the employer",
-                  ].map((point) => (
-                    <li
-                      key={point}
-                      className="flex items-start gap-2 text-slate-600 dark:text-slate-400"
-                    >
-                      <XCircle
-                        className="mt-0.5 h-4 w-4 shrink-0 text-rose-400/70"
-                        aria-hidden="true"
-                      />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-
-              {/* STIOOS Talent — amber accents */}
-              <article className="group relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.10] to-transparent p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/50 md:p-8">
-                {/* Decorative progress ring — shows 77% (good) */}
-                <div className="absolute -right-6 -top-6 opacity-50 transition-opacity group-hover:opacity-80">
-                  <svg
-                    className="h-28 w-28 -rotate-90"
-                    viewBox="0 0 100 100"
-                    aria-hidden="true"
-                  >
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="42"
-                      fill="none"
-                      stroke="rgba(245,158,11,0.15)"
-                      strokeWidth="6"
-                    />
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="42"
-                      fill="none"
-                      stroke="rgba(245,158,11,0.8)"
-                      strokeWidth="6"
-                      strokeLinecap="round"
-                      strokeDasharray="263"
-                      strokeDashoffset="60"
-                    />
-                  </svg>
-                </div>
-                <header className="relative flex items-center gap-3">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/15 to-orange-500/15 ring-1 ring-amber-400/40">
-                    <Sparkles
-                      className="h-5 w-5 text-amber-400"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <div>
-                    <p className="eyebrow font-bold text-amber-400">
-                      The STIOOS way
-                    </p>
-                    <h3 className="text-lg font-bold text-white">
-                      STIOOS Talent
-                    </h3>
-                  </div>
-                </header>
-                {/* Total cost / ramp / retention summary chips */}
-                <div className="relative mt-4 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-400/30">
-                    {STIOOS_TOTALS.cost} / hire
-                  </span>
-                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-400/30">
-                    {STIOOS_TOTALS.ramp} ramp
-                  </span>
-                  <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-300 ring-1 ring-amber-400/30">
-                    {STIOOS_TOTALS.retention} retention
-                  </span>
-                </div>
-                <div className="relative mt-6 space-y-5">
-                  {ROI_BARS.map((metric) => (
-                    <div key={metric.label}>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-slate-200">
-                          {metric.label}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <span className="bg-gradient-to-r from-amber-300 to-orange-300 bg-clip-text font-semibold text-transparent">
-                            {metric.afterValue}
-                          </span>
-                          <span
-                            className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
-                              metric.deltaTone === "up"
-                                ? "bg-emerald-500/15 text-emerald-600"
-                                : "bg-emerald-500/15 text-emerald-600"
-                            }`}
-                          >
-                            {metric.delta}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/10">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-400"
-                          style={{ width: `${metric.afterPct}%` }}
-                          aria-hidden="true"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <ul className="relative mt-6 space-y-2 border-t border-white/10 pt-5 text-sm">
-                  {[
-                    "Pay-after-join — you only pay for hires that stick",
-                    "Trained on your stack, ramped in 1–2 weeks",
-                    "90-day replacement guarantee on every placement",
-                  ].map((point) => (
-                    <li
-                      key={point}
-                      className="flex items-start gap-2 text-slate-200"
-                    >
-                      <CheckCircle2
-                        className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
-                        aria-hidden="true"
-                      />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 8. COMPARISON TABLE — 10-row color-coded matrix with the     */}
-      {/*    STIOOS column highlighted by an amber border + bg tint    */}
-      {/* ============================================================ */}
-      <section
-        id="comparison"
-        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">Head-to-Head</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                STIOOS vs. agency vs. in-house recruiting
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Ten capability rows, three approaches. The STIOOS column is
-                highlighted because that is the column your hiring committee
-                will actually want to read.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-10 overflow-x-auto rounded-2xl border border-white/10">
-              <p className="sr-only">
-                Comparison table of talent hiring approaches. Swipe horizontally
-                to view all columns.
-              </p>
-              <table className="min-w-[720px] w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="bg-brand-ink">
-                    <th
-                      scope="col"
-                      className="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400"
-                    >
-                      Capability
-                    </th>
-                    <th
-                      scope="col"
-                      className="border-y-2 border-amber-500/40 bg-amber-500/[0.10] px-5 py-4 text-center text-xs font-bold uppercase tracking-wide text-amber-400"
-                    >
-                      STIOOS Talent
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400"
-                    >
-                      Traditional Agency
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-5 py-4 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400"
-                    >
-                      In-house Recruiting
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {COMPARISON_ROWS.map((row) => (
-                    <tr
-                      key={row.feature}
-                      className="transition-colors hover:bg-white/[0.02]"
-                    >
-                      <th
-                        scope="row"
-                        className="px-5 py-4 align-top text-sm font-medium text-white"
-                      >
-                        {row.feature}
-                      </th>
-                      <td className="border-l-2 border-amber-500/30 bg-amber-500/[0.06] px-5 py-4 text-center align-top text-sm font-semibold text-amber-300">
-                        <span className="inline-flex items-center gap-1.5">
-                          <CheckCircle2
-                            className="h-3.5 w-3.5 text-amber-400"
-                            aria-hidden="true"
-                          />
-                          {row.stioos}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-center align-top text-sm text-slate-600 dark:text-slate-400">
-                        {row.agency}
-                      </td>
-                      <td className="px-5 py-4 text-center align-top text-sm text-slate-600 dark:text-slate-400">
-                        {row.inhouse}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 9. INDUSTRIES GRID — 8 industry cards, 4-column grid with    */}
-      {/*    gradient icon tiles that scale on hover                   */}
-      {/* ============================================================ */}
-      <section
-        id="industries"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">
-                Industries We Serve
-              </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Talent placed across eight core industries
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Domain-calibrated cohorts — your candidates learn the
-                regulations, tooling, and operating rhythm of your sector
-                before they ever sit down with your team.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {INDUSTRIES_SERVED.map((ind) => (
-                <article
-                  key={ind.name}
-                  className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-5 text-center transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:bg-white/[0.05]"
-                >
-                  {/* Gradient border ring on hover */}
-                  <span
-                    className="pointer-events-none absolute inset-0 rounded-xl opacity-0 ring-1 ring-inset ring-amber-500/40 transition-opacity duration-200 group-hover:opacity-100"
-                    aria-hidden="true"
-                  />
-                  <span className="relative mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/15 to-orange-500/15 ring-1 ring-amber-400/25 transition-transform duration-200 group-hover:scale-110">
-                    <ind.icon
-                      className="h-6 w-6 text-amber-400"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <h3 className="relative mt-4 text-sm font-semibold text-white">
-                    {ind.name}
+                  <h3 className="text-2xl font-bold text-white sm:text-3xl">
+                    Build a pipeline that actually delivers
                   </h3>
-                  <p className="relative mt-1 text-xs text-slate-600 dark:text-slate-400">
-                    {ind.hires}
+                  <p className="mt-2 text-sm text-slate-300">
+                    Replace your stalled recruiter funnel with a vetted bench, trained on your
+                    stack and paid for only when someone joins.
                   </p>
-                </article>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 10. CASE STUDIES — 3 cards with company-type chip, challenge */}
-      {/*     quote, solution, quantified result + before→after bar    */}
-      {/*     + gradient accent border                                  */}
-      {/* ============================================================ */}
-      <section
-        id="case-studies"
-        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">Case Studies</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Real engagements, real numbers
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Three representative engagements from the last twelve months —
-                the challenge, the STIOOS solution applied, and the quantified
-                outcome your hiring committee would see in the dashboard.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {CASE_STUDIES.map((cs) => (
-                <article
-                  key={cs.companyType}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
-                >
-                  {/* Gradient accent bar across the top */}
-                  <div
-                    className={`absolute inset-x-0 top-0 h-1 w-full bg-gradient-to-r ${cs.accent}`}
-                    aria-hidden="true"
-                  />
-                  {/* Company type chip + Trophy icon */}
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-white ring-1 ring-white/10">
-                      <Building2
-                        className="h-3 w-3 text-amber-400"
-                        aria-hidden="true"
-                      />
-                      {cs.companyType}
-                    </span>
-                    <Trophy
-                      className="h-5 w-5 text-amber-400/70"
-                      aria-hidden="true"
-                    />
-                  </div>
-                  {/* Challenge quote */}
-                  <p className="mt-4 text-sm italic leading-relaxed text-slate-300">
-                    {cs.challenge}
-                  </p>
-                  {/* Solution */}
-                  <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                    <span className="font-semibold text-amber-400">
-                      Solution applied.
-                    </span>{" "}
-                    {cs.solution}
-                  </p>
-                  {/* Big quantified result */}
-                  <div className="mt-5 flex items-baseline gap-2">
-                    <span className="bg-gradient-to-r from-amber-300 via-orange-300 to-amber-400 bg-clip-text text-5xl font-black text-transparent">
-                      {cs.result}
-                    </span>
-                    <span className="text-xs font-medium text-slate-300">
-                      {cs.resultLabel}
-                    </span>
-                  </div>
-                  {/* Before → after metric bar */}
-                  <div className="mt-5 border-t border-white/10 pt-4">
-                    <div className="flex items-center justify-between text-[11px] font-medium">
-                      <span className="uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                        {cs.metricLabel}
-                      </span>
-                      <span className="text-slate-400">
-                        <span className="text-slate-500 line-through">
-                          {cs.beforeLabel}
-                        </span>{" "}
-                        →{" "}
-                        <span className="font-bold text-amber-300">
-                          {cs.afterLabel}
+                  <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                    {EMPLOYER_BENEFITS.map((b) => (
+                      <li key={b} className="flex items-start gap-2.5 text-sm text-slate-200">
+                        <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500">
+                          <Check className="h-3 w-3 text-brand-ink" aria-hidden="true" />
                         </span>
-                      </span>
-                    </div>
-                    <div className="relative mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                      {/* before (faded) */}
-                      <div
-                        className="absolute inset-y-0 left-0 rounded-full bg-white/15"
-                        style={{ width: `${cs.beforePct}%` }}
-                        aria-hidden="true"
-                      />
-                      {/* after (gradient, on top) */}
-                      <div
-                        className={`relative h-full rounded-full bg-gradient-to-r ${cs.accent}`}
-                        style={{ width: `${cs.afterPct}%` }}
-                        aria-hidden="true"
-                      />
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ============================================================ */}
-      {/* 11. PRICING TIERS — 3 cards (Cohort Sprint, Pipeline Partner  */}
-      {/*     featured, Enterprise Academy) with 6 features + CTA each  */}
-      {/* ============================================================ */}
-      <section
-        id="pricing"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">Engagement Models</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Three ways to engage STIOOS Talent
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Pick the engagement model that matches your hiring volume and
-                timeline. Every tier ships with the same 90-day replacement
-                guarantee and weekly reporting — no fine print.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {PRICING_TIERS.map((tier) => (
-                <article
-                  key={tier.name}
-                  className={`relative flex flex-col overflow-hidden rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 ${
-                    tier.featured
-                      ? "border-2 border-amber-500/50 bg-gradient-to-br from-amber-500/[0.12] to-transparent shadow-[0_0_40px_-12px] shadow-amber-500/40 lg:scale-[1.03]"
-                      : "border border-white/10 bg-brand-navy/60 hover:border-amber-500/30"
-                  }`}
-                >
-                  {/* Gradient border ring for featured tier */}
-                  {tier.featured && (
-                    <div
-                      className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-amber-500/30"
-                      aria-hidden="true"
-                    />
-                  )}
-                  {/* Most Popular badge — floats on top-right of featured tier */}
-                  {tier.featured && (
-                    <div className="absolute -right-1 -top-1 rotate-3 rounded-bl-xl rounded-tr-2xl bg-gradient-to-br from-amber-500 to-orange-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-ink">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="relative">
-                    <h3 className="text-lg font-bold text-white">{tier.name}</h3>
-                    <div className="mt-3 flex items-baseline gap-1.5">
-                      <span
-                        className={`bg-gradient-to-r ${
-                          tier.featured
-                            ? "from-amber-300 to-orange-400"
-                            : "from-white to-slate-300"
-                        } bg-clip-text text-4xl font-black text-transparent`}
-                      >
-                        {tier.price}
-                      </span>
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                        {tier.cadence}
-                      </span>
-                    </div>
-                    <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                      {tier.blurb}
-                    </p>
-                  </div>
-                  <ul className="relative mt-6 space-y-3 border-t border-white/10 pt-6">
-                    {tier.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-2 text-sm"
-                      >
-                        <CheckCircle2
-                          className="mt-0.5 h-4 w-4 shrink-0 text-amber-400"
-                          aria-hidden="true"
-                        />
-                        <span className="text-slate-300">{feature}</span>
+                        {b}
                       </li>
                     ))}
                   </ul>
-                  <div className="relative mt-7">
-                    <Button
-                      asChild
-                      className={`h-11 w-full text-sm font-semibold ${
-                        tier.featured
-                          ? "bg-amber-500 text-brand-ink hover:bg-amber-400"
-                          : "border-white/25 bg-transparent text-white hover:bg-white/10"
-                      }`}
-                      variant={tier.featured ? "default" : "outline"}
-                    >
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    <Button asChild className="bg-amber-500 text-brand-ink hover:bg-amber-400">
                       <Link href="/contact">
-                        {tier.cta}
-                        <ArrowRight
-                          className="ml-2 h-4 w-4"
-                          aria-hidden="true"
-                        />
+                        Start hiring <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
+                    <Button asChild variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+                      <Link href="#pricing">See engagement models</Link>
+                    </Button>
                   </div>
-                </article>
-              ))}
-            </div>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="mt-8 text-center text-xs text-slate-600 dark:text-slate-400">
-              All tiers include the 90-day replacement guarantee, weekly
-              reporting, and ISO 27001 compliant data handling. Success fees are
-              billed only after a placed candidate joins and clears the
-              guarantee window.
+                </div>
+              </div>
+            </Reveal>
+
+            {/* For Job Seekers — 1/3 width, outlined */}
+            <Reveal delay={0.12}>
+              <div className="relative flex h-full flex-col rounded-2xl border border-white/15 bg-white/[0.02] p-6 sm:p-7">
+                <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-emerald-400/10 px-3 py-1 text-[11px] font-medium text-emerald-300 ring-1 ring-emerald-400/25">
+                  <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                  For Job Seekers
+                </div>
+                <h3 className="text-xl font-bold text-white sm:text-2xl">
+                  Get hired, faster — for free
+                </h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  Free upskilling, AI-matched roles, and a direct line to 500+ hiring employers.
+                </p>
+                <ul className="mt-4 grid gap-2.5">
+                  {SEEKER_BENEFITS.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-xs text-slate-300">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden="true" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto pt-6">
+                  <Button asChild variant="outline" className="w-full border-emerald-400/30 bg-emerald-400/5 text-emerald-300 hover:bg-emerald-400/10">
+                    <Link href="/talent-solutions/placements">
+                      Find your role <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          6. PROCESS TIMELINE — Vertical zigzag
+          ============================================================ */}
+      <section id="process" className="scroll-mt-36 border-b border-white/5 bg-brand-navy py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-12 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              From kickoff to ramp
             </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              A 5-step path to a productive hire
+            </h2>
           </Reveal>
+
+          <div className="relative">
+            {/* central dashed line */}
+            <div
+              className="absolute left-4 top-4 h-[calc(100%-2rem)] w-px border-l border-dashed border-white/15 sm:left-1/2 sm:-translate-x-px"
+              aria-hidden="true"
+            />
+            <ol className="space-y-8">
+              {PROCESS_STEPS.map((step, i) => {
+                const Icon = step.icon;
+                const left = i % 2 === 0;
+                return (
+                  <Reveal as="li" key={step.title} delay={i * 0.06}>
+                    <div
+                      className={`relative flex items-start gap-5 sm:gap-0 ${
+                        left ? "sm:flex-row" : "sm:flex-row-reverse"
+                      }`}
+                    >
+                      {/* numbered circle node */}
+                      <div className="relative z-10 -ml-0 shrink-0 sm:ml-0">
+                        <div className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-sm font-bold text-brand-ink shadow-lg shadow-amber-500/40 ring-4 ring-brand-navy">
+                          {i + 1}
+                        </div>
+                      </div>
+
+                      {/* card */}
+                      <div className={`flex-1 ${left ? "sm:pr-12 sm:text-right" : "sm:pl-12"}`}>
+                        <div className="group rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/30 sm:p-5">
+                          <div
+                            className={`flex items-center gap-3 ${
+                              left ? "sm:flex-row-reverse" : ""
+                            }`}
+                          >
+                            <span className="grid size-9 place-items-center rounded-lg bg-white/5 ring-1 ring-white/10">
+                              <Icon className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                            </span>
+                            <h3 className="text-base font-semibold text-white">{step.title}</h3>
+                            <span className="ml-auto rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-medium text-amber-300 ring-1 ring-amber-400/25 sm:ml-0">
+                              {step.duration}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-xs leading-relaxed text-slate-400">
+                            {step.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* empty spacer on the other side (lg) */}
+                      <div className="hidden flex-1 sm:block" aria-hidden="true" />
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </ol>
+          </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 12. GUARANTEES — 4 cards with gradient icon tiles + glow     */}
-      {/*     shadows                                                  */}
-      {/* ============================================================ */}
-      <section
-        id="guarantees"
-        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">
-                Our Guarantees
-              </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Four commitments behind every placement
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Every engagement — from a single cohort sprint to a full
-                enterprise academy — ships with the same four guarantees baked
-                into the contract. No opt-outs, no fine print.
-              </p>
-            </div>
+      {/* ============================================================
+          7. ROI INFOGRAPHIC — Two overlapping panels
+          ============================================================ */}
+      <section id="roi" className="scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Return on engagement
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              What changes when you switch to STIOOS
+            </h2>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {GUARANTEES.map((g) => (
-                <article
-                  key={g.title}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
-                >
-                  {/* Glow shadow behind icon tile */}
-                  <div
-                    className="pointer-events-none absolute -left-6 -top-6 h-20 w-20 rounded-full bg-amber-500/20 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-                    aria-hidden="true"
-                  />
-                  <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400/15 to-orange-500/15 ring-1 ring-amber-400/30 shadow-[0_0_24px_-8px] shadow-amber-500/40">
-                    <g.icon
-                      className="h-6 w-6 text-amber-400"
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <h3 className="relative mt-5 text-lg font-bold text-white">
-                    {g.title}
-                  </h3>
-                  <p className="relative mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {g.description}
-                  </p>
-                </article>
-              ))}
-            </div>
-          </Reveal>
-        </div>
-      </section>
 
-      {/* ============================================================ */}
-      {/* 13. GLOBAL PRESENCE — 4 region cards (NA, South Asia, ME,     */}
-      {/*     APAC) with MapPin icons + city pills, then a 4-stat strip */}
-      {/* ============================================================ */}
-      <section
-        id="global-presence"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">Global Presence</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Follow-the-sun delivery across four regions
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Three delivery centers and a 24/7 follow-the-sun model mean your
-                shortlists arrive while you sleep, and your cohort never pauses
-                for a timezone handoff.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {GLOBAL_REGIONS.map((region) => (
-                <article
-                  key={region.name}
-                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-brand-navy/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
-                >
-                  {/* Glow blob behind the MapPin tile */}
-                  <div
-                    className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-amber-500/20 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
-                    aria-hidden="true"
-                  />
-                  <div className="relative flex items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400/15 to-orange-500/15 ring-1 ring-amber-400/30 shadow-[0_0_24px_-8px] shadow-amber-500/40">
-                      <region.icon
-                        className="h-5 w-5 text-amber-400"
-                        aria-hidden="true"
-                      />
+            <div className="relative grid gap-6 lg:grid-cols-2 lg:gap-0">
+              {/* Traditional Hiring panel — rose, semi-transparent */}
+              <div className="relative z-0 overflow-hidden rounded-2xl border border-rose-500/20 bg-rose-500/[0.06] p-6 backdrop-blur-sm sm:p-7 lg:rounded-r-none">
+                <div
+                  className="pointer-events-none absolute -left-12 -top-12 size-40 rounded-full bg-rose-500/15 blur-3xl"
+                  aria-hidden="true"
+                />
+                <div className="relative">
+                  <div className="mb-1 flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-rose-400" aria-hidden="true" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-rose-300">
+                      Traditional Hiring
                     </span>
-                    <h3 className="text-base font-bold text-white">
-                      {region.name}
-                    </h3>
                   </div>
-                  {/* City pills */}
-                  <ul className="relative mt-4 flex flex-wrap gap-1.5">
-                    {region.cities.map((city) => (
-                      <li
-                        key={city}
-                        className="inline-flex items-center gap-1 rounded-full bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-slate-300 ring-1 ring-white/10"
-                      >
-                        <MapPin
-                          className="h-3 w-3 text-amber-400/70"
-                          aria-hidden="true"
-                        />
-                        {city}
+                  <h3 className="text-lg font-semibold text-white">Agency + in-house funnel</h3>
+                  <p className="mt-1 text-xs text-slate-400">High cost, slow ramp, leaky retention.</p>
+
+                  <div className="mt-5 grid gap-4">
+                    {ROI_BARS.map((b) => (
+                      <div key={b.label}>
+                        <div className="mb-1 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400">{b.label}</span>
+                          <span className="font-medium text-rose-300">{b.beforeValue}</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-rose-500 to-rose-400"
+                            style={{ width: `${b.beforePct}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* STIOOS Talent panel — amber, overlaps on top */}
+              <div className="relative z-10 overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-br from-amber-500/[0.14] to-orange-500/[0.05] p-6 shadow-2xl shadow-amber-500/20 sm:p-7 lg:-ml-10 lg:-mt-6 lg:rounded-l-none">
+                <div
+                  className="pointer-events-none absolute -right-12 -top-12 size-44 rounded-full bg-amber-500/25 blur-3xl"
+                  aria-hidden="true"
+                />
+                <div className="relative">
+                  <div className="mb-1 flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-300">
+                      STIOOS Talent
+                    </span>
+                    <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-300 ring-1 ring-amber-400/30">
+                      recommended
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-white">Cohort-trained, vetted bench</h3>
+                  <p className="mt-1 text-xs text-slate-300">Lower cost, faster ramp, durable retention.</p>
+
+                  <div className="mt-5 grid gap-4">
+                    {ROI_BARS.map((b) => (
+                      <div key={b.label}>
+                        <div className="mb-1 flex items-center justify-between text-[11px]">
+                          <span className="text-slate-300">{b.label}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-white">{b.afterValue}</span>
+                            <span
+                              className={
+                                "rounded-full px-1.5 py-0.5 text-[9px] font-bold " +
+                                (b.deltaTone === "down"
+                                  ? "bg-emerald-400/15 text-emerald-300"
+                                  : "bg-amber-400/15 text-amber-300")
+                              }
+                            >
+                              {b.delta}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+                            style={{ width: `${b.afterPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 flex items-center gap-2 text-[11px] text-slate-400">
+                    <Scale className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+                    Side-by-side, same scale — the bars show the actual gap.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================
+          8. COMPARISON MATRIX — 3-column card comparison
+          ============================================================ */}
+      <section id="comparison" className="scroll-mt-36 border-b border-white/5 bg-brand-navy py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Side by side
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              STIOOS vs Traditional Agency vs In-house
+            </h2>
+          </Reveal>
+
+          <Reveal>
+            <div className="grid gap-4 md:grid-cols-3">
+              {/* STIOOS card — elevated, gradient border + amber glow */}
+              <div className="relative md:-mt-4 md:mb-4">
+                <div
+                  className="absolute -inset-px rounded-2xl bg-gradient-to-b from-amber-400/60 to-orange-500/30 opacity-80 blur-[2px]"
+                  aria-hidden="true"
+                />
+                <div className="relative h-full overflow-hidden rounded-2xl border border-amber-400/40 bg-gradient-to-b from-amber-500/[0.10] to-white/[0.02] p-5 shadow-2xl shadow-amber-500/20 sm:p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500">
+                        <Sparkles className="h-4 w-4 text-brand-ink" aria-hidden="true" />
+                      </span>
+                      <span className="text-base font-bold text-white">STIOOS</span>
+                    </div>
+                    <span className="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-300 ring-1 ring-amber-400/30">
+                      Best fit
+                    </span>
+                  </div>
+                  <ul className="grid gap-2.5">
+                    {COMPARISON_ROWS.map((r) => (
+                      <li key={r.feature} className="flex items-start gap-2 text-xs">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
+                        <div>
+                          <div className="text-[10px] uppercase tracking-wider text-slate-500">
+                            {r.feature}
+                          </div>
+                          <div className="font-medium text-white">{r.stioos}</div>
+                        </div>
                       </li>
                     ))}
                   </ul>
-                </article>
-              ))}
+                </div>
+              </div>
+
+              {/* Traditional Agency card */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="grid size-8 place-items-center rounded-lg bg-white/5 ring-1 ring-white/10">
+                    <Briefcase className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  </span>
+                  <span className="text-base font-semibold text-slate-200">Traditional Agency</span>
+                </div>
+                <ul className="grid gap-2.5">
+                  {COMPARISON_ROWS.map((r) => (
+                    <li key={r.feature} className="flex items-start gap-2 text-xs">
+                      {r.agencyOk ? (
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+                      ) : (
+                        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400/70" aria-hidden="true" />
+                      )}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500">
+                          {r.feature}
+                        </div>
+                        <div className="text-slate-300">{r.agency}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* In-house card */}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="grid size-8 place-items-center rounded-lg bg-white/5 ring-1 ring-white/10">
+                    <Building2 className="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  </span>
+                  <span className="text-base font-semibold text-slate-200">In-house Recruiting</span>
+                </div>
+                <ul className="grid gap-2.5">
+                  {COMPARISON_ROWS.map((r) => (
+                    <li key={r.feature} className="flex items-start gap-2 text-xs">
+                      {r.inhouseOk ? (
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-slate-500" aria-hidden="true" />
+                      ) : (
+                        <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-400/70" aria-hidden="true" />
+                      )}
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-500">
+                          {r.feature}
+                        </div>
+                        <div className="text-slate-300">{r.inhouse}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </Reveal>
-          {/* 4-stat strip */}
-          <Reveal delay={0.15}>
-            <div className="mt-8 grid grid-cols-2 gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-amber-500/[0.06] to-transparent p-6 sm:grid-cols-4 md:p-8">
-              {PRESENCE_STATS.map((stat) => (
+        </div>
+      </section>
+
+      {/* ============================================================
+          9. INDUSTRIES — Honeycomb circle grid
+          ============================================================ */}
+      <section id="industries" className="scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Where we hire
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              8 industries, 2,000+ placements shipped
+            </h2>
+          </Reveal>
+
+          <Reveal>
+            <div className="flex flex-col items-center gap-8">
+              {[INDUSTRIES_SERVED.slice(0, 4), INDUSTRIES_SERVED.slice(4, 8)].map((row, ri) => (
                 <div
-                  key={stat.label}
-                  className="flex flex-col items-center text-center"
+                  key={ri}
+                  className={`flex flex-wrap justify-center gap-6 sm:gap-10 ${
+                    ri === 1 ? "sm:ml-12" : ""
+                  }`}
                 >
-                  <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-3xl font-black text-transparent md:text-4xl">
-                    {stat.value}
-                  </span>
-                  <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                    {stat.label}
-                  </span>
+                  {row.map((ind, i) => {
+                    const idx = ri * 4 + i;
+                    const tile = INDUSTRY_TILES[idx];
+                    const Icon = ind.icon;
+                    return (
+                      <div
+                        key={ind.name}
+                        className="group flex w-28 flex-col items-center gap-3 sm:w-32"
+                      >
+                        <div className="relative">
+                          <div
+                            className={`pointer-events-none absolute inset-0 rounded-full bg-gradient-to-br ${tile} opacity-30 blur-xl transition-opacity duration-300 group-hover:opacity-70`}
+                            aria-hidden="true"
+                          />
+                          <div
+                            className={`relative grid size-24 place-items-center rounded-full bg-gradient-to-br ${tile} transition-transform duration-300 group-hover:scale-110 sm:size-28`}
+                          >
+                            <Icon className="h-9 w-9 text-brand-ink" aria-hidden="true" />
+                          </div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-semibold text-white">{ind.name}</div>
+                          <div className="text-[11px] text-amber-400">{ind.hires}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
@@ -2181,237 +1699,592 @@ export default function TalentSolutionsPage() {
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 14. TESTIMONIALS — 3 cards with quote, avatar initials       */}
-      {/*     circle, name, role, 5-star rating                         */}
-      {/* ============================================================ */}
-      <section
-        id="testimonials"
-        className="scroll-mt-36 bg-brand-navy py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">
-                What Employers Say
-              </p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Trusted by hiring teams across industries
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                Three testimonials from engineering leaders, HR directors, and
-                talent acquisition teams who have moved real hiring volume
-                through STIOOS Talent.
-              </p>
-            </div>
+      {/* ============================================================
+          10. CASE STUDIES — Staggered cards
+          ============================================================ */}
+      <section id="case-studies" className="scroll-mt-36 border-b border-white/5 bg-brand-navy py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Proof, not promises
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              Three quarters, three outcomes
+            </h2>
           </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-12 grid gap-6 lg:grid-cols-3">
-              {TESTIMONIALS.map((t) => (
-                <article
-                  key={t.name}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-brand-ink/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/30"
-                >
-                  {/* Subtle gradient accent corner */}
+
+          <div className="grid items-start gap-6 md:grid-cols-3">
+            {CASE_STUDIES.map((c, i) => (
+              <Reveal key={c.companyType} delay={i * 0.08} className={c.offset}>
+                <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 sm:p-6">
                   <div
-                    className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-amber-500/15 opacity-50 blur-2xl"
+                    className={`pointer-events-none absolute -right-12 -top-12 size-32 rounded-full bg-gradient-to-br ${c.accent} opacity-15 blur-2xl transition-opacity duration-300 group-hover:opacity-30`}
                     aria-hidden="true"
                   />
-                  {/* Quote mark icon */}
-                  <Quote
-                    className="h-7 w-7 text-amber-400/60"
-                    aria-hidden="true"
-                  />
-                  {/* Star rating */}
-                  <div
-                    className="mt-3 flex gap-0.5"
-                    aria-label={`${t.rating} out of 5 stars`}
-                  >
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < t.rating
-                            ? "fill-amber-400 text-amber-400"
-                            : "text-white/20"
-                        }`}
-                        aria-hidden="true"
-                      />
-                    ))}
-                  </div>
-                  {/* Quote */}
-                  <p className="relative mt-4 flex-1 text-sm leading-relaxed text-slate-300">
-                    {t.quote}
-                  </p>
-                  {/* Author row */}
-                  <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-sm font-bold text-white ring-2 ring-white/10">
-                      {t.initials}
+                  <div className="relative">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-2.5 py-1 text-[10px] font-medium text-slate-300 ring-1 ring-white/10">
+                      <Building2 className="h-3 w-3 text-amber-400" aria-hidden="true" />
+                      {c.companyType}
                     </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-white">
-                        {t.name}
-                      </p>
-                      <p className="truncate text-xs text-slate-600 dark:text-slate-400">
-                        {t.role}
-                      </p>
+                    <p className="mt-3 text-sm italic leading-relaxed text-slate-300">
+                      {c.challenge}
+                    </p>
+                    <p className="mt-3 text-xs leading-relaxed text-slate-400">
+                      <span className="font-semibold text-amber-400">Solution · </span>
+                      {c.solution}
+                    </p>
+                  </div>
+
+                  {/* big result */}
+                  <div className="relative mt-5 flex items-end gap-3">
+                    <div
+                      className={`bg-gradient-to-br ${c.accent} bg-clip-text text-6xl font-bold leading-none text-transparent`}
+                    >
+                      {c.result}
+                    </div>
+                    <div className="pb-1 text-[11px] text-slate-400">{c.resultLabel}</div>
+                  </div>
+
+                  {/* before → after mini bar */}
+                  <div className="relative mt-4 rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <div className="mb-2 flex items-center justify-between text-[10px]">
+                      <span className="text-slate-400">{c.metricLabel}</span>
+                      <span className="text-slate-500">
+                        {c.beforeLabel} → {c.afterLabel}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-10 text-[9px] text-slate-500">before</span>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className="h-full rounded-full bg-rose-400/60"
+                            style={{ width: `${c.beforePct}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-10 text-[9px] text-slate-500">after</span>
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className={`h-full rounded-full bg-gradient-to-r ${c.accent}`}
+                            style={{ width: `${c.afterPct}%` }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </article>
-              ))}
-            </div>
-          </Reveal>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 15. FAQ — 6 AEO-optimized natural-language questions with    */}
-      {/*     native <details> expandable answers                      */}
-      {/* ============================================================ */}
-      <section
-        id="faq"
-        className="scroll-mt-36 bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="eyebrow font-bold text-amber-400">FAQ</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                Common questions from employers
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-slate-300">
-                The six questions we hear on every discovery call — answered
-                straight, with the specifics your hiring committee will ask for.
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="mt-10 space-y-3">
-              {EMPLOYER_FAQS.map((faq, index) => (
-                <details
-                  key={faq.question}
-                  className="group rounded-xl border border-white/10 bg-brand-navy/60 p-5 transition-colors open:border-amber-500/30 open:bg-white/[0.03]"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-                    <span className="flex items-center gap-3">
-                      <span className="font-mono text-xs font-bold text-amber-400">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="text-sm font-semibold text-white sm:text-base">
-                        {faq.question}
-                      </span>
-                    </span>
-                    <ChevronDown
-                      className="h-5 w-5 shrink-0 text-amber-400 transition-transform duration-200 group-open:rotate-180"
-                      aria-hidden="true"
-                    />
-                  </summary>
-                  <p className="mt-4 pl-8 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                    {faq.answer}
-                  </p>
-                </details>
-              ))}
-            </div>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
-              Still have questions?{" "}
-              <Link
-                href="/contact"
-                className="font-semibold text-amber-400 hover:text-amber-300"
-              >
-                Book a discovery call
-              </Link>{" "}
-              and we will walk you through the details.
+      {/* ============================================================
+          11. PRICING — Elevated middle tier
+          ============================================================ */}
+      <section id="pricing" className="scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1300px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-12 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Engagement models
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              Pick the depth of partnership
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-400">
+              Every tier includes 48-hour first shortlists, 5-stage screening, and a 90-day
+              replacement guarantee.
             </p>
           </Reveal>
+
+          <div className="grid items-center gap-6 md:grid-cols-3">
+            {PRICING_TIERS.map((t, i) => (
+              <Reveal key={t.name} delay={i * 0.08}>
+                <div
+                  className={`relative flex h-full flex-col overflow-hidden rounded-2xl border bg-gradient-to-b ${t.bg} p-6 sm:p-7 ${
+                    t.featured
+                      ? "border-amber-400/50 shadow-2xl shadow-amber-500/20 md:scale-105"
+                      : "border-white/10"
+                  }`}
+                >
+                  {t.featured && (
+                    <>
+                      <div
+                        className="pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-b from-amber-400/40 to-transparent opacity-60"
+                        aria-hidden="true"
+                      />
+                      {/* floating Most Popular badge */}
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-ink shadow-lg shadow-amber-500/40">
+                        Most Popular
+                      </div>
+                    </>
+                  )}
+                  <div className="relative">
+                    <div className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+                      {t.name}
+                    </div>
+                    <div className="mt-3 flex items-baseline gap-1.5">
+                      <span
+                        className={`text-4xl font-bold ${
+                          t.featured
+                            ? "bg-gradient-to-br from-amber-300 to-orange-400 bg-clip-text text-transparent"
+                            : "text-white"
+                        }`}
+                      >
+                        {t.price}
+                      </span>
+                      <span className="text-xs text-slate-400">{t.cadence}</span>
+                    </div>
+                    <p className="mt-3 text-xs leading-relaxed text-slate-400">{t.blurb}</p>
+
+                    <ul className="mt-5 grid gap-2.5">
+                      {t.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2 text-xs text-slate-200">
+                          <CheckCircle2
+                            className={`mt-0.5 h-4 w-4 shrink-0 ${
+                              t.featured ? "text-amber-400" : "text-emerald-400"
+                            }`}
+                            aria-hidden="true"
+                          />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-6">
+                      <Button
+                        asChild
+                        className={
+                          t.featured
+                            ? "w-full bg-amber-500 text-brand-ink hover:bg-amber-400"
+                            : "w-full border border-white/20 bg-white/5 text-white hover:bg-white/10"
+                        }
+                        variant={t.featured ? "default" : "outline"}
+                      >
+                        <Link href="/contact">
+                          {t.cta} <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ============================================================ */}
-      {/* 16. CTA BAND — final conversion with floating "48h" badge    */}
-      {/* ============================================================ */}
-      <section
-        id="cta"
-        className="scroll-mt-36 border-t border-white/[0.06] bg-brand-ink py-16 text-white md:py-24"
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* ============================================================
+          12. GUARANTEES — 2x2 grid
+          ============================================================ */}
+      <section id="guarantees" className="scroll-mt-36 border-b border-white/5 bg-brand-navy py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Our commitments
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              Four guarantees on every engagement
+            </h2>
+          </Reveal>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            {GUARANTEES.map((g, i) => {
+              const s = KPI_STYLE[g.accent];
+              const Icon = g.icon;
+              return (
+                <Reveal key={g.title} delay={i * 0.08}>
+                  <div className="group relative h-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20">
+                    <div
+                      className={`pointer-events-none absolute -right-10 -top-10 size-28 rounded-full ${s.glow} opacity-50 blur-2xl transition-opacity duration-300 group-hover:opacity-100`}
+                      aria-hidden="true"
+                    />
+                    <div className="relative flex gap-4">
+                      <div
+                        className={`grid size-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${s.tile} shadow-lg`}
+                        aria-hidden="true"
+                      >
+                        <Icon className="h-7 w-7 text-brand-ink" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-semibold text-white">{g.title}</h3>
+                        <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
+                          {g.description}
+                        </p>
+                        <Link
+                          href="#faq"
+                          className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-amber-400 transition-colors hover:text-amber-300"
+                        >
+                          Learn more
+                          <ArrowRight
+                            className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
+                            aria-hidden="true"
+                          />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          13. GLOBAL PRESENCE — Radiating region cards
+          ============================================================ */}
+      <section id="global-presence" className="scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1300px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              Follow-the-sun delivery
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              A global bench, one SLA
+            </h2>
+          </Reveal>
+
           <Reveal>
-            <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.12] via-brand-navy to-brand-navy px-6 py-14 text-center md:px-12 md:py-16">
-              <div
-                className="absolute inset-0 surface-grid opacity-40"
-                aria-hidden="true"
-              />
-              <div
-                className="absolute left-1/2 top-0 h-56 w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500/20 blur-3xl"
-                aria-hidden="true"
-              />
-              {/* Floating accent badge */}
-              <div className="absolute right-6 top-6 hidden rotate-3 rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2 text-right backdrop-blur-sm sm:block">
-                <p className="flex items-center gap-1 text-xs font-bold text-amber-400">
-                  <Zap className="h-3 w-3" aria-hidden="true" />
-                  48h start
-                </p>
+            {/* mobile globe header */}
+            <div className="mb-8 flex justify-center lg:hidden">
+              <div className="relative grid size-20 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-amber-500/40">
+                <Globe2 className="h-10 w-10 text-brand-ink" aria-hidden="true" />
               </div>
-              <div className="relative mx-auto max-w-2xl">
-                <p className="eyebrow font-bold text-amber-400">
-                  Build your pipeline
-                </p>
-                <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">
-                  Build your talent pipeline this quarter
-                </h2>
-                <p className="mt-4 text-base leading-relaxed text-slate-300">
-                  Book a 30-minute discovery call. We will map your roles to the
-                  right engagement model, hand you a written SLA, and start
-                  shortlists within 48 hours of signing.
-                </p>
-                <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                  <Button
-                    asChild
-                    size="lg"
-                    className="h-12 bg-amber-500 px-8 text-base font-semibold text-brand-ink hover:bg-amber-400"
+            </div>
+
+            <div className="relative grid items-center gap-6 lg:grid-cols-[1fr_auto_1fr] lg:gap-8">
+              {/* SVG connectors — lg only */}
+              <svg
+                className="pointer-events-none absolute inset-0 hidden h-full w-full lg:block"
+                aria-hidden="true"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="ts-spoke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="rgba(245,158,11,0.05)" />
+                    <stop offset="50%" stopColor="rgba(245,158,11,0.35)" />
+                    <stop offset="100%" stopColor="rgba(245,158,11,0.05)" />
+                  </linearGradient>
+                </defs>
+                <line x1="50%" y1="50%" x2="15%" y2="25%" stroke="url(#ts-spoke)" strokeWidth="1.5" strokeDasharray="4 4" />
+                <line x1="50%" y1="50%" x2="15%" y2="75%" stroke="url(#ts-spoke)" strokeWidth="1.5" strokeDasharray="4 4" />
+                <line x1="50%" y1="50%" x2="85%" y2="25%" stroke="url(#ts-spoke)" strokeWidth="1.5" strokeDasharray="4 4" />
+                <line x1="50%" y1="50%" x2="85%" y2="75%" stroke="url(#ts-spoke)" strokeWidth="1.5" strokeDasharray="4 4" />
+              </svg>
+
+              {/* left column — 2 regions */}
+              <div className="grid gap-5">
+                {GLOBAL_REGIONS.slice(0, 2).map((r) => (
+                  <div
+                    key={r.name}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-amber-400/30"
                   >
-                    <Link href="/contact">
-                      Book a Free Consultation
-                      <ArrowRight
-                        className="ml-2 h-4 w-4"
+                    <div className="mb-2 flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                      <span className="text-sm font-semibold text-white">{r.name}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.cities.map((c) => (
+                        <span
+                          key={c}
+                          className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-white/10"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* center globe */}
+              <div className="relative hidden lg:block">
+                <div
+                  className="pointer-events-none absolute -inset-6 rounded-full bg-amber-500/20 blur-2xl"
+                  aria-hidden="true"
+                />
+                <div className="relative grid size-28 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-2xl shadow-amber-500/40 ring-8 ring-brand-ink">
+                  <Globe2 className="h-14 w-14 text-brand-ink" aria-hidden="true" />
+                </div>
+              </div>
+
+              {/* right column — 2 regions */}
+              <div className="grid gap-5">
+                {GLOBAL_REGIONS.slice(2, 4).map((r) => (
+                  <div
+                    key={r.name}
+                    className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-amber-400/30"
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                      <span className="text-sm font-semibold text-white">{r.name}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.cities.map((c) => (
+                        <span
+                          key={c}
+                          className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-slate-300 ring-1 ring-white/10"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4-stat strip */}
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {PRESENCE_STATS.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-center"
+                >
+                  <div className="bg-gradient-to-br from-amber-300 to-orange-400 bg-clip-text text-2xl font-bold text-transparent">
+                    {s.value}
+                  </div>
+                  <div className="mt-0.5 text-[11px] uppercase tracking-wider text-slate-400">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ============================================================
+          14. TESTIMONIALS — Overlapping glass cards
+          ============================================================ */}
+      <section id="testimonials" className="scroll-mt-36 border-b border-white/5 bg-brand-navy py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1300px] px-4 sm:px-6 lg:px-8">
+          <Reveal className="mb-10 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              From the people who hire with us
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              What hiring leaders say
+            </h2>
+          </Reveal>
+
+          <div className="flex flex-col gap-5 lg:-space-x-4 lg:flex-row">
+            {TESTIMONIALS.map((t, i) => (
+              <Reveal key={t.name} delay={i * 0.08} className="lg:flex-1">
+                <article className="relative h-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-amber-400/30 hover:z-10 sm:p-7">
+                  <div
+                    className="pointer-events-none absolute -right-6 -top-6 size-24 rounded-full bg-amber-500/10 blur-2xl"
+                    aria-hidden="true"
+                  />
+                  <Quote
+                    className="h-9 w-9 text-amber-400/40"
+                    aria-hidden="true"
+                  />
+                  <p className="mt-3 text-sm leading-relaxed text-slate-200">“{t.quote}”</p>
+                  <div className="mt-5 flex items-center gap-3">
+                    <div className="grid size-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-sm font-bold text-brand-ink">
+                      {t.initials}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold text-white">{t.name}</div>
+                      <div className="truncate text-[11px] text-slate-400">{t.role}</div>
+                      <div className="mt-1">
+                        <Stars n={t.rating} />
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          15. FAQ — Two-column premium layout (native <details>)
+          ============================================================ */}
+      <section id="faq" className="ts-faq scroll-mt-36 border-b border-white/5 bg-brand-ink py-16 sm:py-20">
+        <div className="mx-auto w-full max-w-[1300px] px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-12">
+            {/* LEFT — sticky intro panel */}
+            <Reveal>
+              <div className="lg:sticky lg:top-28">
+                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-amber-500/[0.08] to-orange-500/[0.02] p-6 sm:p-8">
+                  <div
+                    className="pointer-events-none absolute -right-12 -top-12 size-40 rounded-full bg-amber-500/15 blur-3xl"
+                    aria-hidden="true"
+                  />
+                  <div className="relative">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-[11px] font-medium text-amber-300 ring-1 ring-amber-400/25">
+                      <HelpCircle className="h-3.5 w-3.5" aria-hidden="true" />
+                      FAQ
+                    </div>
+                    <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Questions?</h2>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                      Everything you need to evaluate STIOOS as your talent partner — from first
+                      shortlist timing to data security. Can&apos;t find your answer? Our talent
+                      experts respond within one business day.
+                    </p>
+
+                    {/* illustration tile */}
+                    <div className="mt-6 grid grid-cols-3 gap-2">
+                      {[
+                        { icon: Clock, label: "48h" },
+                        { icon: ShieldCheck, label: "NDA" },
+                        { icon: RefreshCw, label: "90-day" },
+                      ].map((x) => (
+                        <div
+                          key={x.label}
+                          className="flex flex-col items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] p-3"
+                        >
+                          <x.icon className="h-5 w-5 text-amber-400" aria-hidden="true" />
+                          <span className="text-[10px] text-slate-400">{x.label}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+                      <Button asChild className="bg-amber-500 text-brand-ink hover:bg-amber-400">
+                        <Link href="/contact">
+                          <Headset className="h-4 w-4" />
+                          Talk to an expert
+                        </Link>
+                      </Button>
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                      >
+                        <Link href="tel:+1">
+                          <PhoneCall className="h-4 w-4" />
+                          Book a call
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* RIGHT — 6 expandable cards */}
+            <Reveal delay={0.08}>
+              <div className="grid gap-3">
+                {EMPLOYER_FAQS.map((f, i) => (
+                  <details
+                    key={f.question}
+                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] transition-colors hover:border-amber-400/30 open:border-amber-400/30 open:bg-gradient-to-br open:from-amber-500/[0.07] open:to-orange-500/[0.02]"
+                  >
+                    {/* gradient left-border on hover / open */}
+                    <span
+                      className="pointer-events-none absolute inset-y-0 left-0 w-[2px] origin-top scale-y-0 bg-gradient-to-b from-amber-400 to-orange-500 transition-transform duration-300 group-hover:scale-y-100 group-open:scale-y-100"
+                      aria-hidden="true"
+                    />
+                    <summary className="flex cursor-pointer items-center gap-4 p-4 sm:p-5">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-bold text-brand-ink">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="flex-1 text-sm font-semibold text-white sm:text-base">
+                        {f.question}
+                      </span>
+                      <ChevronDown
+                        className="ts-faq-chevron h-5 w-5 shrink-0 text-amber-400 transition-transform duration-300"
                         aria-hidden="true"
                       />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="h-12 border-white/25 bg-transparent px-8 text-base font-medium text-white hover:bg-white/10"
-                  >
-                    <Link href="#services">Explore Services</Link>
-                  </Button>
-                </div>
-                <ul className="mt-10 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-slate-300">
-                  <li className="flex items-center gap-1.5">
-                    <ShieldCheck
-                      className="h-3.5 w-3.5 text-amber-400"
-                      aria-hidden="true"
-                    />
-                    SLA-backed delivery
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <RefreshCw
-                      className="h-3.5 w-3.5 text-amber-400"
-                      aria-hidden="true"
-                    />
-                    90-day replacement guarantee
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <LineChart
-                      className="h-3.5 w-3.5 text-amber-400"
-                      aria-hidden="true"
-                    />
-                    Weekly reporting + dashboard
-                  </li>
-                </ul>
+                    </summary>
+                    <div className="px-4 pb-5 pl-16 pr-5 sm:px-5 sm:pl-[4.5rem]">
+                      <p className="text-sm leading-relaxed text-slate-400">{f.answer}</p>
+                    </div>
+                  </details>
+                ))}
               </div>
+
+              <div className="mt-6 flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                <BadgeCheck className="h-5 w-5 shrink-0 text-amber-400" aria-hidden="true" />
+                <p className="text-xs text-slate-400">
+                  Still have questions? Every engagement starts with a free 30-minute discovery
+                  call — no NDA required to explore fit.
+                </p>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================
+          16. CTA BAND — Full-width gradient mesh
+          ============================================================ */}
+      <section
+        id="cta"
+        className="relative scroll-mt-36 overflow-hidden bg-brand-ink py-20"
+      >
+        {/* amber→orange mesh */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden="true"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 80% at 50% 50%, rgba(245,158,11,0.28), transparent 70%), radial-gradient(ellipse 40% 60% at 80% 20%, rgba(249,115,22,0.22), transparent 70%), radial-gradient(ellipse 40% 60% at 20% 80%, rgba(245,158,11,0.18), transparent 70%)",
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 surface-grid opacity-20"
+          aria-hidden="true"
+        />
+
+        {/* floating 48h response badge — top right */}
+        <div className="absolute right-4 top-6 z-10 sm:right-8 sm:top-10">
+          <div className="flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 backdrop-blur-sm">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-amber-400" />
+            </span>
+            <span className="text-xs font-semibold text-amber-300">48h response</span>
+          </div>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[900px] px-4 text-center sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-400/30 bg-amber-400/10 px-3 py-1 backdrop-blur-sm">
+              <Zap className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-300">
+                Start this quarter
+              </span>
+            </div>
+            <h2 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
+              Build your talent pipeline{" "}
+              <span className="bg-gradient-to-r from-amber-300 to-orange-400 bg-clip-text text-transparent">
+                this quarter
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base text-slate-300">
+              Tell us your roles and ramp timeline. You get a written engagement plan in 48 hours
+              and your first vetted shortlist the day after.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Button asChild size="lg" className="bg-amber-500 text-brand-ink hover:bg-amber-400">
+                <Link href="/contact">
+                  Hire Talent Now <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white/25 bg-white/5 text-white backdrop-blur-sm hover:bg-white/10"
+              >
+                <Link href="/talent-solutions/placements">Browse open roles</Link>
+              </Button>
+            </div>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-6">
+              {CTA_TRUST.map((t) => (
+                <div key={t.label} className="flex items-center gap-2 text-xs text-slate-300">
+                  <t.icon className="h-4 w-4 text-amber-400" aria-hidden="true" />
+                  {t.label}
+                </div>
+              ))}
             </div>
           </Reveal>
         </div>
