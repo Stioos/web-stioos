@@ -148,16 +148,18 @@ export default async function TalentOptionPage({
   }
 
   // ── INFO PAGE (Joining Terms, Learning Terms) ──
-  // Both info pages now have full 12-section reference pages.
-  // Joining Terms → JoiningTermsPage. Learning Terms → LearningTermsPage.
-  // TalentInfoPlaceholder is kept as a fallback for any future info slug.
+  // Both info pages render via the SAME <TalentGroupPage> component
+  // used by the 6 group pills (Get Trained, Build Talent, etc.) —
+  // two-column hero with Live Impact Signal panel + 11 supporting
+  // sections. Content lives in src/data/pages/talent-group-page-content.ts
+  // keyed by slug ("joining-terms", "learning-terms"). The
+  // TalentInfoPlaceholder is retained as a defensive fallback for
+  // any future info slug that doesn't yet have content built.
   const infoPage = TALENT_INFO_PAGES.find((p) => p.slug === slug);
   if (infoPage) {
-    if (slug === "joining-terms") {
-      return <JoiningTermsPage />;
-    }
-    if (slug === "learning-terms") {
-      return <LearningTermsPage />;
+    const infoContent = getGroupPageContent(slug);
+    if (infoContent) {
+      return <TalentGroupPage content={infoContent} />;
     }
     return <TalentInfoPlaceholder infoSlug={slug} />;
   }

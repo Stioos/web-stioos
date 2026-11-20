@@ -757,49 +757,6 @@ export function PublicHeader() {
                         );
                       };
 
-                      const renderInfoPill = (info: (typeof TALENT_INFO_PAGES)[number]) => {
-                        const INFO_ACCENT_TILE: Record<string, string> = {
-                          blue: "text-sky-300",
-                          emerald: "text-emerald-300",
-                          orange: "text-orange-300",
-                        };
-                        const INFO_ACCENT_BORDER: Record<string, string> = {
-                          blue: "hover:border-sky-400/50",
-                          emerald: "hover:border-emerald-400/50",
-                          orange: "hover:border-orange-400/50",
-                        };
-                        const isActiveInfo = talentActiveOption === info.slug;
-                        return (
-                          <Link
-                            key={info.slug}
-                            href={`/talent-solutions/${info.slug}`}
-                            onClick={() => {
-                              dismissFlyouts();
-                            }}
-                            tabIndex={showStrip ? 0 : -1}
-                            title={info.name}
-                            aria-current={isActiveInfo ? "page" : undefined}
-                            className={cn(
-                              "group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.05] px-2.5 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:bg-white/[0.09]",
-                              INFO_ACCENT_BORDER[info.accent],
-                              isActiveInfo && info.accent === "blue" && "border-sky-400/60 bg-sky-400/[0.10]",
-                              isActiveInfo && info.accent === "emerald" && "border-emerald-400/60 bg-emerald-400/[0.10]",
-                              isActiveInfo && info.accent === "orange" && "border-orange-400/60 bg-orange-400/[0.10]"
-                            )}
-                          >
-                            <info.icon
-                              className={cn(
-                                "h-3.5 w-3.5 shrink-0",
-                                INFO_ACCENT_TILE[info.accent]
-                              )}
-                            />
-                            <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
-                              {info.stripLabel}
-                            </span>
-                          </Link>
-                        );
-                      };
-
                       // FLAT list — all pills rendered directly in the
                       // container, no group wrappers, consistent gap.
                       return (
@@ -856,8 +813,12 @@ export function PublicHeader() {
                           {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
                           {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
 
-                          {/* Info pills — flat, no group wrappers */}
-                          {TALENT_INFO_PAGES.map(renderInfoPill)}
+                          {/* Info pills — Joining Terms + Learning Terms,
+                              rendered with the SAME renderGroupPill as
+                              the 6 group pills so they share the dropdown
+                              behaviour (vertical flyout, chevron rotation,
+                              active-state styling). */}
+                          {TALENT_INFO_PAGES.map(renderGroupPill)}
                         </>
                       );
                     })()

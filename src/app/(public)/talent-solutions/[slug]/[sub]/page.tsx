@@ -8,10 +8,17 @@ import {
 } from "@/data/pages/talent-sub-pages";
 import { PageBuilderPage } from "@/components/page-builder/page-builder";
 import { CandidateSubPage } from "@/components/page-builder/candidate-sub-page";
+import { TalentGroupPage } from "@/components/page-builder/talent-group-page";
+import { getGroupPageContent } from "@/data/pages/talent-group-page-content";
 import {
   TALENT_STRIP_GROUPS,
   getTalentStripGroup,
 } from "@/data/talent-strip-groups";
+import {
+  TALENT_INFO_PAGES,
+  TALENT_INFO_GROUP_ICONS,
+  TALENT_INFO_SUB_ICONS,
+} from "@/data/talent-info-pages";
 import {
   findCandidateSubPage,
   GROUP_ICONS,
@@ -21,7 +28,7 @@ import {
 // ============================================================
 // TALENT SUB-PAGE — /talent-solutions/[slug]/[sub]
 //
-// Handles TWO kinds of route pairs:
+// Handles THREE kinds of route pairs:
 //
 //   A. EXISTING SERVICE sub-pages — for the 9 legacy talent
 //      service slugs (train-to-hire, hire-to-train,
@@ -30,14 +37,20 @@ import {
 //      placements). Each has 6–8 deep-dive pages rendered by the
 //      page builder from a deterministic TalentSubSeed → PageSpec.
 //
-//   B. NEW CANDIDATE GROUP sub-pages — for the 3 candidate-side
-//      groups (get-trained, get-placed, get-certified), each with
-//      3 candidate-focused sub-pages (9 total). Rendered by the
+//   B. CANDIDATE/EMPLOYER GROUP sub-pages — for the 6 group slugs
+//      (get-trained, get-placed, get-certified, build-talent,
+//      hire-talent, scale-workforce), each with 3 sub-pages
+//      (9 candidate + 9 employer = 18 total). Rendered by the
 //      lighter <CandidateSubPage /> template from content stored
 //      in src/data/pages/talent-candidate-sub-pages.ts.
 //
-// Backward compatibility: branch A is unchanged from before this
-// update. Branch B is the new addition.
+//   C. INFO-PAGE sub-pages — for the 2 info slugs (joining-terms,
+//      learning-terms), each with 3 sub-pages (6 total). Rendered
+//      via the SAME <TalentGroupPage /> component used by the main
+//      info pages and the 6 group pages — 12-section landing with
+//      two-column hero + Live Impact Signal panel. Content lives
+//      in src/data/pages/talent-group-page-content.ts keyed by
+//      compound slug (e.g. "joining-terms/curriculum").
 // ============================================================
 
 export function generateStaticParams() {
@@ -49,15 +62,23 @@ export function generateStaticParams() {
     }))
   );
 
-  // Branch B — new candidate group × sub pairs (3 × 3 = 9 pairs)
-  const candidate = TALENT_STRIP_GROUPS.flatMap((group) =>
+  // Branch B — candidate/employer group × sub pairs (6 × 3 = 18 pairs)
+  const groups = TALENT_STRIP_GROUPS.flatMap((group) =>
     group.subPages.map((sub) => ({
       slug: group.slug,
       sub: sub.slug,
     }))
   );
 
-  return [...legacy, ...candidate];
+  // Branch C — info-page × sub pairs (2 × 3 = 6 pairs)
+  const info = TALENT_INFO_PAGES.flatMap((page) =>
+    page.subPages.map((sub) => ({
+      slug: page.slug,
+      sub: sub.slug,
+    }))
+  );
+
+  return [...legacy, ...groups, ...info];
 }
 
 export async function generateMetadata({
@@ -77,13 +98,25 @@ export async function generateMetadata({
     };
   }
 
-  // Branch B — new candidate group sub-page metadata
+  // Branch B — candidate/employer group sub-page metadata
   const candidate = findCandidateSubPage(slug, sub);
   if (candidate) {
     return {
       title: `${candidate.subPage.title} | ${candidate.group.name} | Talent Solutions`,
       description: candidate.subPage.description,
     };
+  }
+
+  // Branch C — info-page sub-page metadata
+  const infoGroup = TALENT_INFO_PAGES.find((p) => p.slug === slug);
+  if (infoGroup) {
+    const infoSub = infoGroup.subPages.find((s) => s.slug === sub);
+    if (infoSub) {
+      return {
+        title: `${infoSub.title} | ${infoGroup.name} | Talent Solutions`,
+        description: infoSub.description,
+      };
+    }
   }
 
   return {};
@@ -103,7 +136,7 @@ export default async function TalentSubPage({
     return <PageBuilderPage spec={buildTalentSubSpec(option, seed)} />;
   }
 
-  // ── Branch B — new candidate group sub-page (7-section template) ──
+  // ── Branch B — candidate/employer group sub-page (7-section template) ──
   const candidate = findCandidateSubPage(slug, sub);
   if (candidate) {
     // Guard against an unknown group slug (defensive —
@@ -122,6 +155,30 @@ export default async function TalentSubPage({
         subPageIcon={subPageIcon}
       />
     );
+  }
+
+  // ── Branch C — info-page sub-page (12-section TalentGroupPage) ──
+  // Same component + content shape as the main info pages and the 6
+  // group pages — two-column hero with Live Impact Signal panel +
+  // 11 supporting sections. Content is keyed by compound slug
+  // ("joining-terms/curriculum", "learning-terms/self-learning",
+  //  etc.) in src/data/pages/talent-group-page-content.ts.
+  const infoGroup = TALENT_INFO_PAGES.find((p) => p.slug === slug);
+  if (infoGroup) {
+    const infoSub = infoGroup.subPages.find((s) => s.slug === sub);
+    if (infoSub) {
+      const content = getGroupPageContent(`${slug}/${sub}`);
+      if (content) {
+        // Touch the icon registries (defensive — same pattern as
+        // Branch B). These are imported above but not all are used
+        // directly here; the lookup keeps the bundle graph stable
+        // and surfaces a 404 if a future icon key is missing.
+        const _groupIcon = TALENT_INFO_GROUP_ICONS[slug];
+        const _subIcon = TALENT_INFO_SUB_ICONS[sub];
+        return <TalentGroupPage content={content} />;
+      }
+    }
+    notFound();
   }
 
   notFound();

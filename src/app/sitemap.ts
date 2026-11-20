@@ -10,7 +10,7 @@ import { TALENT_SERVICES } from "@/data/services-talent";
 import { SOLUTION_LIST } from "@/data/pages/solution-pages";
 import { TALENT_PAGE_SPECS } from "@/data/pages/talent-pages";
 import { TALENT_STRIP_GROUPS } from "@/data/talent-strip-groups";
-import { TALENT_INFO_PAGES } from "@/data/talent-info-pages";
+import { TALENT_INFO_PAGES, TALENT_INFO_SUB_PAGE_SLUGS } from "@/data/talent-info-pages";
 import { WORKSONN_PAGE_SPECS } from "@/data/pages/worksonn-pages";
 import { INDUSTRIES, INSIGHTS, RESOURCES } from "@/data/content";
 
@@ -146,6 +146,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  // 6 info-page sub-pages (3 per info page × 2 = 6 pairs)
+  //   joining-terms/curriculum, joining-terms/pricing, joining-terms/agreement
+  //   learning-terms/self-learning, learning-terms/curriculum,
+  //   learning-terms/projects-development
+  const talentInfoSubRoutes: MetadataRoute.Sitemap = TALENT_INFO_PAGES.flatMap(
+    (p) =>
+      (TALENT_INFO_SUB_PAGE_SLUGS[p.slug] ?? []).map((sub) => ({
+        url: `${SITE_URL}/talent-solutions/${p.slug}/${sub}`,
+        lastModified: now,
+        changeFrequency: "monthly" as const,
+        priority: 0.45,
+      }))
+  );
+
   // 8 worksonn pages
   const worksonnRoutes: MetadataRoute.Sitemap = WORKSONN_PAGE_SPECS.map((w) => ({
     url: `${SITE_URL}/worksonn/${w.slug}`,
@@ -166,6 +180,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...talentRoutes,
     ...talentGroupRoutes,
     ...talentInfoRoutes,
+    ...talentInfoSubRoutes,
     ...worksonnRoutes,
   ];
 }
