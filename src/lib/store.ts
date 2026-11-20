@@ -1332,9 +1332,10 @@ export function ensureFullCatalog(): void {
     import("@/data/services-multimedia"),
     import("@/data/services-cloud"),
     import("@/data/services-talent"),
+    import("@/data/services-directory-catalog"),
   ])
-    .then((
-      [
+    .then(
+      ([
         { AGENT_SERVICES },
         { TECH_SERVICES },
         { MARKETING_SERVICES },
@@ -1342,20 +1343,22 @@ export function ensureFullCatalog(): void {
         { MULTIMEDIA_SERVICES },
         { CLOUD_SERVICES },
         { TALENT_SERVICES },
-      ]
-    ) => {
-      useAppStore
-        .getState()
-        .injectAutoServices([
-          ...AGENT_SERVICES,
-          ...TECH_SERVICES,
-          ...MARKETING_SERVICES,
-          ...BUSINESS_SERVICES,
-          ...MULTIMEDIA_SERVICES,
-          ...CLOUD_SERVICES,
-          ...TALENT_SERVICES,
-        ]);
-    })
+        { DIRECTORY_SERVICES },
+      ]) => {
+        useAppStore
+          .getState()
+          .injectAutoServices([
+            ...AGENT_SERVICES,
+            ...TECH_SERVICES,
+            ...MARKETING_SERVICES,
+            ...BUSINESS_SERVICES,
+            ...MULTIMEDIA_SERVICES,
+            ...CLOUD_SERVICES,
+            ...TALENT_SERVICES,
+            ...DIRECTORY_SERVICES,
+          ]);
+      }
+    )
     .catch((error) => {
       console.warn(
         "Deferred catalog chunk failed to load — continuing with the core catalog.",

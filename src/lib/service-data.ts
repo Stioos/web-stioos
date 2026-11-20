@@ -16,8 +16,13 @@ import { MARKETING_SERVICES } from "@/data/services-marketing";
 import { BUSINESS_SERVICES } from "@/data/services-business";
 import { MULTIMEDIA_SERVICES } from "@/data/services-multimedia";
 import { TALENT_SERVICES } from "@/data/services-talent";
+import { DIRECTORY_SERVICES } from "@/data/services-directory-catalog";
 
-/** All 305 services concatenated + deduped by id. */
+/** All 360 services concatenated + deduped by id (305 curated + 55
+ *  directory catalog + 7 core flagships deduped against the curated
+ *  set). The 55 directory services are bundled here so the
+ *  /marketplace/[slug] route finds them via findServiceBySlug()
+ *  WITHOUT depending on the store's deferred ensureFullCatalog(). */
 const ALL_SERVICES: Service[] = (() => {
   const seen = new Set<string>();
   const out: Service[] = [];
@@ -30,6 +35,7 @@ const ALL_SERVICES: Service[] = (() => {
     ...BUSINESS_SERVICES,
     ...MULTIMEDIA_SERVICES,
     ...TALENT_SERVICES,
+    ...DIRECTORY_SERVICES,
   ]) {
     if (seen.has(s.id)) continue;
     seen.add(s.id);

@@ -11,7 +11,11 @@ import {
   Target,
   type LucideIcon as LucideIconType,
 } from "lucide-react";
-import { slugifyServiceName } from "@/data/service-pages-data";
+// NOTE: slugifyServiceName is now imported from the new directory catalog
+// file (services-directory-catalog.ts) so the slug algorithm is shared
+// with the actual /marketplace/[slug] route's data source — the hrefs
+// in this file can never drift out of sync with the catalog slugs.
+import { slugifyServiceName } from "@/data/services-directory-catalog";
 
 // ============================================================
 // SERVICES DIRECTORY — 9 divisions × SEO/AEO-optimized services
@@ -24,13 +28,15 @@ import { slugifyServiceName } from "@/data/service-pages-data";
 // that AI answer engines like Perplexity, ChatGPT, Google AI
 // Overviews can parse and cite).
 //
-// Service routes now point to the dedicated service landing page
-// at /services/<slug> — a full standalone SEO/AEO page (hero,
-// capabilities, process, benefits, FAQ, JSON-LD structured data)
-// generated from src/data/service-pages-data.ts. The slug is
+// Service routes now point to the EXISTING marketplace detail page
+// at /marketplace/<slug> — the rich design with Live Impact Signal
+// panel, donut chart, before/after metrics, progress bars,
+// breadcrumb pills, tags, stats row, CTAs, etc. The slug is
 // derived deterministically from the service name via
-// slugifyServiceName(), so the directory hrefs and the route's
-// generateStaticParams() can never drift out of sync.
+// slugifyServiceName(), which matches the algorithm used by
+// services-directory-catalog.ts to build the DIRECTORY_SERVICES
+// entries — so every directory href resolves to a real catalog
+// entry rendered at the marketplace route.
 // ============================================================
 
 export interface DirectoryService {
@@ -38,7 +44,7 @@ export interface DirectoryService {
   name: string;
   /** one-line AEO-friendly description (answers "what is this?") */
   description: string;
-  /** service landing page href — derived from the name via slugify */
+  /** marketplace detail page href — derived from the name via slugify */
   href: string;
 }
 
@@ -57,16 +63,17 @@ export interface DirectoryDivision {
 
 /**
  * Helper — wraps a service name + description into a directory entry
- * with the href derived deterministically from the name. The slug
- * is produced by the same slugifyServiceName() used by the spec data
- * file, so every directory href resolves to a real /services/[slug]
- * route pre-rendered by generateStaticParams().
+ * with the href derived deterministically from the name. The slug is
+ * produced by the same slugifyServiceName() used by
+ * services-directory-catalog.ts, so every directory href resolves to
+ * a real /marketplace/[slug] entry rendered from the
+ * DIRECTORY_SERVICES catalog.
  */
 function svc(name: string, description: string): DirectoryService {
   return {
     name,
     description,
-    href: `/services/${slugifyServiceName(name)}`,
+    href: `/marketplace/${slugifyServiceName(name)}`,
   };
 }
 

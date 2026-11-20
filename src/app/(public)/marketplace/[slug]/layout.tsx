@@ -6,6 +6,7 @@ import { MARKETING_SERVICES } from "@/data/services-marketing";
 import { BUSINESS_SERVICES } from "@/data/services-business";
 import { MULTIMEDIA_SERVICES } from "@/data/services-multimedia";
 import { TALENT_SERVICES } from "@/data/services-talent";
+import { DIRECTORY_SERVICES } from "@/data/services-directory-catalog";
 import {
   getCategoryById,
   getSubcategoryById,
@@ -15,7 +16,7 @@ import {
  * SERVER layout for service detail pages (the page itself is a client
  * component and cannot export metadata). Provides per-service <title>,
  * meta description, canonical URL, Open Graph tags, and schema.org
- * JSON-LD (Service + BreadcrumbList) — the SEO/AEO layer for all 305
+ * JSON-LD (Service + BreadcrumbList) — the SEO/AEO layer for all 360
  * service landing pages. Data imports here are server-only: they never
  * reach the client bundle.
  */
@@ -30,6 +31,7 @@ const ALL_SERVICES = [
   ...BUSINESS_SERVICES,
   ...MULTIMEDIA_SERVICES,
   ...TALENT_SERVICES,
+  ...DIRECTORY_SERVICES,
 ];
 
 const findService = (slug: string) => ALL_SERVICES.find((s) => s.slug === slug);
