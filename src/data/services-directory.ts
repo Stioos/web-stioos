@@ -8,7 +8,6 @@ import {
   Building2,
   Lightbulb,
   Wallet,
-  Target,
   type LucideIcon as LucideIconType,
 } from "lucide-react";
 // NOTE: slugifyServiceName is now imported from the new directory catalog
@@ -18,10 +17,12 @@ import {
 import { slugifyServiceName } from "@/data/services-directory-catalog";
 
 // ============================================================
-// SERVICES DIRECTORY — 9 divisions × SEO/AEO-optimized services
-// (5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 15 = 55 services). Rendered as
-// a flat, minimal 4-column grid on the home page (above the footer),
-// mirroring the reference design.
+// SERVICES DIRECTORY — 8 divisions × SEO/AEO-optimized services
+// (5 + 5 + 6 + 7 + 10 + 5 + 12 + 5 = 55 services). The 15 branding
+// services from the reference image are MERGED into the 8 existing
+// divisions (not a separate 9th division). Rendered as a flat, minimal
+// 4-column grid on the home page (before the trust marquee), mirroring
+// the reference design.
 //
 // Each service name is crafted for SEO (keyword-rich, matches
 // what buyers search for) AND AEO (natural-language phrasing
@@ -165,6 +166,11 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
         "API Development & Integration",
         "API strategy, development, and integration services for connecting your entire stack."
       ),
+      // ── Merged from Branding & Marketing Strategy ──
+      svc(
+        "Faster Time-to-Market",
+        "Brand systems and activation plans built for faster time-to-market — launch in weeks, not quarters."
+      ),
     ],
   },
 
@@ -195,6 +201,15 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
         "AI Video & Audio Production",
         "AI-generated video ads, synthetic voiceovers, music, and podcast production."
       ),
+      // ── Merged from Branding & Marketing Strategy ──
+      svc(
+        "Brand Identity Design & Strategy Development",
+        "Brand identity design and strategy development — name, logo, voice, and visual system from positioning."
+      ),
+      svc(
+        "Brand Positioning & Rebranding Services",
+        "Brand positioning and rebranding services for established companies — reposition without losing equity."
+      ),
     ],
   },
 
@@ -224,6 +239,27 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
       svc(
         "SEO & Answer Engine Optimization",
         "SEO and AEO (Answer Engine Optimization) for Google, Perplexity, ChatGPT, and AI overviews."
+      ),
+      // ── Merged from Branding & Marketing Strategy ──
+      svc(
+        "Jataye Blogs & News",
+        "Branded blogs and news content that builds authority, supports SEO, and earns organic traffic."
+      ),
+      svc(
+        "Dedicated Sales Teams",
+        "Dedicated, brand-aligned sales teams that carry your narrative into every conversation."
+      ),
+      svc(
+        "Marketing Specialist",
+        "Dedicated marketing specialists embedded in your team — channel owners who execute the strategy."
+      ),
+      svc(
+        "Build Social Media Branding",
+        "Build social media branding that is consistent, on-voice, and built for each platform."
+      ),
+      svc(
+        "Digital Marketing Integration & Enhancement",
+        "Integrate and enhance your brand across every digital marketing channel — one brand, every touchpoint."
       ),
     ],
   },
@@ -285,6 +321,35 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
         "Digital Transformation Consulting",
         "End-to-end digital transformation strategy and execution for enterprise modernization."
       ),
+      // ── Merged from Branding & Marketing Strategy ──
+      svc(
+        "Industries Experience",
+        "Industry-specific brand experience programs — tailored messaging, assets, and proof per vertical."
+      ),
+      svc(
+        "Market Research & Analysts",
+        "Market research and analyst programs that quantify opportunity and de-risk brand bets."
+      ),
+      svc(
+        "Humanity, Ethic & Emotion of Brand",
+        "Define and express the humanity, ethics, and emotion of your brand — the why behind the loyalty."
+      ),
+      svc(
+        "Strategic Root Positioning of Brand",
+        "Strategic root positioning that defines who the brand is for, what it stands for, and how it differs."
+      ),
+      svc(
+        "Emotional Attach Brand Connection",
+        "Programs that build emotional attachment — community, content, experiences — for lasting loyalty."
+      ),
+      svc(
+        "Market Segment Differentiation",
+        "Differentiate your brand across market segments — tailored positioning per audience you serve."
+      ),
+      svc(
+        "Competitor Analysis & Market Reach",
+        "Competitor analysis and market reach programs — map the field, find the gap, and own the whitespace."
+      ),
     ],
   },
 
@@ -314,79 +379,6 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
       svc(
         "Fractional CFO & Controller Services",
         "Fractional CFO and controller services for startups without a full-time finance team."
-      ),
-    ],
-  },
-
-  // ── 9. Branding & Marketing Strategy (15 services) ──
-  // Pulled directly from the reference image's branding & marketing
-  // strategy panel. The largest division — covers research, positioning,
-  // identity, activation, and measurement of a brand end-to-end.
-  {
-    id: "branding-marketing-strategy",
-    name: "Branding & Marketing Strategy",
-    icon: Target,
-    accent: "amber",
-    services: [
-      svc(
-        "Jataye Blogs & News",
-        "Branded blogs and news content that builds authority, supports SEO, and earns organic traffic."
-      ),
-      svc(
-        "Industries Experience",
-        "Industry-specific brand experience programs — tailored messaging, assets, and proof per vertical."
-      ),
-      svc(
-        "Dedicated Sales Teams",
-        "Dedicated, brand-aligned sales teams that carry your narrative into every conversation."
-      ),
-      svc(
-        "Market Research & Analysts",
-        "Market research and analyst programs that quantify opportunity and de-risk brand bets."
-      ),
-      svc(
-        "Marketing Specialist",
-        "Dedicated marketing specialists embedded in your team — channel owners who execute the strategy."
-      ),
-      svc(
-        "Humanity, Ethic & Emotion of Brand",
-        "Define and express the humanity, ethics, and emotion of your brand — the why behind the loyalty."
-      ),
-      svc(
-        "Strategic Root Positioning of Brand",
-        "Strategic root positioning that defines who the brand is for, what it stands for, and how it differs."
-      ),
-      svc(
-        "Emotional Attach Brand Connection",
-        "Programs that build emotional attachment — community, content, experiences — for lasting loyalty."
-      ),
-      svc(
-        "Market Segment Differentiation",
-        "Differentiate your brand across market segments — tailored positioning per audience you serve."
-      ),
-      svc(
-        "Faster Time-to-Market",
-        "Brand systems and activation plans built for faster time-to-market — launch in weeks, not quarters."
-      ),
-      svc(
-        "Brand Identity Design & Strategy Development",
-        "Brand identity design and strategy development — name, logo, voice, and visual system from positioning."
-      ),
-      svc(
-        "Brand Positioning & Rebranding Services",
-        "Brand positioning and rebranding services for established companies — reposition without losing equity."
-      ),
-      svc(
-        "Build Social Media Branding",
-        "Build social media branding that is consistent, on-voice, and built for each platform."
-      ),
-      svc(
-        "Digital Marketing Integration & Enhancement",
-        "Integrate and enhance your brand across every digital marketing channel — one brand, every touchpoint."
-      ),
-      svc(
-        "Competitor Analysis & Market Reach",
-        "Competitor analysis and market reach programs — map the field, find the gap, and own the whitespace."
       ),
     ],
   },

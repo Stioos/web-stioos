@@ -514,6 +514,12 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ====================== SERVICES DIRECTORY ====================== */}
+      {/* 8 divisions × ~7 services = 55 SEO/AEO-optimized services in a
+          flat, minimal 4-column grid. Placed BEFORE the trust marquee
+          per user request. */}
+      <ServicesDirectory />
+
       {/* ===================== TRUST MARQUEE ===================== */}
       <section className="border-b border-border bg-background py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -890,12 +896,6 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
-
-      {/* ====================== SERVICES DIRECTORY ====================== */}
-      {/* 8 divisions × 5 services = 40 SEO/AEO-optimized services in a
-          flat, minimal 4-column grid. Placed above the footer per the
-          reference design. */}
-      <ServicesDirectory />
 
       {/* ============================ FINAL CTA ============================ */}
       <section className="px-4 py-16 sm:px-6 md:py-24 lg:px-8">

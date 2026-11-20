@@ -64,7 +64,7 @@ export function ServicesDirectory() {
           <p className="eyebrow text-amber-400">Our Services</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl md:text-[2.5rem]">
             One partner.{" "}
-            <span className="text-amber-400">Nine divisions.</span>{" "}
+            <span className="text-amber-400">Eight divisions.</span>{" "}
             Fifty-five services.
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
