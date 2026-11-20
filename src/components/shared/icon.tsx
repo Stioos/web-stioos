@@ -1,8 +1,8 @@
 import {
-  Activity, ArrowRight, ArrowRightLeft, Award, BadgeCheck, BarChart3, Bot, Boxes, Briefcase, Building2, Calculator,
-  CalendarDays, Check, ChevronDown, ClipboardCheck, Brain, BrainCircuit,
+  Activity, ArrowRight, ArrowRightLeft, Award, BadgeCheck, BarChart3, Bot, Boxes, Briefcase, Building, Building2, Calculator,
+  CalendarDays, Check, ChevronDown, ClipboardCheck, Code2, Brain, BrainCircuit,
   Clapperboard, Clock, CloudCog, Cog, Compass, Contact, Cpu, Database, DraftingCompass, Code,
-  Factory, FileSearch, FileText, Globe, Handshake, HardHat, Headset, HeartHandshake, History,
+  Factory, FileSearch, FileText, Flag, Globe, Handshake, HardHat, Headset, Heart, HeartHandshake, History,
   Inbox, Landmark, Layers, Lightbulb, LineChart, Megaphone, MessageSquare, Network, Package,
   Palette, PenTool, Phone, Plug, Receipt, RefreshCw, Rocket, ScanEye, ScanLine, Settings,
   Shield, ShieldCheck, ShoppingCart, Smartphone, Sparkles, Star, Target, TrendingUp, Users, UserCheck, UserCircle, Workflow,
@@ -19,12 +19,12 @@ import {
 // Note: ChevronDown is also imported above and added to the ICONS map below.
 
 const ICONS: Record<string, LucideIcon> = {
-  Activity, ArrowRight, ArrowRightLeft, BarChart3, Bot, Boxes, Briefcase, Building2, Calculator, ChevronDown, ClipboardCheck,
-  Clapperboard, CloudCog, Cog, Compass, Contact, Cpu, Database, DraftingCompass,
-  Factory, FileSearch, FileText, Globe, Handshake, HardHat, Headset, HeartHandshake, History,
+  Activity, ArrowRight, ArrowRightLeft, Award, BarChart3, Bot, Boxes, Brain, BrainCircuit, Briefcase, Building, Building2, Calculator, ChevronDown, ClipboardCheck,
+  Code, Code2, Clapperboard, CloudCog, Cog, Compass, Contact, Cpu, Database, DraftingCompass,
+  Factory, FileSearch, FileText, Flag, Globe, Handshake, HardHat, Headset, Heart, HeartHandshake, History,
   Inbox, Landmark, Layers, Lightbulb, LineChart, Megaphone, MessageSquare, Network, Package,
   Palette, PenTool, Plug, Receipt, RefreshCw, Rocket, ScanEye, ScanLine, Settings,
-  ShieldCheck, ShoppingCart, Smartphone, Sparkles, Target, TrendingUp, Users, UserCircle, Workflow,
+  ShieldCheck, ShoppingCart, Smartphone, Sparkles, Star, Target, TrendingUp, Users, UserCircle, Workflow,
   Zap, Wrench, Search, GraduationCap, Bell, BookOpen, LayoutDashboard,
   AudioLines, Atom, Binary, Box, Braces, Brush, Camera, CircuitBoard, Cloud,
   CloudDownload, CloudUpload, Coins, Container, Crown, Earth, Fingerprint, Flame,
