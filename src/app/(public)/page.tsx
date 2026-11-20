@@ -31,6 +31,7 @@ import { ServiceCard } from "@/components/marketplace/service-card";
 import { Button } from "@/components/ui/button";
 import { INDUSTRIES } from "@/data/content";
 import { MarketplaceExplorer } from "@/components/home/marketplace-explorer";
+import { ServicesDirectory } from "@/components/home/services-directory";
 
 // ============================================================
 // HOMEPAGE — STIOOS GLOBAL
@@ -889,6 +890,12 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
+
+      {/* ====================== SERVICES DIRECTORY ====================== */}
+      {/* 8 divisions × 5 services = 40 SEO/AEO-optimized services in a
+          flat, minimal 4-column grid. Placed above the footer per the
+          reference design. */}
+      <ServicesDirectory />
 
       {/* ============================ FINAL CTA ============================ */}
       <section className="px-4 py-16 sm:px-6 md:py-24 lg:px-8">
