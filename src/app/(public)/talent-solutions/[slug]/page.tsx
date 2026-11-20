@@ -56,6 +56,8 @@ import { getTalentStripGroup } from "@/data/talent-strip-groups";
 import { TALENT_INFO_PAGES } from "@/data/talent-info-pages";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
+import { TalentGroupPage } from "@/components/page-builder/talent-group-page";
+import { getGroupPageContent } from "@/data/pages/talent-group-page-content";
 
 // ============================================================
 // TALENT SOLUTIONS OPTION PAGE — /talent-solutions/[slug]
@@ -130,9 +132,18 @@ export default async function TalentOptionPage({
     );
   }
 
-  // ── NEW GROUP PAGE — placeholder structure awaiting confirmation ──
+  // ── GROUP PAGE — full 12-section landing for the 6 group slugs ──
+  // (get-trained, get-placed, get-certified, build-talent,
+  // hire-talent, scale-workforce). The TalentGroupPage component
+  // renders a two-column hero with a Live Impact Signal panel +
+  // 11 supporting sections, matching the design of the main
+  // /talent-solutions page.
   const group = getTalentStripGroup(slug);
   if (group) {
+    const groupContent = getGroupPageContent(slug);
+    if (groupContent) {
+      return <TalentGroupPage content={groupContent} />;
+    }
     return <TalentGroupPlaceholder groupSlug={slug} />;
   }
 
