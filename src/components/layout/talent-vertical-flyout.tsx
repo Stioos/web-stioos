@@ -159,18 +159,18 @@ export function TalentVerticalFlyout({
           </div>
         </div>
 
-        {/* Body — vertical list of the group's mapped services */}
+        {/* Body — vertical list of the group's sub-pages */}
         <div className="max-h-[360px] overflow-y-auto overscroll-contain px-3 py-3">
           <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">
-            Explore the services
+            Explore the pages
           </p>
           <ul className="flex flex-col gap-1">
-            {group.services.map((svcRow, i) => {
-              const isActive = svcRow.slug === activeServiceSlug;
+            {group.subPages.map((subPage, i) => {
+              const isActive = subPage.slug === activeServiceSlug;
               return (
-                <li key={svcRow.slug}>
+                <li key={subPage.slug}>
                   <Link
-                    href={`/talent-solutions/${svcRow.slug}`}
+                    href={`/talent-solutions/${group.slug}/${subPage.slug}`}
                     onClick={() => setTimeout(onClose, 60)}
                     className={cn(
                       "group/svc flex items-start gap-3 rounded-xl border p-2.5 transition-all duration-150",
@@ -185,7 +185,7 @@ export function TalentVerticalFlyout({
                         accent.tile
                       )}
                     >
-                      <svcRow.icon className="h-[16px] w-[16px]" aria-hidden="true" />
+                      <subPage.icon className="h-[16px] w-[16px]" aria-hidden="true" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
@@ -197,7 +197,7 @@ export function TalentVerticalFlyout({
                               : "text-white group-hover/svc:text-amber-300"
                           )}
                         >
-                          {svcRow.stripLabel}
+                          {subPage.stripLabel}
                         </span>
                         <span className="font-mono text-[9px] font-bold text-slate-600">
                           {String(i + 1).padStart(2, "0")}
@@ -212,7 +212,7 @@ export function TalentVerticalFlyout({
                           overflow: "hidden",
                         }}
                       >
-                        {svcRow.description}
+                        {subPage.description}
                       </p>
                     </div>
                     <ChevronRight
@@ -237,7 +237,7 @@ export function TalentVerticalFlyout({
               aria-hidden="true"
               className={cn("h-1.5 w-1.5 shrink-0 rounded-full", accent.dot)}
             />
-            {group.services.length} services in this group
+            {group.subPages.length} pages in this group
           </span>
           <Link
             href={`/talent-solutions/${group.slug}`}

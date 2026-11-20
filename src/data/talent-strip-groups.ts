@@ -1,47 +1,46 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Award,
+  BookOpen,
   Briefcase,
-  GraduationCap,
-  TrendingUp,
-  UserCheck,
-  Users,
-  Rocket,
   ClipboardCheck,
-  Search,
-  Layers,
-  Building2,
+  FileText,
+  GraduationCap,
+  Rocket,
   Target,
+  TrendingUp,
+  Users,
 } from "lucide-react";
-import { TALENT_STRIP_OPTIONS } from "./talent-solutions";
 
 // ============================================================
-// TALENT STRIP GROUPS — 6 horizontal options shown in the
-// Talent Solutions secondary header (replaces the 9 individual
-// option pills that were getting truncated).
+// TALENT STRIP GROUPS — 3 candidate-side options shown in the
+// Talent Solutions secondary header:
 //
-// Split into two equal halves:
-//   • CANDIDATE-SIDE (3) — what a job seeker wants to do
-//   • EMPLOYER-SIDE (3) — what an employer wants to do
+//   • Get Trained   (3 sub-pages)
+//   • Get Placed    (3 sub-pages)
+//   • Get Certified (3 sub-pages)
 //
-// Each group maps to one or more of the 9 existing Talent
-// Solutions option pages. The vertical flyout that opens on
-// hover (right side of the pill) lists those mapped services,
-// so visitors can still reach every existing detail page.
+// Each group has its own dropdown (TalentVerticalFlyout) that
+// opens on hover and lists the 3 candidate-focused sub-pages.
+// The 9 sub-pages live at:
+//   /talent-solutions/<group-slug>/<sub-slug>
 //
-// The 6 group routes themselves (/talent-solutions/<group-slug>)
-// are placeholder pages — full content is built AFTER user
-// confirmation. The hover flyout links to the EXISTING service
-// detail pages so nothing is broken in the meantime.
+// The employer-side groups (Build Talent, Hire Talent, Scale
+// Workforce) have been REMOVED per user request — the header
+// now shows only candidate-side options + Joining Terms +
+// Learning Terms.
+//
+// No divider/segmentation lines between groups — the header
+// is a standard flat strip of pills.
 // ============================================================
 
-export type TalentGroupSide = "candidate" | "employer";
+export type TalentGroupSide = "candidate";
 
-export interface TalentGroupedService {
-  /** slug of the EXISTING talent option — /talent-solutions/<slug> */
+export interface TalentSubPage {
+  /** URL slug — /talent-solutions/<group-slug>/<slug> */
   slug: string;
-  /** display name (from TALENT_STRIP_OPTIONS) */
-  name: string;
+  /** display title (SEO/AEO-optimized, two-line) */
+  title: string;
   /** short label shown in the flyout row */
   stripLabel: string;
   /** one-line description for the flyout row */
@@ -65,105 +64,137 @@ export interface TalentStripGroup {
   icon: LucideIcon;
   /** accent color key — drives pill + flyout color */
   accent: "blue" | "emerald" | "orange";
-  /** existing talent services this group exposes */
-  services: TalentGroupedService[];
-}
-
-// Helper: pull the existing TALENT_STRIP_OPTIONS entry by slug so the
-// flyout rows always match the canonical option metadata.
-function svc(slug: string): TalentGroupedService {
-  const found = TALENT_STRIP_OPTIONS.find((o) => o.slug === slug);
-  if (!found) {
-    throw new Error(`talent-strip-groups: unknown service slug "${slug}"`);
-  }
-  return {
-    slug: found.slug,
-    name: found.name,
-    stripLabel: found.stripLabel,
-    description: found.description,
-    icon: found.icon,
-  };
+  /** candidate-focused sub-pages (3 per group) */
+  subPages: TalentSubPage[];
 }
 
 // ─────────────────────────────────────────────────────────────
-// CANDIDATE-SIDE (3) — "what do I want to do as a job seeker?"
+// 9 candidate/job-seeker sub-pages (3 per group)
 // ─────────────────────────────────────────────────────────────
+
+const GET_TRAINED_SUB_PAGES: TalentSubPage[] = [
+  {
+    slug: "custom-cohort-curriculum",
+    title: "Custom Cohort Curriculum — Learn on Your Exact Stack",
+    stripLabel: "Custom Cohort Curriculum",
+    description:
+      "Co-designed curriculum built around your target role — your tools, your conventions, your workflows.",
+    icon: BookOpen,
+  },
+  {
+    slug: "ai-candidate-screening",
+    title: "AI Candidate Screening — Get Matched to the Right Program",
+    stripLabel: "AI Screening",
+    description:
+      "AI-scored aptitude, communication and technical screens that match you to the perfect training program.",
+    icon: Target,
+  },
+  {
+    slug: "training-sprint-delivery",
+    title: "Training Sprint Delivery — Learn by Building Real Projects",
+    stripLabel: "Training Sprints",
+    description:
+      "Mentor-led sprints with weekly checkpoints, real client-shaped projects, and job-ready capstones.",
+    icon: Rocket,
+  },
+];
+
+const GET_PLACED_SUB_PAGES: TalentSubPage[] = [
+  {
+    slug: "browse-open-roles",
+    title: "Browse Open Roles — Explore Live Jobs Across AI, Tech & Business",
+    stripLabel: "Browse Open Roles",
+    description:
+      "AI-matched live openings across 500+ employers — filter by role, stack, location, and salary.",
+    icon: Briefcase,
+  },
+  {
+    slug: "interview-preparation",
+    title: "Interview Preparation — Master Interviews with AI Coaching",
+    stripLabel: "Interview Prep",
+    description:
+      "AI-powered mock interviews, real-time feedback, and company-specific interview playbooks.",
+    icon: Users,
+  },
+  {
+    slug: "offer-onboarding",
+    title: "Offer & Onboarding — From Offer Letter to Day One",
+    stripLabel: "Offer & Onboarding",
+    description:
+      "Offer negotiation guidance, document support, and a guided onboarding plan for your first 90 days.",
+    icon: FileText,
+  },
+];
+
+const GET_CERTIFIED_SUB_PAGES: TalentSubPage[] = [
+  {
+    slug: "skills-assessment",
+    title: "Skills Assessment — Validate Your Skills with AI-Powered Scoring",
+    stripLabel: "Skills Assessment",
+    description:
+      "AI-scored assessments across 200+ skill tracks — get a verified competency profile employers trust.",
+    icon: ClipboardCheck,
+  },
+  {
+    slug: "industry-certifications",
+    title: "Industry Certifications — Earn Recognized Credentials",
+    stripLabel: "Industry Certifications",
+    description:
+      "Earn industry-recognized certifications in AI, cloud, data, full-stack, and more — included in your program.",
+    icon: Award,
+  },
+  {
+    slug: "career-portfolio",
+    title: "Career Portfolio — Build a Real-World Project Portfolio",
+    stripLabel: "Career Portfolio",
+    description:
+      "Build a portfolio of real client-shaped projects that prove you can deliver from day one.",
+    icon: TrendingUp,
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
+// 3 candidate-side groups
+// ─────────────────────────────────────────────────────────────
+
 const CANDIDATE_GROUPS: TalentStripGroup[] = [
   {
-    slug: "candidate-get-trained",
+    slug: "get-trained",
     stripLabel: "Get Trained",
     name: "Get Trained",
     tagline: "Learn on your stack, get hired while you train",
     side: "candidate",
     icon: GraduationCap,
     accent: "blue",
-    services: [svc("train-to-hire"), svc("hire-to-train"), svc("corporate-training")],
+    subPages: GET_TRAINED_SUB_PAGES,
   },
   {
-    slug: "candidate-get-placed",
+    slug: "get-placed",
     stripLabel: "Get Placed",
     name: "Get Placed",
     tagline: "Browse live roles and get matched with hiring employers",
     side: "candidate",
     icon: Briefcase,
     accent: "blue",
-    services: [svc("placements"), svc("staffing-solutions"), svc("talent-recruitment")],
+    subPages: GET_PLACED_SUB_PAGES,
   },
   {
-    slug: "candidate-get-certified",
+    slug: "get-certified",
     stripLabel: "Get Certified",
     name: "Get Certified",
     tagline: "Validate your skills with AI-scored assessments",
     side: "candidate",
     icon: Award,
     accent: "blue",
-    services: [svc("talent-assessment"), svc("workforce-solutions"), svc("talent-deployment")],
+    subPages: GET_CERTIFIED_SUB_PAGES,
   },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// EMPLOYER-SIDE (3) — "what do I want to do as a hiring team?"
-// ─────────────────────────────────────────────────────────────
-const EMPLOYER_GROUPS: TalentStripGroup[] = [
-  {
-    slug: "employer-build-talent",
-    stripLabel: "Build Talent",
-    name: "Build Talent",
-    tagline: "Train cohorts on your stack — pipeline, not lottery",
-    side: "employer",
-    icon: Users,
-    accent: "emerald",
-    services: [svc("train-to-hire"), svc("hire-to-train"), svc("corporate-training")],
-  },
-  {
-    slug: "employer-hire-talent",
-    stripLabel: "Hire Talent",
-    name: "Hire Talent",
-    tagline: "Tap a 2M+ pre-vetted pool — shortlists in 48 hours",
-    side: "employer",
-    icon: UserCheck,
-    accent: "emerald",
-    services: [svc("staffing-solutions"), svc("talent-recruitment"), svc("talent-deployment")],
-  },
-  {
-    slug: "employer-scale-workforce",
-    stripLabel: "Scale Workforce",
-    name: "Scale Workforce",
-    tagline: "End-to-end workforce strategy, assessment and bench",
-    side: "employer",
-    icon: TrendingUp,
-    accent: "emerald",
-    services: [svc("workforce-solutions"), svc("talent-assessment"), svc("placements")],
-  },
-];
-
-export const TALENT_STRIP_GROUPS: TalentStripGroup[] = [
-  ...CANDIDATE_GROUPS,
-  ...EMPLOYER_GROUPS,
-];
-
+export const TALENT_STRIP_GROUPS: TalentStripGroup[] = CANDIDATE_GROUPS;
 export const CANDIDATE_STRIP_GROUPS = CANDIDATE_GROUPS;
-export const EMPLOYER_STRIP_GROUPS = EMPLOYER_GROUPS;
+
+// Kept for backward compatibility (employer groups removed — returns empty)
+export const EMPLOYER_STRIP_GROUPS: TalentStripGroup[] = [];
 
 export function getTalentStripGroup(
   slug: string
@@ -174,4 +205,12 @@ export function getTalentStripGroup(
 // Convenience for sitemap / generateStaticParams
 export const TALENT_GROUP_SLUGS: string[] = TALENT_STRIP_GROUPS.map(
   (g) => g.slug
+);
+
+// All 9 sub-page slugs grouped by parent — used by generateStaticParams
+export const TALENT_SUB_PAGE_SLUGS: Record<string, string[]> = Object.fromEntries(
+  TALENT_STRIP_GROUPS.map((g) => [
+    g.slug,
+    g.subPages.map((s) => s.slug),
+  ])
 );

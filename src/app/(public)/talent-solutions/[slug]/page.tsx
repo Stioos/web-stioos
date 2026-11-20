@@ -221,38 +221,38 @@ function TalentGroupPlaceholder({ groupSlug }: { groupSlug: string }) {
         </div>
       </section>
 
-      {/* Services in this group — these pages ARE fully built */}
+      {/* Sub-pages in this group — these pages ARE fully built */}
       <section className="py-16 md:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow text-amber-400">Available now</p>
             <h2 className="mt-3 text-2xl font-bold tracking-tight text-white md:text-3xl">
-              Services in the {group.name} group
+              Pages in the {group.name} group
             </h2>
             <p className="mt-4 text-sm leading-relaxed text-slate-400 md:text-base">
-              {group.services.length} existing talent solutions belong to
+              {group.subPages.length} candidate-focused pages belong to
               this group — every one is fully built and ready to explore.
             </p>
           </div>
 
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {group.services.map((svc) => (
+            {group.subPages.map((svc) => (
               <Link
                 key={svc.slug}
-                href={`/talent-solutions/${svc.slug}`}
+                href={`/talent-solutions/${group.slug}/${svc.slug}`}
                 className="group relative overflow-hidden rounded-2xl border border-white/10 bg-brand-navy p-6 transition-all duration-200 hover:-translate-y-1 hover:border-amber-500/40 hover:shadow-xl hover:shadow-amber-500/5"
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/10 to-orange-500/15 ring-1 ring-amber-500/20">
                   <svc.icon className="h-5 w-5 text-amber-400" aria-hidden="true" />
                 </span>
                 <h3 className="mt-4 text-base font-semibold text-white md:text-lg">
-                  {svc.name}
+                  {svc.stripLabel}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-400">
                   {svc.description}
                 </p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-amber-400 transition-colors group-hover:text-amber-300">
-                  Open service page
+                  Open page
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                 </span>
               </Link>

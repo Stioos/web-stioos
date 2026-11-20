@@ -194,12 +194,15 @@ export function PublicHeader() {
   const talentSegment2 = talentPathParts[2] ?? "";
   const talentActiveSub = talentPathParts[3];
   // If the segment matches a group slug directly, that's the active group.
-  // Otherwise find the group whose services include this slug.
+  // Otherwise find the group whose sub-pages include this slug. NOTE: the
+  // data shape changed from `services` (legacy service slugs) to `subPages`
+  // (3 candidate-side slugs per group) — guard with `?? []` so the lookup
+  // is safe and no longer crashes the layout on legacy talent routes.
   const talentActiveGroup =
     talentSegment2 && getTalentStripGroup(talentSegment2)
       ? talentSegment2
       : TALENT_STRIP_GROUPS.find((g) =>
-            g.services.some((s) => s.slug === talentSegment2)
+            (g.subPages ?? []).some((s) => s.slug === talentSegment2)
           )?.slug ?? "";
   // Keep the legacy active option name so any code that still reads it
   // keeps working (e.g. the existing TalentStripMenu for sub-page nav).
@@ -798,29 +801,16 @@ export function PublicHeader() {
                             )}
                           </div>
 
-                          {/* CANDIDATE SIDE (3) — left half */}
+                          {/* CANDIDATE GROUPS (3) — Get Trained, Get Placed,
+                              Get Certified. No dividers — flat standard
+                              header strip. */}
                           <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
                             {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
                           </div>
 
-                          {/* Divider — candidate | employer */}
-                          <div
-                            className="mx-0.5 hidden h-5 w-px shrink-0 bg-white/15 sm:block"
-                            aria-hidden="true"
-                          />
-
-                          {/* EMPLOYER SIDE (3) — right half */}
-                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
-                            {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
-                          </div>
-
-                          {/* Divider — employer | info */}
-                          <div
-                            className="mx-0.5 hidden h-5 w-px shrink-0 bg-white/15 sm:block"
-                            aria-hidden="true"
-                          />
-
-                          {/* INFO SIDE (2) — Joining Terms + Learning Terms */}
+                          {/* INFO PILLS (2) — Joining Terms + Learning Terms.
+                              Moved after Get Certified (per user request).
+                              No divider — flat standard header strip. */}
                           <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
                             {TALENT_INFO_PAGES.map((info) => {
                               const INFO_ACCENT_TILE: Record<string, string> = {
