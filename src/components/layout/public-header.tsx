@@ -808,8 +808,14 @@ export function PublicHeader() {
                             {CANDIDATE_STRIP_GROUPS.map(renderGroupPill)}
                           </div>
 
+                          {/* EMPLOYER GROUPS (3) — Build Talent, Hire Talent,
+                              Scale Workforce. Added back per user request.
+                              No divider — flat standard header strip. */}
+                          <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
+                            {EMPLOYER_STRIP_GROUPS.map(renderGroupPill)}
+                          </div>
+
                           {/* INFO PILLS (2) — Joining Terms + Learning Terms.
-                              Moved after Get Certified (per user request).
                               No divider — flat standard header strip. */}
                           <div className="flex min-w-0 shrink items-center gap-1 xl:gap-1.5">
                             {TALENT_INFO_PAGES.map((info) => {

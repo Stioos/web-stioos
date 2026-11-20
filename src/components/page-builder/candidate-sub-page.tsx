@@ -7,6 +7,7 @@ import {
   MessageSquare,
   ShieldCheck,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { Icon } from "@/components/shared/icon";
@@ -65,124 +66,331 @@ export function CandidateSubPage({
   return (
     <main className="min-h-screen bg-brand-ink text-white">
       {/* ============================================================ */}
-      {/* 1. HERO                                                       */}
+      {/* 1. HERO — two-column layout matching the PageBuilder hero    */}
+      {/* (Live Impact Signal panel on the right + CTAs)               */}
       {/* ============================================================ */}
       <section
         id="hero"
-        className="relative scroll-mt-36 overflow-hidden bg-brand-ink"
+        className="relative scroll-mt-36 overflow-hidden border-b border-white/5 bg-brand-ink"
         aria-label={`${subPage.stripLabel} overview`}
       >
         <div
-          className="absolute inset-0 surface-grid opacity-50"
+          className="pointer-events-none absolute inset-0 surface-grid opacity-40"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-0 radial-fade"
+          className="pointer-events-none absolute inset-0"
           aria-hidden="true"
           style={{
             background:
-              "radial-gradient(ellipse 60% 65% at 50% 0%, rgba(245,158,11,0.22), transparent 70%)",
+              "radial-gradient(ellipse 55% 75% at 35% 0%, rgba(245,158,11,0.18), transparent 70%)",
           }}
         />
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28 lg:px-8">
-          <Reveal>
-            <Link
-              href={groupHref}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400 transition-colors hover:text-white"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              Back to {group.name}
-            </Link>
+
+        <div className="relative mx-auto w-full max-w-[1600px] px-4 pt-4 pb-12 sm:px-6 sm:pt-6 sm:pb-16 lg:px-8">
+          {/* Merged hero card — identity + Live Impact Signal panel */}
+          <Reveal delay={0.05} className="relative">
+            <div
+              className="pointer-events-none absolute -inset-5 hidden rounded-3xl opacity-40 blur-2xl sm:block"
+              style={{ background: "rgba(245,158,11,0.15)" }}
+              aria-hidden="true"
+            />
+            <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-sm">
+              <div className="grid lg:grid-cols-[1.35fr_1px_1fr]">
+                {/* ── Left — breadcrumb pills + identity + stats + description ── */}
+                <div className="flex flex-col p-5 sm:p-7 lg:p-8">
+                  {/* Breadcrumb pills */}
+                  <Reveal delay={0.08}>
+                    <div className="mb-4 flex flex-wrap items-center gap-2 sm:mb-5 sm:gap-3">
+                      <Link
+                        href="/talent-solutions"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white ring-1 ring-white/10 transition-colors hover:bg-white/10"
+                      >
+                        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                        Talent Solutions
+                      </Link>
+                      <Link
+                        href={groupHref}
+                        className="group inline-flex items-center gap-1.5 rounded-full bg-white/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white ring-1 ring-white/10 transition-colors hover:bg-white/10"
+                      >
+                        <GroupIcon className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" />
+                        {group.name}
+                        <ArrowUpRight
+                          className="h-3.5 w-3.5 text-slate-400 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                    </div>
+                  </Reveal>
+
+                  {/* Identity row — gradient tile + title */}
+                  <Reveal delay={0.12}>
+                    <div className="flex items-center gap-4 sm:gap-5">
+                      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30 ring-1 ring-white/20 sm:h-[72px] sm:w-[72px]">
+                        <SubPageIcon className="h-8 w-8 text-white sm:h-9 sm:w-9" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h1 className="line-clamp-2 text-xl font-bold leading-snug tracking-tight text-white sm:text-2xl lg:text-[26px]">
+                          {subPage.title}
+                        </h1>
+                      </div>
+                    </div>
+                  </Reveal>
+
+                  {/* Subtitle */}
+                  <Reveal delay={0.16}>
+                    <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
+                      {content.heroSubtitle}
+                    </p>
+                  </Reveal>
+
+                  {/* Tags — from first 4 capabilities */}
+                  {content.capabilities && content.capabilities.length > 0 && (
+                    <Reveal delay={0.2}>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {content.capabilities.slice(0, 4).map((cap) => (
+                          <span
+                            key={cap.title}
+                            className="rounded-full border border-white/15 px-3 py-1 text-xs text-white/70"
+                          >
+                            {cap.title}
+                          </span>
+                        ))}
+                      </div>
+                    </Reveal>
+                  )}
+
+                  {/* Stats row — 4 cells */}
+                  <Reveal delay={0.24}>
+                    <div className="mt-5 flex items-stretch gap-2">
+                      {content.heroStats.map((stat) => (
+                        <div
+                          key={stat.label}
+                          className="flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center"
+                        >
+                          <span className="text-base font-bold text-amber-400">
+                            {stat.value}
+                          </span>
+                          <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">
+                            {stat.label}
+                          </span>
+                        </div>
+                      ))}
+                      {/* Timeline cell */}
+                      <div className="flex flex-1 flex-col items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-2 text-center">
+                        <span className="text-xs font-bold text-white">On request</span>
+                        <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400">Timeline</span>
+                      </div>
+                    </div>
+                  </Reveal>
+
+                  {/* Engaging description */}
+                  <Reveal delay={0.28}>
+                    <div className="mt-auto pt-6">
+                      <p className="text-[13px] leading-relaxed text-slate-300">
+                        <span className="font-semibold text-white">
+                          {subPage.stripLabel} delivers measurable outcomes — not just activity.
+                        </span>{" "}
+                        Every program is scoped, delivered by senior mentors, and backed by
+                        placement SLAs you can hold us to. Apply once, clear the AI screen, and
+                        get matched with employers hiring right now.
+                      </p>
+                      <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+                        Scoped to your goals after a free application — clear next steps, no surprises.
+                      </p>
+                    </div>
+                  </Reveal>
+                </div>
+
+                {/* Divider rail (lg only) */}
+                <div className="hidden bg-white/[0.07] lg:block" aria-hidden="true" />
+
+                {/* ── Right — Live Impact Signal panel + CTAs ── */}
+                <div className="flex flex-col border-t border-white/[0.07] bg-white/[0.02] p-5 sm:p-7 lg:border-t-0 lg:p-8">
+                  <Reveal delay={0.2}>
+                    {/* Live Impact Signal panel */}
+                    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-card p-4 text-foreground">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-foreground">
+                          <span
+                            className="h-2 w-2 rounded-full bg-amber-500"
+                            aria-hidden="true"
+                          />
+                          Live Impact Signal
+                        </span>
+                        <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-semibold text-amber-600">
+                          {content.heroStats[0]?.label ?? "Outcomes"}
+                        </span>
+                      </div>
+
+                      {/* Donut gauge + KPI cards */}
+                      <div className="mt-3 flex gap-3">
+                        {/* Donut gauge */}
+                        <div className="flex shrink-0 flex-col items-center justify-center">
+                          <div className="relative h-20 w-20">
+                            <svg
+                              className="h-full w-full -rotate-90"
+                              viewBox="0 0 100 100"
+                            >
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="9"
+                                className="text-muted/30"
+                              />
+                              <circle
+                                cx="50"
+                                cy="50"
+                                r="40"
+                                fill="none"
+                                stroke="url(#candGaugeGrad)"
+                                strokeWidth="9"
+                                strokeLinecap="round"
+                                strokeDasharray={`${85 * 2.51} 251`}
+                              />
+                              <defs>
+                                <linearGradient
+                                  id="candGaugeGrad"
+                                  x1="0"
+                                  y1="0"
+                                  x2="1"
+                                  y2="1"
+                                >
+                                  <stop offset="0%" stopColor="#f97316" />
+                                  <stop offset="100%" stopColor="#f59e0b" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-xl font-bold text-foreground">85%</span>
+                            </div>
+                          </div>
+                          <span className="mt-0.5 text-center text-[8px] uppercase tracking-wider text-muted-foreground">
+                            Success rate
+                          </span>
+                        </div>
+
+                        {/* KPI cards */}
+                        <div className="flex-1 space-y-1.5">
+                          {content.heroStats.slice(0, 3).map((stat) => (
+                            <div
+                              key={stat.label}
+                              className="rounded-lg border border-amber-500/20 bg-amber-500/[0.06] px-2.5 py-1.5"
+                            >
+                              <div className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                {stat.label}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-foreground">
+                                  {stat.value}
+                                </span>
+                                <span className="rounded-full bg-emerald-500/15 px-1 py-0.5 text-[8px] font-bold text-emerald-600">
+                                  Active
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Progress bars */}
+                      <div className="mt-3 space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between text-[8px]">
+                            <span className="font-semibold uppercase tracking-wider text-muted-foreground">
+                              Program completion
+                            </span>
+                            <span className="text-muted-foreground">
+                              <span className="font-bold text-foreground">85%</span>
+                            </span>
+                          </div>
+                          <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                              style={{ width: "85%" }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between text-[8px]">
+                            <span className="font-semibold uppercase tracking-wider text-muted-foreground">
+                              Placement rate
+                            </span>
+                            <span className="text-muted-foreground">
+                              <span className="font-bold text-foreground">94%</span>
+                            </span>
+                          </div>
+                          <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
+                              style={{ width: "94%" }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Score badge + quote */}
+                      <div className="mt-3 flex items-center gap-2 border-t border-border pt-2">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-orange-500 text-xs font-bold text-white">
+                          85
+                        </div>
+                        <p className="text-[10px] italic leading-snug text-amber-600">
+                          &ldquo;{subPage.stripLabel} gave me the skills and the job — measurable results, delivered on schedule.&rdquo;
+                        </p>
+                      </div>
+                    </div>
+                  </Reveal>
+
+                  {/* CTAs */}
+                  <Reveal delay={0.28}>
+                    <div className="mt-4 grid gap-2.5">
+                      <Link
+                        href="/contact"
+                        className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
+                      >
+                        Apply Now
+                        <ArrowRight
+                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                          aria-hidden="true"
+                        />
+                      </Link>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <Link
+                          href="/contact"
+                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
+                        >
+                          Get a Quote
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                        <Link
+                          href="/contact"
+                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] font-semibold text-white transition-colors hover:bg-white/10"
+                        >
+                          Schedule Consultation
+                        </Link>
+                      </div>
+                    </div>
+                  </Reveal>
+
+                  {/* Trust reinforcement */}
+                  <Reveal delay={0.34}>
+                    <p className="mt-4 flex items-start gap-2 text-[11px] leading-relaxed text-slate-500">
+                      <ShieldCheck
+                        className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                        aria-hidden="true"
+                      />
+                      Backed by written SLAs, placement guarantees and weekly progress
+                      reporting — scoped to your goals on a free discovery call.
+                    </p>
+                  </Reveal>
+                </div>
+              </div>
+            </div>
           </Reveal>
-
-          <div className="mt-6 max-w-3xl">
-            <Reveal>
-              <p className="eyebrow flex items-center gap-2 text-amber-400">
-                <span
-                  className="inline-block h-px w-6 bg-amber-400/60"
-                  aria-hidden="true"
-                />
-                {content.heroEyebrow}
-                <span
-                  className="inline-block h-px w-6 bg-amber-400/60"
-                  aria-hidden="true"
-                />
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.05}>
-              <div className="mt-5 flex items-center gap-4">
-                <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30 ring-1 ring-white/20">
-                  <SubPageIcon
-                    className="h-8 w-8 text-white"
-                    aria-hidden="true"
-                  />
-                </span>
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/[0.04]">
-                  <GroupIcon
-                    className="h-5 w-5 text-amber-400"
-                    aria-hidden="true"
-                  />
-                </span>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1} as="h1">
-              <span className="mt-6 block text-3xl font-bold leading-[1.1] tracking-tight sm:text-4xl md:text-5xl">
-                {subPage.title}
-              </span>
-            </Reveal>
-
-            <Reveal delay={0.15} as="p">
-              <span className="mt-6 block max-w-2xl text-base leading-relaxed text-slate-300 md:text-lg">
-                {content.heroSubtitle}
-              </span>
-            </Reveal>
-
-            <Reveal delay={0.2}>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link
-                  href="/contact"
-                  className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-amber-500 px-7 text-sm font-bold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
-                >
-                  Apply Now
-                  <ArrowRight
-                    className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/20 bg-transparent px-7 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-                >
-                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                  Talk to a Talent Expert
-                </Link>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.25}>
-              <dl className="mt-12 grid gap-4 border-t border-white/10 pt-8 sm:grid-cols-3">
-                {content.heroStats.map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="rounded-xl border border-white/10 bg-brand-navy p-5"
-                  >
-                    <dt className="sr-only">{stat.label}</dt>
-                    <dd className="text-3xl font-bold tracking-tight text-amber-400 sm:text-4xl">
-                      {stat.value}
-                    </dd>
-                    <p className="mt-1 text-sm font-semibold text-white">
-                      {stat.label}
-                    </p>
-                    <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
-                      {stat.detail}
-                    </p>
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
-          </div>
         </div>
       </section>
 
