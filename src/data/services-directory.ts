@@ -8,23 +8,29 @@ import {
   Building2,
   Lightbulb,
   Wallet,
+  Target,
   type LucideIcon as LucideIconType,
 } from "lucide-react";
+import { slugifyServiceName } from "@/data/service-pages-data";
 
 // ============================================================
-// SERVICES DIRECTORY — 8 divisions × 5 SEO/AEO-optimized
-// services = 40 services. Rendered as a flat, minimal 4-column
-// grid on the home page (above the footer), mirroring the
-// reference design.
+// SERVICES DIRECTORY — 9 divisions × SEO/AEO-optimized services
+// (5 + 5 + 5 + 5 + 5 + 5 + 5 + 5 + 15 = 55 services). Rendered as
+// a flat, minimal 4-column grid on the home page (above the footer),
+// mirroring the reference design.
 //
 // Each service name is crafted for SEO (keyword-rich, matches
 // what buyers search for) AND AEO (natural-language phrasing
 // that AI answer engines like Perplexity, ChatGPT, Google AI
 // Overviews can parse and cite).
 //
-// Service routes point to the marketplace search filtered by
-// the matching category/subcategory slug so every link resolves
-// to a real, populated results page.
+// Service routes now point to the dedicated service landing page
+// at /services/<slug> — a full standalone SEO/AEO page (hero,
+// capabilities, process, benefits, FAQ, JSON-LD structured data)
+// generated from src/data/service-pages-data.ts. The slug is
+// derived deterministically from the service name via
+// slugifyServiceName(), so the directory hrefs and the route's
+// generateStaticParams() can never drift out of sync.
 // ============================================================
 
 export interface DirectoryService {
@@ -32,7 +38,7 @@ export interface DirectoryService {
   name: string;
   /** one-line AEO-friendly description (answers "what is this?") */
   description: string;
-  /** marketplace search href (resolves to a real results page) */
+  /** service landing page href — derived from the name via slugify */
   href: string;
 }
 
@@ -45,8 +51,23 @@ export interface DirectoryDivision {
   icon: LucideIconType;
   /** accent color key for the icon */
   accent: "amber" | "emerald" | "violet" | "sky" | "rose" | "orange" | "teal" | "fuchsia";
-  /** 5 services under this division */
+  /** services under this division (5 for divisions 1-8, 15 for division 9) */
   services: DirectoryService[];
+}
+
+/**
+ * Helper — wraps a service name + description into a directory entry
+ * with the href derived deterministically from the name. The slug
+ * is produced by the same slugifyServiceName() used by the spec data
+ * file, so every directory href resolves to a real /services/[slug]
+ * route pre-rendered by generateStaticParams().
+ */
+function svc(name: string, description: string): DirectoryService {
+  return {
+    name,
+    description,
+    href: `/services/${slugifyServiceName(name)}`,
+  };
 }
 
 export const SERVICES_DIRECTORY: DirectoryDivision[] = [
@@ -57,31 +78,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Workflow,
     accent: "violet",
     services: [
-      {
-        name: "Operations & Process Automation",
-        description: "Automate repetitive business operations and back-office processes with AI-driven workflows.",
-        href: "/marketplace?cat=ai-agents&sub=process-automation-agents",
-      },
-      {
-        name: "Digital Sales & AI Marketing Automation",
-        description: "End-to-end AI automation for sales and marketing pipelines — from lead gen to nurture.",
-        href: "/marketplace?cat=digital-sales-marketing&sub=ai-sdr-outbound-sales",
-      },
-      {
-        name: "Data, Analytics & Decision Intelligence",
-        description: "AI-powered data pipelines, analytics dashboards, and decision intelligence platforms.",
-        href: "/marketplace?cat=business-enterprise-services&sub=business-intelligence-data-analytics",
-      },
-      {
-        name: "Supply Chain, Procurement & Management",
-        description: "Automate supply chain workflows, procurement approvals, and vendor management with AI.",
-        href: "/marketplace?cat=business-enterprise-services&sub=erp-solutions",
-      },
-      {
-        name: "HR & Workforce Automation",
-        description: "AI automation for HR processes — screening, onboarding, scheduling, and people analytics.",
-        href: "/marketplace?cat=talent-solutions&sub=hr-technology-ai-automation",
-      },
+      svc(
+        "Operations & Process Automation",
+        "Automate repetitive business operations and back-office processes with AI-driven workflows."
+      ),
+      svc(
+        "Digital Sales & AI Marketing Automation",
+        "End-to-end AI automation for sales and marketing pipelines — from lead gen to nurture."
+      ),
+      svc(
+        "Data, Analytics & Decision Intelligence",
+        "AI-powered data pipelines, analytics dashboards, and decision intelligence platforms."
+      ),
+      svc(
+        "Supply Chain, Procurement & Management Automation",
+        "Automate supply chain workflows, procurement approvals, and vendor management with AI."
+      ),
+      svc(
+        "HR & Workforce Automation",
+        "AI automation for HR processes — screening, onboarding, scheduling, and people analytics."
+      ),
     ],
   },
 
@@ -92,31 +108,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Bot,
     accent: "amber",
     services: [
-      {
-        name: "Conversational & Support Agents",
-        description: "Custom AI agents for customer support — resolve, escalate, and learn across every channel.",
-        href: "/marketplace?cat=ai-agents&sub=customer-support-agents",
-      },
-      {
-        name: "Integration & Orchestration Agents",
-        description: "AI agents that integrate and orchestrate across your CRM, ERP, and internal tools.",
-        href: "/marketplace?cat=ai-agents&sub=custom-ai-agents",
-      },
-      {
-        name: "Analytical & Decision-Making Agents",
-        description: "AI agents that analyze data, surface insights, and make recommendations autonomously.",
-        href: "/marketplace?cat=ai-agents&sub=enterprise-ai-agents",
-      },
-      {
-        name: "Process & Task Automation Agents",
-        description: "Purpose-built AI agents that execute multi-step business processes end-to-end.",
-        href: "/marketplace?cat=ai-agents&sub=process-automation-agents",
-      },
-      {
-        name: "Multi-Agent Systems & Agent Fleets",
-        description: "Governed fleets of cooperating AI agents for enterprise-scale automation.",
-        href: "/marketplace?cat=ai-agents&sub=enterprise-ai-agents",
-      },
+      svc(
+        "Conversational & Support Agents",
+        "Custom AI agents for customer support — resolve, escalate, and learn across every channel."
+      ),
+      svc(
+        "Integration & Orchestration Agents",
+        "AI agents that integrate and orchestrate across your CRM, ERP, and internal tools."
+      ),
+      svc(
+        "Analytical & Decision-Making Agents",
+        "AI agents that analyze data, surface insights, and make recommendations autonomously."
+      ),
+      svc(
+        "Process & Task Automation Agents",
+        "Purpose-built AI agents that execute multi-step business processes end-to-end."
+      ),
+      svc(
+        "Multi-Agent Systems & Agent Fleets",
+        "Governed fleets of cooperating AI agents for enterprise-scale automation."
+      ),
     ],
   },
 
@@ -127,31 +138,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Code2,
     accent: "sky",
     services: [
-      {
-        name: "Ready-to-Use Tools & SaaS Apps",
-        description: "Pre-built SaaS tools and applications, customized and deployed for your business.",
-        href: "/marketplace?cat=technology-programming&sub=software-design-development",
-      },
-      {
-        name: "Cloud Hosting & Deployment",
-        description: "Cloud hosting, deployment automation, and infrastructure management on AWS, GCP, Azure.",
-        href: "/marketplace?cat=cloud-devops-mlops&sub=cloud-migration-modernization",
-      },
-      {
-        name: "Mobile Apps Design & Development",
-        description: "iOS and Android mobile app design and development built for performance and scale.",
-        href: "/marketplace?cat=technology-programming&sub=mobile-apps-design-development",
-      },
-      {
-        name: "Software Design & Development",
-        description: "Custom software products, internal systems, and enterprise applications built by senior teams.",
-        href: "/marketplace?cat=technology-programming&sub=software-design-development",
-      },
-      {
-        name: "API Development & Integration",
-        description: "API strategy, development, and integration services for connecting your entire stack.",
-        href: "/marketplace?cat=technology-programming&sub=api-development",
-      },
+      svc(
+        "Ready-to-Use Tools & SaaS Apps",
+        "Pre-built SaaS tools and applications, customized and deployed for your business."
+      ),
+      svc(
+        "Cloud Hosting & Deployment",
+        "Cloud hosting, deployment automation, and infrastructure management on AWS, GCP, Azure."
+      ),
+      svc(
+        "Mobile Apps Design & Development",
+        "iOS and Android mobile app design and development built for performance and scale."
+      ),
+      svc(
+        "Software Design & Development",
+        "Custom software products, internal systems, and enterprise applications built by senior teams."
+      ),
+      svc(
+        "API Development & Integration",
+        "API strategy, development, and integration services for connecting your entire stack."
+      ),
     ],
   },
 
@@ -162,31 +168,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Clapperboard,
     accent: "fuchsia",
     services: [
-      {
-        name: "Graphic Design & Branding",
-        description: "Brand identity, logo design, and graphic design services for digital and print.",
-        href: "/marketplace?cat=multimedia-ai-graphics&sub=social-ad-creatives",
-      },
-      {
-        name: "Multimedia Production Services",
-        description: "Full-cycle multimedia production — video, audio, motion graphics, and animation.",
-        href: "/marketplace?cat=multimedia-ai-graphics&sub=ai-video-generation",
-      },
-      {
-        name: "Visual Content & Marketing Assets",
-        description: "High-volume visual content and marketing assets for paid and organic campaigns.",
-        href: "/marketplace?cat=multimedia-ai-graphics&sub=ai-image-generation",
-      },
-      {
-        name: "UI/UX & Digital Design Services",
-        description: "Research-driven UI/UX design for web, mobile, and SaaS products.",
-        href: "/marketplace?cat=technology-programming&sub=ui-ux-design",
-      },
-      {
-        name: "AI Video & Audio Production",
-        description: "AI-generated video ads, synthetic voiceovers, music, and podcast production.",
-        href: "/marketplace?cat=multimedia-ai-graphics&sub=ai-audio-voice",
-      },
+      svc(
+        "Graphic Design & Branding",
+        "Brand identity, logo design, and graphic design services for digital and print."
+      ),
+      svc(
+        "Multimedia Production Services",
+        "Full-cycle multimedia production — video, audio, motion graphics, and animation."
+      ),
+      svc(
+        "Visual Content & Marketing Assets",
+        "High-volume visual content and marketing assets for paid and organic campaigns."
+      ),
+      svc(
+        "UI/UX & Digital Design Services",
+        "Research-driven UI/UX design for web, mobile, and SaaS products."
+      ),
+      svc(
+        "AI Video & Audio Production",
+        "AI-generated video ads, synthetic voiceovers, music, and podcast production."
+      ),
     ],
   },
 
@@ -197,31 +198,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Megaphone,
     accent: "rose",
     services: [
-      {
-        name: "AI-Driven Marketing & Personalization",
-        description: "AI-powered marketing personalization across email, web, and ad channels.",
-        href: "/marketplace?cat=digital-sales-marketing&sub=lifecycle-email-sms-marketing",
-      },
-      {
-        name: "AI-Powered Sales Enablement",
-        description: "AI SDRs, sales intelligence, and outbound pipeline engines for revenue teams.",
-        href: "/marketplace?cat=digital-sales-marketing&sub=ai-sdr-outbound-sales",
-      },
-      {
-        name: "Conversational & Engagement Automation",
-        description: "Chatbots, conversational marketing, and customer engagement automation.",
-        href: "/marketplace?cat=ai-agents&sub=conversational-ai-agents",
-      },
-      {
-        name: "Analytics, Insights & ROI Optimization",
-        description: "Marketing analytics, attribution, and ROI optimization for every channel.",
-        href: "/marketplace?cat=digital-sales-marketing&sub=conversion-rate-optimization",
-      },
-      {
-        name: "SEO & Answer Engine Optimization",
-        description: "SEO and AEO (Answer Engine Optimization) for Google, Perplexity, ChatGPT, and AI overviews.",
-        href: "/marketplace?cat=digital-sales-marketing&sub=seo-answer-engine-optimization",
-      },
+      svc(
+        "AI-Driven Marketing & Personalization",
+        "AI-powered marketing personalization across email, web, and ad channels."
+      ),
+      svc(
+        "AI-Powered Sales Enablement",
+        "AI SDRs, sales intelligence, and outbound pipeline engines for revenue teams."
+      ),
+      svc(
+        "Conversational & Engagement Automation",
+        "Chatbots, conversational marketing, and customer engagement automation."
+      ),
+      svc(
+        "Analytics, Insights & ROI Optimization",
+        "Marketing analytics, attribution, and ROI optimization for every channel."
+      ),
+      svc(
+        "SEO & Answer Engine Optimization",
+        "SEO and AEO (Answer Engine Optimization) for Google, Perplexity, ChatGPT, and AI overviews."
+      ),
     ],
   },
 
@@ -232,31 +228,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Building2,
     accent: "emerald",
     services: [
-      {
-        name: "Process & Workflow Automation",
-        description: "Automate business processes and workflows across operations, finance, and admin.",
-        href: "/marketplace?cat=business-enterprise-services&sub=crm-solutions",
-      },
-      {
-        name: "Customer, Sales & Experience Management",
-        description: "CRM, CX programs, and customer experience management for enterprise teams.",
-        href: "/marketplace?cat=business-enterprise-services&sub=customer-experience",
-      },
-      {
-        name: "Data, Analytics & Business Intelligence",
-        description: "Data pipelines, warehouses, BI dashboards, and decision analytics platforms.",
-        href: "/marketplace?cat=business-enterprise-services&sub=business-intelligence-data-analytics",
-      },
-      {
-        name: "Compliance, Security & Risk Management",
-        description: "Cybersecurity, compliance programs, and risk management for regulated industries.",
-        href: "/marketplace?cat=business-enterprise-services&sub=security-risk",
-      },
-      {
-        name: "CRM & ERP Implementation",
-        description: "CRM and ERP selection, implementation, and integration — Salesforce, HubSpot, SAP, Oracle.",
-        href: "/marketplace?cat=business-enterprise-services&sub=erp-solutions",
-      },
+      svc(
+        "Process & Workflow Automation",
+        "Automate business processes and workflows across operations, finance, and admin."
+      ),
+      svc(
+        "Customer, Sales & Experience Management",
+        "CRM, CX programs, and customer experience management for enterprise teams."
+      ),
+      svc(
+        "Data, Analytics & Business Intelligence",
+        "Data pipelines, warehouses, BI dashboards, and decision analytics platforms."
+      ),
+      svc(
+        "Compliance, Security & Risk Management",
+        "Cybersecurity, compliance programs, and risk management for regulated industries."
+      ),
+      svc(
+        "CRM & ERP Implementation",
+        "CRM and ERP selection, implementation, and integration — Salesforce, HubSpot, SAP, Oracle."
+      ),
     ],
   },
 
@@ -267,31 +258,26 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Lightbulb,
     accent: "orange",
     services: [
-      {
-        name: "Operational & Performance Solutions",
-        description: "Operational consulting and performance improvement programs for growing businesses.",
-        href: "/marketplace?cat=business-enterprise-services&sub=customer-experience",
-      },
-      {
-        name: "Compliance, Risk & Governance Consulting",
-        description: "Governance, risk, and compliance consulting for regulated and enterprise organizations.",
-        href: "/marketplace?cat=business-enterprise-services&sub=security-risk",
-      },
-      {
-        name: "Business & Strategy Consulting",
-        description: "Business strategy, market entry, and growth consulting from senior practitioners.",
-        href: "/marketplace?cat=business-enterprise-services",
-      },
-      {
-        name: "Branding & Identity Services",
-        description: "Brand strategy, identity design, and positioning for startups and enterprises.",
-        href: "/marketplace?cat=multimedia-ai-graphics&sub=social-ad-creatives",
-      },
-      {
-        name: "Digital Transformation Consulting",
-        description: "End-to-end digital transformation strategy and execution for enterprise modernization.",
-        href: "/marketplace?cat=cloud-devops-mlops&sub=cloud-migration-modernization",
-      },
+      svc(
+        "Operational & Performance Solutions",
+        "Operational consulting and performance improvement programs for growing businesses."
+      ),
+      svc(
+        "Compliance, Risk & Governance Consulting",
+        "Governance, risk, and compliance consulting for regulated and enterprise organizations."
+      ),
+      svc(
+        "Business & Strategy Consulting",
+        "Business strategy, market entry, and growth consulting from senior practitioners."
+      ),
+      svc(
+        "Branding & Identity Services",
+        "Brand strategy, identity design, and positioning for startups and enterprises."
+      ),
+      svc(
+        "Digital Transformation Consulting",
+        "End-to-end digital transformation strategy and execution for enterprise modernization."
+      ),
     ],
   },
 
@@ -302,31 +288,99 @@ export const SERVICES_DIRECTORY: DirectoryDivision[] = [
     icon: Wallet,
     accent: "teal",
     services: [
-      {
-        name: "Bookkeeping & Financial Management",
-        description: "Bookkeeping automation, financial reporting, and day-to-day financial management.",
-        href: "/marketplace?cat=business-enterprise-services&sub=financial-management",
-      },
-      {
-        name: "Financial Advisory & Growth Planning",
-        description: "Financial advisory, FP&A, and growth planning for startups and SMBs.",
-        href: "/marketplace?cat=business-enterprise-services&sub=financial-management",
-      },
-      {
-        name: "Business Formation & Compliance",
-        description: "Business formation, entity setup, and regulatory compliance for new companies.",
-        href: "/marketplace?cat=business-enterprise-services&sub=security-risk",
-      },
-      {
-        name: "Tax Planning & Regulatory Compliance",
-        description: "Tax planning, preparation, and regulatory compliance services for businesses.",
-        href: "/marketplace?cat=business-enterprise-services&sub=financial-management",
-      },
-      {
-        name: "Fractional CFO & Controller Services",
-        description: "Fractional CFO and controller services for startups without a full-time finance team.",
-        href: "/marketplace?cat=business-enterprise-services&sub=financial-management",
-      },
+      svc(
+        "Bookkeeping & Financial Management",
+        "Bookkeeping automation, financial reporting, and day-to-day financial management."
+      ),
+      svc(
+        "Financial Advisory & Growth Planning",
+        "Financial advisory, FP&A, and growth planning for startups and SMBs."
+      ),
+      svc(
+        "Business Formation & Compliance",
+        "Business formation, entity setup, and regulatory compliance for new companies."
+      ),
+      svc(
+        "Tax Planning & Regulatory Compliance",
+        "Tax planning, preparation, and regulatory compliance services for businesses."
+      ),
+      svc(
+        "Fractional CFO & Controller Services",
+        "Fractional CFO and controller services for startups without a full-time finance team."
+      ),
+    ],
+  },
+
+  // ── 9. Branding & Marketing Strategy (15 services) ──
+  // Pulled directly from the reference image's branding & marketing
+  // strategy panel. The largest division — covers research, positioning,
+  // identity, activation, and measurement of a brand end-to-end.
+  {
+    id: "branding-marketing-strategy",
+    name: "Branding & Marketing Strategy",
+    icon: Target,
+    accent: "amber",
+    services: [
+      svc(
+        "Jataye Blogs & News",
+        "Branded blogs and news content that builds authority, supports SEO, and earns organic traffic."
+      ),
+      svc(
+        "Industries Experience",
+        "Industry-specific brand experience programs — tailored messaging, assets, and proof per vertical."
+      ),
+      svc(
+        "Dedicated Sales Teams",
+        "Dedicated, brand-aligned sales teams that carry your narrative into every conversation."
+      ),
+      svc(
+        "Market Research & Analysts",
+        "Market research and analyst programs that quantify opportunity and de-risk brand bets."
+      ),
+      svc(
+        "Marketing Specialist",
+        "Dedicated marketing specialists embedded in your team — channel owners who execute the strategy."
+      ),
+      svc(
+        "Humanity, Ethic & Emotion of Brand",
+        "Define and express the humanity, ethics, and emotion of your brand — the why behind the loyalty."
+      ),
+      svc(
+        "Strategic Root Positioning of Brand",
+        "Strategic root positioning that defines who the brand is for, what it stands for, and how it differs."
+      ),
+      svc(
+        "Emotional Attach Brand Connection",
+        "Programs that build emotional attachment — community, content, experiences — for lasting loyalty."
+      ),
+      svc(
+        "Market Segment Differentiation",
+        "Differentiate your brand across market segments — tailored positioning per audience you serve."
+      ),
+      svc(
+        "Faster Time-to-Market",
+        "Brand systems and activation plans built for faster time-to-market — launch in weeks, not quarters."
+      ),
+      svc(
+        "Brand Identity Design & Strategy Development",
+        "Brand identity design and strategy development — name, logo, voice, and visual system from positioning."
+      ),
+      svc(
+        "Brand Positioning & Rebranding Services",
+        "Brand positioning and rebranding services for established companies — reposition without losing equity."
+      ),
+      svc(
+        "Build Social Media Branding",
+        "Build social media branding that is consistent, on-voice, and built for each platform."
+      ),
+      svc(
+        "Digital Marketing Integration & Enhancement",
+        "Integrate and enhance your brand across every digital marketing channel — one brand, every touchpoint."
+      ),
+      svc(
+        "Competitor Analysis & Market Reach",
+        "Competitor analysis and market reach programs — map the field, find the gap, and own the whitespace."
+      ),
     ],
   },
 ];
