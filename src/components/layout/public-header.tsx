@@ -1609,9 +1609,10 @@ function CategoryMegaMenu({
   return (
     <div
       id="stioos-category-mega"
+      data-flyout-panel
       role="region"
       aria-label="Solution categories"
-      className="flyout-panel absolute left-4 right-4 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-brand-navy shadow-2xl shadow-black/60 ring-1 ring-white/[0.06] sm:left-6 sm:right-auto w-[calc(100%-2rem)] sm:w-[calc(100vw-6rem)] lg:w-[min(1020px,calc(100vw-6rem))] max-w-[1020px]"
+      className="flyout-panel absolute left-4 right-4 top-[118px] z-50 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-brand-navy shadow-2xl shadow-black/60 ring-1 ring-white/[0.06] sm:left-6 sm:right-auto w-[calc(100%-2rem)] sm:w-[calc(100vw-6rem)] lg:w-[min(1020px,calc(100vw-6rem))] max-w-[1020px]"
     >
       <div className="grid grid-cols-1 md:grid-cols-[290px_1fr] xl:grid-cols-[310px_1fr]">
         {/* ── Left panel: category list ── */}
