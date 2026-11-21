@@ -2299,19 +2299,26 @@ function HeaderSearch({
                 setActiveIdx(-1);
               }
             }}
-            className="flyout-panel absolute inset-x-0 top-full z-50 mt-2 max-h-[440px] overflow-y-auto rounded-2xl border border-white/10 bg-brand-navy p-2 shadow-2xl shadow-black/60 ring-1 ring-white/[0.06]"
+            className="flyout-panel absolute inset-x-0 top-full z-50 max-h-[440px] overflow-y-auto rounded-2xl border border-white/10 bg-brand-navy p-2 shadow-2xl shadow-black/60 ring-1 ring-white/[0.06]"
             style={
               isDesktop && stripShown
-                ? { top: "calc(100% + 2.875rem)" } // clear the 46px strip band
-                : undefined
+                ? { top: "calc(100% + 0.125rem)" }
+                : { top: "calc(100% + 0.125rem)" }
             }
           >
             {!hasQuery && (
               <div className="p-1.5">
-                <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                {/* Popular services — now at the TOP (was below trending) */}
+                <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Popular services
+                </p>
+                {popularServices.map((s) => row(s, null))}
+
+                {/* Trending searches — moved to BOTTOM (was at top) */}
+                <p className="px-2 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Trending searches
                 </p>
-                <div className="flex flex-wrap gap-1.5 px-1 pb-2">
+                <div className="flex flex-wrap gap-1.5 px-1 pb-1">
                   {TRENDING.map((t) => (
                     <button
                       key={t}
@@ -2321,34 +2328,6 @@ function HeaderSearch({
                       className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-300 transition-colors hover:border-amber-400/40 hover:bg-amber-400/10 hover:text-amber-300"
                     >
                       {t}
-                    </button>
-                  ))}
-                </div>
-
-                <p className="px-2 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Popular services
-                </p>
-                {popularServices.map((s) => row(s, null))}
-
-                <p className="px-2 pb-1.5 pt-2.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Quick links
-                </p>
-                <div className="grid grid-cols-2 gap-1">
-                  {QUICK_LINKS.map((l) => (
-                    <button
-                      key={l.key}
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => go(l.href)}
-                      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-white/[0.05]"
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-slate-300">
-                        <Icon name={l.icon ?? "Sparkles"} className="h-3.5 w-3.5" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[13px] font-medium text-slate-200">{l.title}</span>
-                        <span className="block truncate text-[10px] text-slate-500">{l.sub}</span>
-                      </span>
                     </button>
                   ))}
                 </div>
