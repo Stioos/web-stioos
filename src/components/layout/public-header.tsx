@@ -272,11 +272,10 @@ export function PublicHeader() {
   };
   const scheduleClose = () => {
     clearTimers();
-    // 500ms close delay — gives users enough time to move the mouse
-    // from the pill to the dropdown panel without it closing prematurely.
-    // The previous 240ms was too short and caused the "header not working"
-    // issue reported repeatedly.
-    closeTimer.current = window.setTimeout(closeAllFlyouts, 500);
+    // 400ms close delay — enough time to move mouse within a panel,
+    // but fast enough that the mega menu closes quickly when the user
+    // moves to the secondary strip pills.
+    closeTimer.current = window.setTimeout(closeAllFlyouts, 400);
   };
   const hoverOpenMenu = (menu: Exclude<OpenMenu, null>) => {
     clearTimers();
@@ -315,38 +314,26 @@ export function PublicHeader() {
   // header and outside an open flyout panel schedules dismissal.
   // PROXIMITY GRACE ZONE: if the mouse is within 200px below the header
   // (where dropdown panels live), don't schedule close — the user is
-  // likely moving toward the panel. This permanently fixes the "header
-  // not working" issue where panels closed before the user could reach them.
+  // Mouse-leave detection: closes flyouts when the mouse leaves both
+  // the header and any open flyout panel.
+  // SIMPLE & RELIABLE: if the mouse is inside the header or a
+  // data-flyout-panel, cancel any pending close. Otherwise, schedule
+  // a close with a 400ms delay. No grace zone — the grace zone was
+  // causing the mega menu to stay open and block the secondary strip.
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       const t = e.target as Element | null;
       if (!t || !t.closest) return;
-      const inside = t.closest("header") || t.closest("[data-flyout-panel]");
-      if (inside) {
+      const insideHeader = t.closest("header");
+      const insidePanel = t.closest("[data-flyout-panel]");
+      if (insideHeader || insidePanel) {
         // Mouse is inside header or a flyout panel — cancel any pending close
         if (closeTimer.current !== null) {
           window.clearTimeout(closeTimer.current);
           closeTimer.current = null;
         }
       } else if (openMenu !== null || openStrip !== null || modeOpen) {
-        // Mouse is outside header AND outside panel. Check if the mouse
-        // is in the "grace zone" — within 250px below the header bottom
-        // edge. If so, don't close yet (user is likely moving toward
-        // the dropdown panel).
-        const headerEl = document.querySelector("header");
-        if (headerEl) {
-          const headerBottom = headerEl.getBoundingClientRect().bottom;
-          const distanceBelow = e.clientY - headerBottom;
-          if (distanceBelow >= -20 && distanceBelow <= 600) {
-            // In the grace zone — cancel close timer but don't schedule a new one
-            if (closeTimer.current !== null) {
-              window.clearTimeout(closeTimer.current);
-              closeTimer.current = null;
-            }
-            return;
-          }
-        }
-        // Outside the grace zone — schedule close
+        // Mouse is outside both header and panel — schedule close
         scheduleClose();
       }
     };
@@ -1612,7 +1599,7 @@ function CategoryMegaMenu({
       data-flyout-panel
       role="region"
       aria-label="Solution categories"
-      className="flyout-panel absolute left-4 right-4 top-[118px] z-50 mt-2 overflow-hidden rounded-2xl border border-white/10 bg-brand-navy shadow-2xl shadow-black/60 ring-1 ring-white/[0.06] sm:left-6 sm:right-auto w-[calc(100%-2rem)] sm:w-[calc(100vw-6rem)] lg:w-[min(1020px,calc(100vw-6rem))] max-w-[1020px]"
+      className="flyout-panel absolute left-4 right-4 top-16 z-[55] mt-2 overflow-hidden rounded-2xl border border-white/10 bg-brand-navy shadow-2xl shadow-black/60 ring-1 ring-white/[0.06] sm:left-6 sm:right-auto w-[calc(100%-2rem)] sm:w-[calc(100vw-6rem)] lg:w-[min(1020px,calc(100vw-6rem))] max-w-[1020px] lg:top-[72px]"
     >
       <div className="grid grid-cols-1 md:grid-cols-[290px_1fr] xl:grid-cols-[310px_1fr]">
         {/* ── Left panel: category list ── */}

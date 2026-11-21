@@ -68,7 +68,7 @@ export function TalentMegaMenu({ onClose }: { onClose: () => void }) {
       data-flyout-panel
       role="region"
       aria-label="Talent solutions"
-      className="flyout-panel absolute inset-x-4 top-[118px] z-50 mx-auto mt-2 max-h-[calc(100dvh-8.5rem)] max-w-[1100px] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-brand-navy shadow-2xl shadow-black/60 ring-1 ring-white/[0.06] lg:top-[118px]"
+      className="flyout-panel absolute inset-x-4 top-16 z-[55] mx-auto mt-2 max-h-[calc(100dvh-8.5rem)] max-w-[1100px] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-brand-navy shadow-2xl shadow-black/60 ring-1 ring-white/[0.06] lg:top-[72px]"
     >
       <div className="grid xl:grid-cols-[272px_1fr]">
         {/* ── Featured rail: audience picker that converts both sides ── */}
