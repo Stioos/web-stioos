@@ -660,7 +660,7 @@ export function PublicHeader() {
               }
               className="flex h-[46px] items-center border-t border-white/[0.07]"
             >
-              <div className="flex min-w-0 flex-1 items-center gap-1.5 xl:gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-1 xl:gap-1.5 overflow-x-auto no-scrollbar">
                 {isTalentSection
                   ? (() => {
                       // Talent Solutions secondary header — ALL pills in a
@@ -720,7 +720,7 @@ export function PublicHeader() {
                                   GROUP_ACCENT_TILE[group.accent]
                                 )}
                               />
-                              <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
+                              <span className="text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
                                 {group.stripLabel}
                               </span>
                               <ChevronDown
@@ -776,7 +776,7 @@ export function PublicHeader() {
                               className="group inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-lg border border-amber-400/60 bg-gradient-to-br from-amber-500/25 via-orange-500/20 to-amber-600/15 px-2.5 shadow-[0_0_22px_-6px] shadow-amber-500/50 transition-colors duration-200 hover:border-amber-300/80 hover:from-amber-500/35 hover:via-orange-500/25 hover:to-amber-600/20"
                             >
                               <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-400" />
-                              <span className="min-w-0 truncate text-[11px] font-bold whitespace-nowrap leading-none text-amber-700 dark:text-amber-200 transition-colors group-hover:text-amber-800 dark:group-hover:text-amber-100 xl:text-xs">
+                              <span className="text-[11px] font-bold whitespace-nowrap leading-none text-amber-700 dark:text-amber-200 transition-colors group-hover:text-amber-800 dark:group-hover:text-amber-100 xl:text-xs">
                                 Premium Talent
                               </span>
                               <ChevronDown
@@ -839,7 +839,7 @@ export function PublicHeader() {
                         className="group inline-flex h-9 min-w-0 shrink items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] pl-2.5 pr-2 shadow-[0_1px_2px_rgba(2,8,23,0.05)] transition-colors duration-200 hover:border-indigo-400/40 hover:bg-white/[0.09]"
                       >
                         <Icon name={cat.icon} className="h-4 w-4 shrink-0 text-indigo-400" />
-                        <span className="min-w-0 truncate text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
+                        <span className="text-[11px] font-semibold whitespace-nowrap leading-none text-slate-200 transition-colors group-hover:text-white xl:text-xs">
                           {cat.name}
                         </span>
                         <ChevronDown
