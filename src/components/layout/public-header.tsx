@@ -695,8 +695,9 @@ export function PublicHeader() {
                             ref={(el) => {
                               pillRefs.current[menuId] = el;
                             }}
-                            className="relative flex min-w-0 shrink"
+                            className="relative flex shrink-0"
                             onMouseEnter={() => hoverOpenStrip(menuId)}
+                            onMouseLeave={() => scheduleClose()}
                           >
                             <Link
                               href={`/talent-solutions/${group.slug}`}
@@ -756,8 +757,9 @@ export function PublicHeader() {
                             ref={(el) => {
                               pillRefs.current["talent-all-services"] = el;
                             }}
-                            className="relative flex min-w-0 shrink"
+                            className="relative flex shrink-0"
                             onMouseEnter={() => hoverOpenStrip("talent-all-services")}
+                            onMouseLeave={() => scheduleClose()}
                           >
                             <Link
                               href="/talent-solutions"
@@ -821,8 +823,9 @@ export function PublicHeader() {
                       ref={(el) => {
                         pillRefs.current[cat.id] = el;
                       }}
-                      className="relative flex min-w-0 shrink"
+                      className="relative flex shrink-0"
                       onMouseEnter={() => hoverOpenStrip(cat.id)}
+                      onMouseLeave={() => scheduleClose()}
                     >
                       <Link
                         href={`/category/${cat.slug}`}

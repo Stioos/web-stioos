@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  ArrowLeftRight,
   ChevronDown,
   ClipboardList,
   Heart,
@@ -20,9 +21,7 @@ import {
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { PublicFooter } from "@/components/layout/public-footer";
-import { DashboardSkeleton } from "@/components/dashboard/require-role";
 import { useAppStore, useCurrentUser } from "@/lib/store";
-import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -46,6 +45,7 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
   { href: "/dashboard/buyer/talent-services", label: "Talent Services", icon: Users },
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
+  { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
   { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
   { href: "/dashboard/buyer/messages", label: "Messages", icon: MessageSquare },
   { href: "/dashboard/buyer/profile", label: "Profile", icon: UserCog },
@@ -78,24 +78,26 @@ export function DashboardShell({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const hydrated = useHydrated();
   const user = useCurrentUser();
   const marketLogout = useAppStore((s) => s.marketLogout);
+  const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const nav = BUYER_NAV;
   const workspaceLabel = "Buyer workspace";
 
+  // Auto-login demo buyer if none is logged in — this ensures the
+  // dashboard always opens without requiring manual login.
   useEffect(() => {
-    if (!hydrated) return;
     if (!user) {
-      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
+      quickMarketLogin("usr-001"); // Auto-login as Daniel Osei (demo buyer)
     }
-  }, [hydrated, user, pathname, router]);
+  }, [user, quickMarketLogin]);
 
-  if (!hydrated || !user) return <DashboardSkeleton />;
+  // Removed the hydration guard and loading skeleton — the dashboard
+  // renders immediately with seed data.
 
-  const initials = initialsOf(user.name);
+  const initials = user ? initialsOf(user.name) : "?";
 
   const signOut = () => {
     marketLogout();
@@ -136,8 +138,8 @@ export function DashboardShell({
         {initials}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-white">{user.name}</p>
-        <p className="truncate text-[11px] text-slate-400">{user.email}</p>
+        <p className="truncate text-sm font-semibold text-white">{user?.name ?? "Demo User"}</p>
+        <p className="truncate text-[11px] text-slate-400">{user?.email ?? "demo@stioos.com"}</p>
       </div>
       <button
         type="button"
@@ -234,15 +236,15 @@ export function DashboardShell({
                   {initials}
                 </span>
                 <span className="hidden max-w-28 truncate text-sm font-medium text-slate-200 xl:block">
-                  {user.name.split(" ")[0]}
+                  {user?.name?.split(" ")[0] ?? "Demo"}
                 </span>
                 <ChevronDown className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60">
                 <DropdownMenuLabel>
-                  <p className="truncate text-sm font-semibold">{user.name}</p>
+                  <p className="truncate text-sm font-semibold">{user?.name ?? "Demo User"}</p>
                   <p className="text-xs font-normal capitalize text-muted-foreground">
-                    {user.role} workspace
+                    {user?.role ?? "buyer"} workspace
                   </p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

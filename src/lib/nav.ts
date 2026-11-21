@@ -94,6 +94,7 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     label: "Communication",
     items: [
       { label: "Inquiries", href: "/admin/inquiries", icon: "Mail", module: "inquiries" },
+      { label: "CTA Transactions", href: "/admin/cta-transactions", icon: "ArrowLeftRight", module: "inquiries" },
       { label: "Contact Requests", href: "/admin/contact-requests", icon: "MessageSquare", module: "inquiries" },
     ],
   },

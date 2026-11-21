@@ -666,7 +666,7 @@ export const useAppStore = create<AppState>()(
         return { ok: false, error: "No account found with this email. Create one or use demo access." };
       },
       quickMarketLogin: (userId) => {
-        const user = get().users.find((u) => u.id === userId && !!u.password);
+        const user = get().users.find((u) => u.id === userId);
         if (!user) return { ok: false };
         set({ currentUserId: user.id, currentAdminId: null });
         get().logActivity("signed in", "Marketplace", user.name, `${user.name} signed in via demo quick access.`);

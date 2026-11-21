@@ -1,5 +1,5 @@
 import {
-  Activity, ArrowRight, ArrowRightLeft, Award, BadgeCheck, BarChart3, Bot, Boxes, Briefcase, Building, Building2, Calculator,
+  Activity, ArrowLeftRight, ArrowRight, ArrowRightLeft, Award, BadgeCheck, BarChart3, Bot, Boxes, Briefcase, Building, Building2, Calculator,
   CalendarDays, Check, ChevronDown, ClipboardCheck, Code2, Brain, BrainCircuit,
   Clapperboard, Clock, CloudCog, Cog, Compass, Contact, Cpu, Database, DraftingCompass, Code,
   Factory, FileSearch, FileText, Flag, Globe, Handshake, HardHat, Headset, Heart, HeartHandshake, History,
@@ -19,7 +19,7 @@ import {
 // Note: ChevronDown is also imported above and added to the ICONS map below.
 
 const ICONS: Record<string, LucideIcon> = {
-  Activity, ArrowRight, ArrowRightLeft, Award, BarChart3, Bot, Boxes, Brain, BrainCircuit, Briefcase, Building, Building2, Calculator, ChevronDown, ClipboardCheck,
+  Activity, ArrowLeftRight, ArrowRight, ArrowRightLeft, Award, BarChart3, Bot, Boxes, Brain, BrainCircuit, Briefcase, Building, Building2, Calculator, ChevronDown, ClipboardCheck,
   Code, Code2, Clapperboard, CloudCog, Cog, Compass, Contact, Cpu, Database, DraftingCompass,
   Factory, FileSearch, FileText, Flag, Globe, Handshake, HardHat, Headset, Heart, HeartHandshake, History,
   Inbox, Landmark, Layers, Lightbulb, LineChart, Megaphone, MessageSquare, Network, Package,
