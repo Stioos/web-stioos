@@ -4,18 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ArrowLeftRight,
   ChevronDown,
-  ClipboardList,
-  Heart,
   LayoutDashboard,
   LogOut,
   Menu,
-  MessageSquare,
-  Package,
   Store,
-  UserCog,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
@@ -42,13 +35,6 @@ interface NavItem {
 
 const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
-  { href: "/dashboard/buyer/talent-services", label: "Talent Services", icon: Users },
-  { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
-  { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
-  { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/dashboard/buyer/messages", label: "Messages", icon: MessageSquare },
-  { href: "/dashboard/buyer/profile", label: "Profile", icon: UserCog },
 ];
 
 function initialsOf(name: string): string {

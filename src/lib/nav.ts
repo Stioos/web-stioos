@@ -81,34 +81,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     label: "Overview",
     items: [{ label: "Dashboard", href: "/admin", icon: "LayoutDashboard", module: "dashboard", exact: true }],
   },
-  {
-    label: "Marketplace Management",
-    items: [
-      { label: "Services", href: "/admin/services", icon: "Layers", module: "services" },
-      { label: "Orders", href: "/admin/orders", icon: "Package", module: "orders" },
-      { label: "Service Requests", href: "/admin/service-requests", icon: "Inbox", module: "marketplace" },
-      { label: "Users", href: "/admin/users", icon: "Users", module: "users" },
-    ],
-  },
-  {
-    label: "Communication",
-    items: [
-      { label: "Inquiries", href: "/admin/inquiries", icon: "Mail", module: "inquiries" },
-      { label: "CTA Transactions", href: "/admin/cta-transactions", icon: "ArrowLeftRight", module: "inquiries" },
-      { label: "Contact Requests", href: "/admin/contact-requests", icon: "MessageSquare", module: "inquiries" },
-    ],
-  },
-  {
-    label: "System",
-    items: [
-      { label: "Activity Logs", href: "/admin/activity", icon: "History", module: "activity" },
-      { label: "Settings", href: "/admin/settings", icon: "Settings", module: "settings" },
-    ],
-  },
-  {
-    label: "Profile",
-    items: [{ label: "My Profile", href: "/admin/profile", icon: "UserCircle", module: "settings" }],
-  },
 ];
 
 /** Modules a role can view → visible nav groups */
