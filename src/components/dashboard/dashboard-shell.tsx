@@ -9,6 +9,12 @@ import {
   LogOut,
   Menu,
   Store,
+  Package,
+  ClipboardList,
+  ArrowLeftRight,
+  Heart,
+  MessageSquare,
+  UserCog,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
@@ -35,6 +41,12 @@ interface NavItem {
 
 const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
+  { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
+  { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
+  { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
+  { href: "/dashboard/buyer/messages", label: "Messages", icon: MessageSquare },
+  { href: "/dashboard/buyer/profile", label: "Profile", icon: UserCog },
 ];
 
 function initialsOf(name: string): string {
@@ -49,9 +61,9 @@ function initialsOf(name: string): string {
 }
 
 /**
- * Shared marketplace dashboard chrome: sticky topbar, desktop sidebar,
- * mobile sheet navigation and the public footer. The footer sticks to the
- * bottom on short pages (min-h-screen flex-col wrapper + footer mt-auto).
+ * Buyer dashboard chrome — NO sidebar, uses a secondary header strip
+ * (like talent solutions) for navigation. The admin dashboard keeps
+ * its sidebar.
  */
 export function DashboardShell({
   role,
@@ -72,16 +84,11 @@ export function DashboardShell({
   const nav = BUYER_NAV;
   const workspaceLabel = "Buyer workspace";
 
-  // Auto-login demo buyer if none is logged in — this ensures the
-  // dashboard always opens without requiring manual login.
   useEffect(() => {
     if (!user) {
-      quickMarketLogin("usr-001"); // Auto-login as Daniel Osei (demo buyer)
+      quickMarketLogin("usr-001");
     }
   }, [user, quickMarketLogin]);
-
-  // Removed the hydration guard and loading skeleton — the dashboard
-  // renders immediately with seed data.
 
   const initials = user ? initialsOf(user.name) : "?";
 
@@ -90,61 +97,8 @@ export function DashboardShell({
     router.push("/");
   };
 
-  const renderNavLinks = (onNavigate?: () => void) => (
-    <nav aria-label={`${workspaceLabel} navigation`} className="flex flex-col gap-1">
-      {nav.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40",
-              active
-                ? "bg-amber-400/10 text-amber-300 ring-1 ring-inset ring-amber-400/25"
-                : "text-slate-300 hover:bg-white/[0.05] hover:text-white"
-            )}
-          >
-            <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-
-  const renderUserCard = (onNavigate?: () => void) => (
-    <div className="flex items-center gap-3">
-      <span
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[11px] font-bold text-brand-ink"
-        aria-hidden="true"
-      >
-        {initials}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-white">{user?.name ?? "Demo User"}</p>
-        <p className="truncate text-[11px] text-slate-400">{user?.email ?? "demo@stioos.com"}</p>
-      </div>
-      <button
-        type="button"
-        onClick={() => {
-          signOut();
-          onNavigate?.();
-        }}
-        aria-label="Sign out"
-        title="Sign out"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-rose-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40"
-      >
-        <LogOut className="h-4 w-4" aria-hidden="true" />
-      </button>
-    </div>
-  );
-
   return (
     <div className="flex min-h-screen flex-col bg-brand-ink text-white">
-      {/* Skip link — visible on keyboard focus */}
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-amber-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-ink"
@@ -152,7 +106,7 @@ export function DashboardShell({
         Skip to main content
       </a>
 
-      {/* Topbar */}
+      {/* Main header — logo + breadcrumb + account */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-ink/95 backdrop-blur">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
           {/* Mobile navigation */}
@@ -180,8 +134,49 @@ export function DashboardShell({
                 </div>
               </SheetTitle>
               <div className="flex h-[calc(100%-5.5rem)] flex-col">
-                <div className="flex-1 overflow-y-auto p-4">{renderNavLinks(() => setMobileNavOpen(false))}</div>
-                <div className="border-t border-white/10 p-4">{renderUserCard(() => setMobileNavOpen(false))}</div>
+                <div className="flex-1 overflow-y-auto p-4">
+                  <nav aria-label={`${workspaceLabel} navigation`} className="flex flex-col gap-1">
+                    {nav.map((item) => {
+                      const active = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setMobileNavOpen(false)}
+                          aria-current={active ? "page" : undefined}
+                          className={cn(
+                            "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                            active
+                              ? "bg-amber-400/10 text-amber-300 ring-1 ring-inset ring-amber-400/25"
+                              : "text-slate-300 hover:bg-white/[0.05] hover:text-white"
+                          )}
+                        >
+                          <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </nav>
+                </div>
+                <div className="border-t border-white/10 p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[11px] font-bold text-brand-ink">
+                      {initials}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-white">{user?.name ?? "Demo User"}</p>
+                      <p className="truncate text-[11px] text-slate-400">{user?.email ?? "demo@stioos.com"}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { signOut(); setMobileNavOpen(false); }}
+                      aria-label="Sign out"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-white/[0.06] hover:text-rose-300"
+                    >
+                      <LogOut className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
@@ -213,12 +208,9 @@ export function DashboardShell({
             <DropdownMenu>
               <DropdownMenuTrigger
                 aria-label="Account menu"
-                className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-2 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40"
+                className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-2 transition-colors hover:bg-white/10"
               >
-                <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[11px] font-bold text-brand-ink"
-                  aria-hidden="true"
-                >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[11px] font-bold text-brand-ink">
                   {initials}
                 </span>
                 <span className="hidden max-w-28 truncate text-sm font-medium text-slate-200 xl:block">
@@ -234,7 +226,7 @@ export function DashboardShell({
                   </p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push(nav[0].href)}>
+                <DropdownMenuItem onClick={() => router.push("/dashboard/buyer")}>
                   <LayoutDashboard className="h-4 w-4" /> Dashboard home
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/marketplace")}>
@@ -251,20 +243,42 @@ export function DashboardShell({
             </DropdownMenu>
           </div>
         </div>
+
+        {/* Secondary header strip — navigation pills (replaces sidebar) */}
+        <nav
+          aria-label="Buyer workspace navigation"
+          className="hidden h-[46px] items-center border-t border-white/[0.07] px-4 sm:px-6 lg:px-8 lg:flex"
+        >
+          <div className="no-scrollbar flex flex-1 items-center gap-1.5 xl:gap-2 overflow-x-auto">
+            {nav.map((item) => {
+              const active = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 transition-colors duration-200",
+                    active
+                      ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
+                      : "border-white/15 bg-white/[0.05] text-slate-200 hover:bg-white/[0.09]"
+                  )}
+                >
+                  <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="text-[11px] font-semibold whitespace-nowrap leading-none xl:text-xs">
+                    {item.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
       </header>
 
-      {/* Body: sidebar + content */}
-      <div className="flex w-full flex-1 items-stretch">
-        {/* Desktop sidebar */}
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-64 shrink-0 flex-col border-r border-white/10 bg-brand-ink lg:flex">
-          <div className="flex-1 overflow-y-auto p-4">{renderNavLinks()}</div>
-          <div className="border-t border-white/10 p-4">{renderUserCard()}</div>
-        </aside>
-
-        <main id="main" className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
-      </div>
+      {/* Body — full width, no sidebar */}
+      <main id="main" className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+        {children}
+      </main>
 
       <PublicFooter />
     </div>
