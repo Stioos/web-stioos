@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -16,12 +16,18 @@ import {
   CreditCard,
   Users,
   Settings,
+  Search,
+  X,
+  MessageSquareText,
+  ArrowRight,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
+import { Icon } from "@/components/shared/icon";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { useAppStore, useCurrentUser } from "@/lib/store";
+import { getAllPublishedServices } from "@/lib/service-data";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -33,6 +39,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { Service } from "@/types";
 
 interface NavItem {
   href: string;
@@ -42,9 +49,9 @@ interface NavItem {
 
 const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/buyer/post-a-job", label: "Post a Service Job", icon: Briefcase },
   { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
+  { href: "/dashboard/buyer/service-responses", label: "Service Responses", icon: MessageSquareText },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
   { href: "/dashboard/buyer/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },
@@ -63,11 +70,14 @@ function initialsOf(name: string): string {
   );
 }
 
-/**
- * Buyer dashboard chrome — NO sidebar, uses a secondary header strip
- * (like talent solutions) for navigation. The admin dashboard keeps
- * its sidebar.
- */
+interface SearchItem {
+  key: string;
+  title: string;
+  sub: string;
+  href: string;
+  icon: string;
+}
+
 export function DashboardShell({
   role,
   title,
@@ -83,9 +93,12 @@ export function DashboardShell({
   const marketLogout = useAppStore((s) => s.marketLogout);
   const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchIdx, setSearchIdx] = useState(-1);
 
-  const nav = BUYER_NAV;
-  const workspaceLabel = "Buyer workspace";
+  const allServices = useMemo(() => getAllPublishedServices(), []);
+  const categories = useAppStore((s) => s.categories);
 
   useEffect(() => {
     if (!user) {
@@ -100,6 +113,44 @@ export function DashboardShell({
     router.push("/");
   };
 
+  // Search results
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const terms = q.split(/\s+/).filter(Boolean);
+    const svc: SearchItem[] = allServices
+      .filter((s) => {
+        const hay = [s.name, s.shortDescription, s.tags.join(" ")].join(" ").toLowerCase();
+        return terms.every((t) => hay.includes(t));
+      })
+      .slice(0, 5)
+      .map((s) => ({
+        key: `svc-${s.id}`,
+        title: s.name,
+        sub: "Service",
+        href: `/marketplace/${s.slug}`,
+        icon: s.icon,
+      }));
+    const cats: SearchItem[] = categories
+      .filter((c) => terms.every((t) => c.name.toLowerCase().includes(t)))
+      .slice(0, 3)
+      .map((c) => ({
+        key: `cat-${c.id}`,
+        title: c.name,
+        sub: "Category",
+        href: `/category/${c.slug}`,
+        icon: c.icon,
+      }));
+    return [...svc, ...cats];
+  }, [searchQuery, allServices, categories]);
+
+  const submitSearch = () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    setSearchOpen(false);
+    router.push(`/dashboard/buyer/search?q=${encodeURIComponent(q)}`);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-brand-ink text-white">
       <a
@@ -109,7 +160,7 @@ export function DashboardShell({
         Skip to main content
       </a>
 
-      {/* Main header — logo + breadcrumb + account */}
+      {/* Main header — logo + search + account */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-ink/95 backdrop-blur">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
           {/* Mobile navigation */}
@@ -132,14 +183,14 @@ export function DashboardShell({
                 <div className="border-b border-white/10 px-5 py-4">
                   <Logo className="h-7 w-auto" priority />
                   <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    {workspaceLabel}
+                    Buyer workspace
                   </p>
                 </div>
               </SheetTitle>
               <div className="flex h-[calc(100%-5.5rem)] flex-col">
                 <div className="flex-1 overflow-y-auto p-4">
-                  <nav aria-label={`${workspaceLabel} navigation`} className="flex flex-col gap-1">
-                    {nav.map((item) => {
+                  <nav aria-label="Buyer workspace navigation" className="flex flex-col gap-1">
+                    {BUYER_NAV.map((item) => {
                       const active = pathname === item.href;
                       return (
                         <Link
@@ -186,12 +237,139 @@ export function DashboardShell({
 
           <Logo href="/" className="h-7 w-auto" priority />
 
-          {/* Breadcrumb */}
-          <div className="hidden min-w-0 items-center gap-2 text-sm sm:flex" aria-label="Breadcrumb">
-            <span className="text-slate-500" aria-hidden="true">/</span>
-            <span className="whitespace-nowrap text-slate-400">{workspaceLabel}</span>
-            <span className="text-slate-500" aria-hidden="true">/</span>
-            <span className="truncate font-semibold text-white">{title}</span>
+          {/* Browse Categories dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="hidden items-center gap-2 rounded-lg border border-white/15 bg-white/[0.05] px-3 py-2 text-sm font-semibold text-slate-200 transition-colors hover:bg-white/10 md:inline-flex">
+                <Store className="h-4 w-4 text-amber-400" />
+                Browse Categories
+                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuLabel>Solution Divisions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {categories.filter((c) => c.status === "active").map((c) => (
+                <DropdownMenuItem key={c.id} asChild>
+                  <Link href={`/category/${c.slug}`}>
+                    <Icon name={c.icon} className="mr-2 h-4 w-4 text-amber-400" />
+                    {c.name}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/marketplace" className="font-semibold text-amber-400">
+                  View All Services
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Search bar */}
+          <div className="relative min-w-0 flex-1 lg:max-w-[480px]">
+            <form
+              onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
+              className={cn(
+                "relative flex h-10 items-center gap-2 rounded-full border pl-4 pr-1.5 transition-all",
+                searchOpen
+                  ? "border-amber-400/50 bg-white/[0.08] ring-2 ring-amber-400/20"
+                  : "border-white/10 bg-white/[0.05] hover:border-white/20"
+              )}
+            >
+              <Search className="h-4 w-4 shrink-0 text-slate-400" />
+              <input
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); setSearchIdx(-1); }}
+                onFocus={() => setSearchOpen(true)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") { setSearchOpen(false); }
+                  if (e.key === "ArrowDown") { e.preventDefault(); setSearchIdx((i) => Math.min(i + 1, searchResults.length - 1)); }
+                  if (e.key === "ArrowUp") { e.preventDefault(); setSearchIdx((i) => Math.max(i - 1, -1)); }
+                  if (e.key === "Enter" && searchIdx >= 0 && searchResults[searchIdx]) {
+                    e.preventDefault();
+                    router.push(searchResults[searchIdx].href);
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Search services, solutions, industries…"
+                aria-label="Search services"
+                className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  aria-label="Clear"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => { setSearchQuery(""); setSearchOpen(false); }}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <button
+                type="submit"
+                aria-label="Search"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500 text-brand-ink hover:bg-amber-400"
+              >
+                <Search className="h-4 w-4" strokeWidth={2.4} />
+              </button>
+            </form>
+
+            {/* Search suggestions dropdown */}
+            {searchOpen && searchQuery && (
+              <div
+                className="absolute inset-x-0 top-full z-50 mt-1 max-h-[360px] overflow-y-auto rounded-2xl border border-white/10 bg-brand-navy p-2 shadow-2xl shadow-black/60"
+                onMouseDown={(e) => {
+                  const el = e.target as Element;
+                  if (!el.closest("a") && !el.closest("button")) setSearchOpen(false);
+                }}
+              >
+                {searchResults.length === 0 ? (
+                  <div className="px-4 py-6 text-center">
+                    <p className="text-sm text-slate-300">No matches for &ldquo;{searchQuery}&rdquo;</p>
+                    <p className="mt-1 text-xs text-slate-500">Press Enter for full search.</p>
+                  </div>
+                ) : (
+                  <div className="p-1.5">
+                    {searchResults.length > 0 && (
+                      <>
+                        <p className="px-2 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Results ({searchResults.length})
+                        </p>
+                        {searchResults.map((item, i) => (
+                          <Link
+                            key={item.key}
+                            href={item.href}
+                            onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                            onMouseEnter={() => setSearchIdx(i)}
+                            className={cn(
+                              "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors",
+                              i === searchIdx ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"
+                            )}
+                          >
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white/[0.06] ring-1 ring-white/10">
+                              <Icon name={item.icon} className="h-3.5 w-3.5 text-amber-400" />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm font-medium text-slate-100">{item.title}</span>
+                              <span className="block truncate text-[11px] text-slate-500">{item.sub}</span>
+                            </span>
+                          </Link>
+                        ))}
+                      </>
+                    )}
+                    <button
+                      onClick={submitSearch}
+                      className="mt-1 flex w-full items-center justify-between border-t border-white/[0.06] px-3 py-2.5 text-[13px] font-semibold text-amber-400 hover:bg-amber-400/[0.07]"
+                    >
+                      <span>See all results for &ldquo;{searchQuery}&rdquo;</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right cluster */}
@@ -204,7 +382,7 @@ export function DashboardShell({
             >
               <Link href="/marketplace">
                 <Store className="h-4 w-4" aria-hidden="true" />
-                Marketplace
+                <span className="hidden lg:inline">Marketplace</span>
               </Link>
             </Button>
 
@@ -247,13 +425,13 @@ export function DashboardShell({
           </div>
         </div>
 
-        {/* Secondary header strip — navigation pills (replaces sidebar) */}
+        {/* Secondary header strip — navigation pills */}
         <nav
           aria-label="Buyer workspace navigation"
           className="hidden h-[46px] items-center border-t border-white/[0.07] px-4 sm:px-6 lg:px-8 lg:flex"
         >
-          <div className="no-scrollbar flex flex-1 items-center gap-1.5 xl:gap-2 overflow-x-auto">
-            {nav.map((item) => {
+          <div className="no-scrollbar flex flex-1 items-center gap-1 xl:gap-1.5 overflow-x-auto">
+            {BUYER_NAV.map((item) => {
               const active = pathname === item.href;
               return (
                 <Link

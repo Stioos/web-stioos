@@ -351,7 +351,7 @@ function NewRequestDialog({ onCreated }: { onCreated: () => void }) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4" aria-hidden="true" />
-          New request
+          Post a Service Job
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
