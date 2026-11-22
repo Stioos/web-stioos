@@ -171,7 +171,7 @@ function TransactionsContent() {
       <div className="mt-4">
         {filtered.length === 0 ? (
           <EmptyState
-            icon={<Inbox className="h-8 w-8" />}
+            icon={Inbox}
             title="No transactions yet"
             description="Payments you make against invoices will appear here, with linked receipts."
           />

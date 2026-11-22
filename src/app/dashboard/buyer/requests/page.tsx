@@ -221,7 +221,7 @@ function RequestsContent() {
           <div className="mt-4 space-y-3">
             {filteredRequests.length === 0 ? (
               <EmptyState
-                icon={<Inbox className="h-8 w-8" />}
+                icon={Inbox}
                 title="No requests in this stage"
                 description={
                   lifecycleTab === "all"
@@ -347,7 +347,7 @@ function ServiceResponsesTab({ responses }: { responses: Inquiry[] }) {
   if (responses.length === 0) {
     return (
       <EmptyState
-        icon={<MessageSquareText className="h-8 w-8" />}
+        icon={MessageSquareText}
         title="No responses yet"
         description="When you submit a quote, consultation or contact request from the marketplace, the STIOOS team's responses will appear here."
       />

@@ -80,7 +80,7 @@ function RequestDetailContent() {
   if (!request || (user && request.buyerId !== user.id)) {
     return (
       <EmptyState
-        icon={<ClipboardList className="h-8 w-8" />}
+        icon={ClipboardList}
         title="Request not found"
         description="This request may have been removed, never existed, or doesn't belong to your account."
         action={

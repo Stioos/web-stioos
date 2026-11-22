@@ -164,7 +164,7 @@ function BillingContent() {
       >
         {myInvoices.length === 0 ? (
           <EmptyState
-            icon={<Inbox className="h-8 w-8" />}
+            icon={Inbox}
             title="No invoices yet"
             description="When the STIOOS team creates an order against your accepted quote, the invoice will appear here."
           />
