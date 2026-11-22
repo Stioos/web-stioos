@@ -328,10 +328,20 @@ export type MarketOrderStatus =
   | "completed"
   | "cancelled";
 
+/**
+ * Full buyer ↔ super-admin lifecycle:
+ *   open → in_review → quoted → approved → ordered → paid → delivered → closed
+ * Side exits: rejected (declined), closed-from-fulfilled (legacy/short-circuit).
+ */
 export type MarketRequestStatus =
   | "open"
   | "in_review"
+  | "quoted"
+  | "approved"
+  | "ordered"
+  | "paid"
   | "in_progress"
+  | "delivered"
   | "fulfilled"
   | "rejected"
   | "closed";
@@ -395,6 +405,150 @@ export interface MarketRequest {
   quotedAmount?: number;
   /** Set once the request is converted into a marketplace order. */
   orderId?: ID | null;
+  /** Reference to the Quote issued by the super-admin in response to this request. */
+  quoteId?: ID | null;
+  /** Reference to the Invoice generated when the order was created. */
+  invoiceId?: ID | null;
+  /** Reason captured when a buyer or admin declines a quote / request. */
+  declineReason?: string;
+}
+
+// ---------- Quote / Invoice / Transaction (lifecycle billing entities) ----------
+
+export interface QuoteItem {
+  id: ID;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+export type QuoteStatus =
+  | "draft"
+  | "sent"
+  | "accepted"
+  | "declined"
+  | "expired";
+
+export interface Quote {
+  id: ID;
+  /** Human-friendly reference, e.g. QUO-7H2KP. */
+  reference: string;
+  requestId: ID;
+  requestReference?: string;
+  buyerId: ID;
+  buyerName: string;
+  buyerCompany: string;
+  /** Admin who issued the quote. */
+  issuedById: ID;
+  issuedByName: string;
+  issuedAt: string;
+  items: QuoteItem[];
+  subtotal: number;
+  /** Percentage applied to subtotal, e.g. 18. */
+  taxRate: number;
+  taxAmount: number;
+  /** Flat discount applied after tax, if any. */
+  discount: number;
+  total: number;
+  /** Number of days the quote is valid for after issuing. */
+  validityDays: number;
+  /** ISO date the quote expires on (issuedAt + validityDays). */
+  validUntil: string;
+  notes?: string;
+  status: QuoteStatus;
+  /** Free-text reason captured if the buyer declines. */
+  declineReason?: string;
+  declinedAt?: string;
+  acceptedAt?: string;
+}
+
+export interface InvoiceItem {
+  id: ID;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+export type InvoiceStatus =
+  | "draft"
+  | "issued"
+  | "paid"
+  | "void"
+  | "refunded";
+
+export interface Invoice {
+  id: ID;
+  /** Human-friendly reference, e.g. INV-9K4QM. */
+  reference: string;
+  orderId: ID;
+  requestId?: ID | null;
+  quoteId?: ID | null;
+  buyerId: ID;
+  buyerName: string;
+  buyerCompany: string;
+  issuedById: ID;
+  issuedByName: string;
+  issuedAt: string;
+  /** ISO date the payment is due. */
+  dueDate: string;
+  items: InvoiceItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  discount: number;
+  total: number;
+  status: InvoiceStatus;
+  paidAt?: string;
+  paymentMethod?: string;
+  paymentReference?: string;
+  notes?: string;
+}
+
+export type TransactionType =
+  | "payment"
+  | "refund"
+  | "credit"
+  | "debit"
+  | "adjustment";
+
+export type TransactionStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "refunded";
+
+export type PaymentMethod =
+  | "card"
+  | "bank_transfer"
+  | "upi"
+  | "wallet"
+  | "manual";
+
+export interface Transaction {
+  id: ID;
+  /** Human-friendly reference, e.g. TXN-3M8QF. */
+  reference: string;
+  type: TransactionType;
+  invoiceId?: ID | null;
+  orderId?: ID | null;
+  requestId?: ID | null;
+  quoteId?: ID | null;
+  buyerId: ID;
+  buyerName: string;
+  buyerCompany: string;
+  amount: number;
+  currency: string;
+  method: PaymentMethod;
+  status: TransactionStatus;
+  createdAt: string;
+  description: string;
+  initiatedById: ID;
+  initiatedByName: string;
+  /** Optional receipt / payment-gateway reference number. */
+  gatewayReference?: string;
+  meta?: Record<string, string>;
 }
 
 export interface MarketMessage {

@@ -22,6 +22,7 @@ import {
   REQUEST_KIND_DEFS,
   REQUEST_STATUS_LABELS,
 } from "@/lib/request-kinds";
+import { QuoteBuilderDialog } from "@/components/dashboard/lifecycle/quote-invoice";
 import type {
   Inquiry,
   InquiryStatus,
@@ -144,11 +145,11 @@ function RequestsHub({ focusId }: { focusId: string | null }) {
         }
       />
 
-      {/* Stat row */}
+      {/* Stat row — full lifecycle */}
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
-          label="Open"
-          value={countBy("open")}
+          label="New / Open"
+          value={countBy("open") + countBy("in_review")}
           icon="Inbox"
           tone="amber"
           onClick={() => {
@@ -157,33 +158,33 @@ function RequestsHub({ focusId }: { focusId: string | null }) {
           }}
         />
         <StatCard
-          label="In review"
-          value={countBy("in_review")}
-          icon="Clock"
-          tone="blue"
-          onClick={() => {
-            setTab("pipeline");
-            setStatusFilter("in_review");
-          }}
-        />
-        <StatCard
-          label="In progress"
-          value={countBy("in_progress")}
-          icon="Timer"
+          label="Quoted"
+          value={countBy("quoted")}
+          icon="FileText"
           tone="violet"
           onClick={() => {
             setTab("pipeline");
-            setStatusFilter("in_progress");
+            setStatusFilter("quoted");
           }}
         />
         <StatCard
-          label="Fulfilled"
-          value={countBy("fulfilled")}
+          label="Approved + Ordered"
+          value={countBy("approved") + countBy("ordered")}
           icon="BadgeCheck"
+          tone="blue"
+          onClick={() => {
+            setTab("pipeline");
+            setStatusFilter("approved");
+          }}
+        />
+        <StatCard
+          label="Paid + Delivered"
+          value={countBy("paid") + countBy("delivered")}
+          icon="Truck"
           tone="green"
           onClick={() => {
             setTab("pipeline");
-            setStatusFilter("fulfilled");
+            setStatusFilter("paid");
           }}
         />
       </div>
@@ -587,11 +588,29 @@ function TrackingTimeline({ request }: { request: MarketRequest }) {
 function RequestActions({ request }: { request: MarketRequest }) {
   const { toast } = useToast();
   const updateMarketRequestStatus = useAppStore((s) => s.updateMarketRequestStatus);
-  const convertRequestToOrder = useAppStore((s) => s.convertRequestToOrder);
+  const markOrderDelivered = useAppStore((s) => s.markOrderDelivered);
+  const orders = useAppStore((s) => s.orders);
+  const quotes = useAppStore((s) => s.quotes);
+  const invoices = useAppStore((s) => s.invoices);
 
   const [nextStatus, setNextStatus] = useState<MarketRequestStatus>(request.status);
   const [note, setNote] = useState("");
-  const [amount, setAmount] = useState("");
+  const [quoteBuilderOpen, setQuoteBuilderOpen] = useState(false);
+
+  // Reset internal status selector if the underlying request changes
+  if (nextStatus !== request.status && !note) {
+    setNextStatus(request.status);
+  }
+
+  const linkedQuote = request.quoteId
+    ? quotes.find((q) => q.id === request.quoteId) ?? null
+    : null;
+  const linkedOrder = request.orderId
+    ? orders.find((o) => o.id === request.orderId) ?? null
+    : null;
+  const linkedInvoice = request.invoiceId
+    ? invoices.find((i) => i.id === request.invoiceId) ?? null
+    : null;
 
   const handleUpdateStatus = () => {
     updateMarketRequestStatus(request.id, nextStatus, note.trim() || undefined);
@@ -604,39 +623,54 @@ function RequestActions({ request }: { request: MarketRequest }) {
     setNote("");
   };
 
-  const handleConvert = () => {
-    const result = convertRequestToOrder(request.id, Number(amount));
-    if (result.ok && result.order) {
+  const handleMarkDelivered = () => {
+    if (!linkedOrder) return;
+    const res = markOrderDelivered(linkedOrder.id);
+    if (res.ok) {
       toast({
-        title: "Order created",
-        description: `Order ${result.order.id} is now visible in Orders and the buyer's dashboard.`,
+        title: "Order delivered",
+        description: `Order ${linkedOrder.id} marked delivered. The buyer can now accept delivery from their dashboard.`,
       });
-      setAmount("");
     } else {
       toast({
         variant: "destructive",
-        title: "Could not convert request",
-        description: result.error ?? "Something went wrong.",
+        title: "Could not mark delivered",
+        description: res.error ?? "Something went wrong.",
       });
     }
   };
 
-  // Already converted — surface the linked order instead of admin actions.
-  if (request.orderId) {
+  // Already converted to order — show order status + delivery action
+  if (linkedOrder) {
+    const canMarkDelivered =
+      linkedOrder.status === "in_progress" && request.status === "paid";
+    const awaitingBuyerPayment =
+      linkedOrder.status === "pending" && request.status === "ordered";
+    const awaitingBuyerAcceptance =
+      linkedOrder.status === "delivered" && request.status === "delivered";
     return (
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Order</p>
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Linked order
+        </p>
         <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
-                Fulfilled
+                {request.status === "closed" ? "Completed" : "Order active"}
               </p>
               <p className="mt-0.5 text-sm font-medium text-foreground">
-                {request.quotedAmount
+                {linkedQuote
+                  ? `Quoted ${formatMoney(linkedQuote.total)}`
+                  : request.quotedAmount
                   ? `Quoted ${formatMoney(request.quotedAmount)}`
                   : "Converted to a marketplace order"}
               </p>
+              {linkedInvoice && (
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Invoice {linkedInvoice.reference} · {linkedInvoice.status}
+                </p>
+              )}
             </div>
             <Button
               asChild
@@ -646,74 +680,261 @@ function RequestActions({ request }: { request: MarketRequest }) {
             >
               <Link href="/admin/orders">
                 <ExternalLink className="h-3.5 w-3.5" />
-                Order {request.orderId}
+                Order {linkedOrder.id.slice(0, 10)}
               </Link>
             </Button>
           </div>
         </div>
+
+        {awaitingBuyerPayment && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+            Order created + invoice issued. Waiting for the buyer to pay —
+            the order will move to <span className="font-semibold">In Progress</span>{" "}
+            automatically once payment is captured.
+          </div>
+        )}
+
+        {canMarkDelivered && (
+          <div className="space-y-2 rounded-lg border border-sky-500/30 bg-sky-500/5 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-400">
+              Delivery action
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Buyer has paid ({formatMoney(linkedOrder.amount)}). Mark the order
+              delivered when the work is complete.
+            </p>
+            <Button
+              size="sm"
+              className="w-full bg-sky-600 hover:bg-sky-700"
+              onClick={handleMarkDelivered}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Mark Order Delivered
+            </Button>
+          </div>
+        )}
+
+        {awaitingBuyerAcceptance && (
+          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300">
+            Order delivered. Waiting for the buyer to accept delivery — the
+            order will close automatically once accepted.
+          </div>
+        )}
+
         <p className="text-xs text-muted-foreground">
-          This request is complete. Track delivery from the Orders page.
+          This request is in the post-order lifecycle. Track delivery from the Orders page.
         </p>
       </div>
     );
   }
 
+  // Quote already issued but not yet accepted — show quote status
+  if (linkedQuote && linkedQuote.status === "sent") {
+    return (
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Quote issued
+        </p>
+        <div className="rounded-lg border border-violet-500/30 bg-violet-500/10 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-400">
+                Awaiting buyer
+              </p>
+              <p className="mt-0.5 text-sm font-medium text-foreground">
+                {linkedQuote.reference} · {formatMoney(linkedQuote.total)}
+              </p>
+            </div>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/admin/quotes">View</Link>
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            The buyer can accept or decline this quote from their dashboard.
+            Once accepted, create the order + invoice below.
+          </p>
+        </div>
+
+        {/* Status update */}
+        <StatusUpdateBlock
+          request={request}
+          nextStatus={nextStatus}
+          setNextStatus={setNextStatus}
+          note={note}
+          setNote={setNote}
+          onUpdate={handleUpdateStatus}
+        />
+      </div>
+    );
+  }
+
+  // Quote accepted — admin needs to create the order + invoice
+  if (linkedQuote && linkedQuote.status === "accepted") {
+    return (
+      <div className="space-y-3">
+        <CreateOrderBlock request={request} quote={linkedQuote} />
+        <StatusUpdateBlock
+          request={request}
+          nextStatus={nextStatus}
+          setNextStatus={setNextStatus}
+          note={note}
+          setNote={setNote}
+          onUpdate={handleUpdateStatus}
+        />
+      </div>
+    );
+  }
+
+  // Default — fresh request, admin can review + issue a quote
   return (
     <div className="space-y-5">
-      {/* Status update */}
-      <div className="space-y-2">
-        <Label htmlFor="request-status">Update status</Label>
-        <Select
-          value={nextStatus}
-          onValueChange={(v) => setNextStatus(v as MarketRequestStatus)}
-        >
-          <SelectTrigger id="request-status" className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {REQUEST_STATUS_OPTIONS.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                {s.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          placeholder="Optional note for the tracking timeline…"
-          aria-label="Status note"
-        />
-        <Button
-          className="w-full"
-          disabled={nextStatus === request.status}
-          onClick={handleUpdateStatus}
-        >
-          Update status
-        </Button>
-        <p className="text-xs text-muted-foreground">
-          Every status change is appended to the buyer&apos;s tracking timeline.
+      {/* Issue Quote action */}
+      <div className="space-y-2 rounded-lg border border-violet-500/30 bg-violet-500/5 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-400">
+          Respond with a quote
         </p>
+        <p className="text-xs text-muted-foreground">
+          Review the request, then build a line-item quote. The buyer will be
+          notified and can accept or decline from their dashboard.
+        </p>
+        <Button
+          className="w-full bg-violet-600 hover:bg-violet-700"
+          onClick={() => setQuoteBuilderOpen(true)}
+        >
+          Issue Quote
+        </Button>
       </div>
 
-      {/* Convert to order */}
-      <div className="space-y-2 rounded-lg border p-4">
-        <Label htmlFor="quoted-amount">Convert to order</Label>
-        <Input
-          id="quoted-amount"
-          type="number"
-          min={0}
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder={request.budgetRange ? `e.g. ${request.budgetRange}` : "e.g. 7500"}
-          aria-label="Quoted amount in USD"
-        />
-        <Button className="w-full" disabled={!amount} onClick={handleConvert}>
-          Convert to order
+      <StatusUpdateBlock
+        request={request}
+        nextStatus={nextStatus}
+        setNextStatus={setNextStatus}
+        note={note}
+        setNote={setNote}
+        onUpdate={handleUpdateStatus}
+      />
+
+      <QuoteBuilderDialog
+        open={quoteBuilderOpen}
+        onOpenChange={setQuoteBuilderOpen}
+        requestId={request.id}
+        requestTitle={request.title}
+        buyerName={request.buyerName}
+      />
+    </div>
+  );
+}
+
+// ---------- Sub-blocks ----------
+
+function StatusUpdateBlock({
+  request,
+  nextStatus,
+  setNextStatus,
+  note,
+  setNote,
+  onUpdate,
+}: {
+  request: MarketRequest;
+  nextStatus: MarketRequestStatus;
+  setNextStatus: (s: MarketRequestStatus) => void;
+  note: string;
+  setNote: (s: string) => void;
+  onUpdate: () => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor="request-status">Update status</Label>
+      <Select
+        value={nextStatus}
+        onValueChange={(v) => setNextStatus(v as MarketRequestStatus)}
+      >
+        <SelectTrigger id="request-status" className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {REQUEST_STATUS_OPTIONS.map((s) => (
+            <SelectItem key={s.value} value={s.value}>
+              {s.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Input
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Optional note for the tracking timeline…"
+        aria-label="Status note"
+      />
+      <Button
+        className="w-full"
+        disabled={nextStatus === request.status}
+        onClick={onUpdate}
+      >
+        Update status
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        Every status change is appended to the buyer&apos;s tracking timeline.
+      </p>
+    </div>
+  );
+}
+
+function CreateOrderBlock({
+  request,
+  quote,
+}: {
+  request: MarketRequest;
+  quote: import("@/types").Quote;
+}) {
+  const { toast } = useToast();
+  const createOrderFromQuote = useAppStore((s) => s.createOrderFromQuote);
+  const [dueDays, setDueDays] = useState("7");
+
+  const handleCreate = () => {
+    const res = createOrderFromQuote({
+      quoteId: quote.id,
+      dueDays: Number(dueDays) || 7,
+    });
+    if (res.ok) {
+      toast({
+        title: "Order + invoice created",
+        description: `Order ${res.order?.id} and invoice ${res.invoice?.reference} issued to ${request.buyerName}.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Could not create order",
+        description: res.error ?? "Something went wrong.",
+      });
+    }
+  };
+
+  return (
+    <div className="space-y-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+        Create order + invoice
+      </p>
+      <p className="text-xs text-muted-foreground">
+        The buyer accepted quote {quote.reference} ({formatMoney(quote.total)}).
+        Create the order and issue the invoice — the buyer will be prompted to pay.
+      </p>
+      <div className="flex items-end gap-2">
+        <div className="flex-1">
+          <Label className="text-xs">Payment due (days)</Label>
+          <Input
+            type="number"
+            min={1}
+            value={dueDays}
+            onChange={(e) => setDueDays(e.target.value)}
+          />
+        </div>
+        <Button
+          className="bg-emerald-600 hover:bg-emerald-700"
+          onClick={handleCreate}
+        >
+          Create Order + Invoice
         </Button>
-        <p className="text-xs text-muted-foreground">
-          Creates a pending order for {request.buyerName} and marks this request fulfilled.
-        </p>
       </div>
     </div>
   );

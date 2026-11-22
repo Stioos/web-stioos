@@ -18,7 +18,6 @@ import {
   Settings,
   Search,
   X,
-  MessageSquareText,
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
@@ -51,7 +50,6 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
-  { href: "/dashboard/buyer/service-responses", label: "Service Responses", icon: MessageSquareText },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
   { href: "/dashboard/buyer/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },

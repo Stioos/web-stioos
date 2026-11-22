@@ -30,14 +30,23 @@ export interface RequestKindDef {
 export const REQUEST_STATUS_FLOW: MarketRequestStatus[] = [
   "open",
   "in_review",
-  "in_progress",
-  "fulfilled",
+  "quoted",
+  "approved",
+  "ordered",
+  "paid",
+  "delivered",
+  "closed",
 ];
 
 export const REQUEST_STATUS_LABELS: Record<MarketRequestStatus, string> = {
   open: "Open",
-  in_review: "In review",
-  in_progress: "In progress",
+  in_review: "In Review",
+  quoted: "Quoted",
+  approved: "Approved",
+  ordered: "Order Created",
+  paid: "Paid",
+  in_progress: "In Progress",
+  delivered: "Delivered",
   fulfilled: "Fulfilled",
   rejected: "Rejected",
   closed: "Closed",
@@ -203,10 +212,29 @@ export const REQUEST_KIND_DEFS: Record<RequestKind, RequestKindDef | undefined> 
 
 /** Generates a human-friendly tracking reference, e.g. REQ-8F3K2. */
 export function newRequestReference(): string {
+  return `REQ-${refSuffix()}`;
+}
+
+/** Generates a quote reference, e.g. QUO-7H2KP. */
+export function newQuoteReference(): string {
+  return `QUO-${refSuffix()}`;
+}
+
+/** Generates an invoice reference, e.g. INV-9K4QM. */
+export function newInvoiceReference(): string {
+  return `INV-${refSuffix()}`;
+}
+
+/** Generates a transaction reference, e.g. TXN-3M8QF. */
+export function newTransactionReference(): string {
+  return `TXN-${refSuffix()}`;
+}
+
+function refSuffix(): string {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let out = "";
   for (let i = 0; i < 5; i += 1) {
     out += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
-  return `REQ-${out}`;
+  return out;
 }

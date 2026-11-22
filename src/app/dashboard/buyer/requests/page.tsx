@@ -2,26 +2,27 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import {
-  Archive,
   ArrowRight,
-  ChevronDown,
-  History,
+  ChevronRight,
+  ClipboardList,
   Inbox,
-  Loader2,
+  MessageSquareText,
   Plus,
-  XCircle,
 } from "lucide-react";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { EmptyState, StatusBadge, formatDate, formatMoney } from "@/components/dashboard/shared";
-import { Button } from "@/components/ui/button";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  EmptyState,
+  SectionCard,
+  StatusBadge,
+  formatDate,
+  formatMoney,
+  timeAgo,
+} from "@/components/dashboard/shared";
+import { LifecycleStepper, nextBuyerActionLabel } from "@/components/dashboard/lifecycle/lifecycle-shared";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -29,7 +30,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,9 +44,9 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
-import { KIND_LABELS, REQUEST_STATUS_FLOW, REQUEST_STATUS_LABELS } from "@/lib/request-kinds";
+import { KIND_LABELS, REQUEST_STATUS_LABELS } from "@/lib/request-kinds";
 import { cn } from "@/lib/utils";
-import type { MarketRequest, MarketRequestStatus } from "@/types";
+import type { Inquiry, MarketRequest, MarketRequestStatus } from "@/types";
 
 const BUDGET_OPTIONS = [
   "Under $2,500",
@@ -58,358 +58,513 @@ const BUDGET_OPTIONS = [
 
 const TIMELINE_OPTIONS = ["ASAP (1–2 weeks)", "2–4 weeks", "4–8 weeks", "Flexible"];
 
-// ---------- Status filter tabs ----------
+// ---------- Lifecycle filter tabs ----------
 
 type RequestTab = "all" | MarketRequestStatus;
 
 const REQUEST_TABS: { value: RequestTab; label: string }[] = [
   { value: "all", label: "All" },
   { value: "open", label: "Open" },
-  { value: "in_review", label: "In review" },
-  { value: "in_progress", label: "In progress" },
-  { value: "fulfilled", label: "Fulfilled" },
+  { value: "in_review", label: "In Review" },
+  { value: "quoted", label: "Quoted" },
+  { value: "approved", label: "Approved" },
+  { value: "ordered", label: "Order Created" },
+  { value: "paid", label: "Paid" },
+  { value: "delivered", label: "Delivered" },
   { value: "closed", label: "Closed" },
+  { value: "rejected", label: "Rejected" },
 ];
-
-// ---------- Tracking card building blocks ----------
 
 const KIND_BADGE_TALENT = "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300";
 const KIND_BADGE_SERVICE = "border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-300";
 
-const STATUS_DOT_COLOR: Record<MarketRequestStatus, string> = {
-  open: "bg-amber-500",
-  in_review: "bg-sky-500",
-  in_progress: "bg-teal-500",
-  fulfilled: "bg-emerald-500",
-  rejected: "bg-rose-500",
-  closed: "bg-slate-400",
+const INQUIRY_STATUS_LABELS: Record<Inquiry["status"], string> = {
+  new: "New",
+  in_progress: "In Progress",
+  contacted: "Contacted",
+  closed: "Closed",
 };
 
-/** Horizontal 4-step pipeline (open → in review → in progress → fulfilled). */
-function RequestStepper({ status }: { status: MarketRequestStatus }) {
-  const current = Math.max(REQUEST_STATUS_FLOW.indexOf(status), 0);
+export default function BuyerRequestsPage() {
   return (
-    <ol
-      aria-label={`Progress: ${REQUEST_STATUS_LABELS[status]}`}
-      className="flex items-start overflow-x-auto pb-1"
-    >
-      {REQUEST_STATUS_FLOW.map((step, index) => {
-        const past = index < current;
-        const active = index === current;
-        return (
-          <li key={step} aria-current={active ? "step" : undefined} className="flex items-start">
-            <span className="flex flex-col items-center gap-1">
-              <span
-                className={cn(
-                  "h-2.5 w-2.5 rounded-full border-2",
-                  past && "border-primary bg-primary",
-                  active && "border-primary bg-primary ring-4 ring-primary/20",
-                  !past && !active && "border-muted-foreground/40 bg-transparent"
-                )}
-                aria-hidden="true"
-              />
-              <span
-                className={cn(
-                  "whitespace-nowrap text-[10px] leading-none",
-                  active
-                    ? "font-semibold text-primary"
-                    : past
-                      ? "font-medium text-foreground"
-                      : "font-medium text-muted-foreground"
-                )}
-              >
-                {REQUEST_STATUS_LABELS[step]}
-              </span>
-            </span>
-            {index < REQUEST_STATUS_FLOW.length - 1 && (
-              <span
-                aria-hidden="true"
-                className={cn("mt-1 h-0.5 w-5 shrink-0 sm:w-10", past ? "bg-primary" : "bg-border")}
-              />
-            )}
-          </li>
-        );
-      })}
-    </ol>
+    <RequireRole role="buyer">
+      <DashboardShell role="buyer" title="My Requests · Buyer Dashboard">
+        <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+          <RequestsContent />
+        </div>
+      </DashboardShell>
+    </RequireRole>
   );
 }
 
-/** End-state chip replacing the stepper for rejected / closed requests. */
-function RequestEndState({ status }: { status: MarketRequestStatus }) {
-  const rejected = status === "rejected";
-  const Icon = rejected ? XCircle : Archive;
+function RequestsContent() {
+  const user = useCurrentUser();
+  const requests = useAppStore((s) => s.requests);
+  const inquiries = useAppStore((s) => s.inquiries);
+  const quotes = useAppStore((s) => s.quotes);
+
+  const [topTab, setTopTab] = useState<"requests" | "responses">("requests");
+  const [lifecycleTab, setLifecycleTab] = useState<RequestTab>("all");
+  const [newRequestOpen, setNewRequestOpen] = useState(false);
+
+  const myRequests = useMemo(() => {
+    if (!user) return [];
+    return requests
+      .filter((r) => r.buyerId === user.id)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }, [requests, user]);
+
+  const filteredRequests = useMemo(() => {
+    if (lifecycleTab === "all") return myRequests;
+    return myRequests.filter((r) => r.status === lifecycleTab);
+  }, [myRequests, lifecycleTab]);
+
+  const responses = useMemo(() => {
+    if (!user) return [];
+    return inquiries
+      .filter((i) => i.email.toLowerCase() === user.email.toLowerCase())
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }, [inquiries, user]);
+
+  const tabCount = (tab: RequestTab) =>
+    tab === "all" ? myRequests.length : myRequests.filter((r) => r.status === tab).length;
+
+  const pendingActionCount = myRequests.filter(
+    (r) => nextBuyerActionLabel(r.status) !== null
+  ).length;
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span
-        className={cn(
-          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
-          rejected
-            ? "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300"
-            : "border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-300"
-        )}
-      >
-        <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-        {REQUEST_STATUS_LABELS[status]}
-      </span>
-      <span className="text-[11px] text-muted-foreground">
-        This request is {REQUEST_STATUS_LABELS[status].toLowerCase()} — you can submit a new request any time.
-      </span>
+    <>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+            Marketplace · Buyer
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-white sm:text-3xl">
+            My Requests
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-slate-300">
+            Track every service request from submission through quote, order,
+            payment and delivery. {pendingActionCount > 0 && (
+              <span className="font-semibold text-amber-300">
+                {pendingActionCount} awaiting your action.
+              </span>
+            )}
+          </p>
+        </div>
+        <Button
+          onClick={() => setNewRequestOpen(true)}
+          className="bg-amber-500 text-slate-900 hover:bg-amber-400"
+        >
+          <Plus className="mr-1.5 h-4 w-4" /> Post a Service Request
+        </Button>
+      </div>
+
+      {/* Top-level tabs: Requests vs Service Responses */}
+      <div className="mt-5 flex items-center gap-1 rounded-lg border border-white/10 bg-white/[0.03] p-1">
+        <button
+          onClick={() => setTopTab("requests")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+            topTab === "requests"
+              ? "bg-amber-500/15 text-amber-300"
+              : "text-slate-300 hover:text-white"
+          )}
+        >
+          <ClipboardList className="h-3.5 w-3.5" />
+          Service Requests
+          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold">
+            {myRequests.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setTopTab("responses")}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+            topTab === "responses"
+              ? "bg-amber-500/15 text-amber-300"
+              : "text-slate-300 hover:text-white"
+          )}
+        >
+          <MessageSquareText className="h-3.5 w-3.5" />
+          Service Responses
+          <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold">
+            {responses.length}
+          </span>
+        </button>
+      </div>
+
+      {topTab === "requests" ? (
+        <>
+          {/* Lifecycle tabs */}
+          <Tabs value={lifecycleTab} onValueChange={(v) => setLifecycleTab(v as RequestTab)} className="mt-4">
+            <TabsList className="flex w-full flex-wrap justify-start gap-1 h-auto p-1 bg-white/[0.03]">
+              {REQUEST_TABS.map((t) => (
+                <TabsTrigger
+                  key={t.value}
+                  value={t.value}
+                  className="data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-300 text-xs"
+                >
+                  {t.label}
+                  <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold">
+                    {tabCount(t.value)}
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          {/* Stats strip */}
+          <RequestStatsStrip requests={myRequests} />
+
+          {/* Request list */}
+          <div className="mt-4 space-y-3">
+            {filteredRequests.length === 0 ? (
+              <EmptyState
+                icon={<Inbox className="h-8 w-8" />}
+                title="No requests in this stage"
+                description={
+                  lifecycleTab === "all"
+                    ? "Post a service request to get started — it goes straight to the STIOOS delivery team for review."
+                    : "Try another filter, or post a new service request."
+                }
+                action={
+                  <Button
+                    onClick={() => setNewRequestOpen(true)}
+                    className="bg-amber-500 text-slate-900 hover:bg-amber-400"
+                  >
+                    <Plus className="mr-1.5 h-4 w-4" /> Post a Service Request
+                  </Button>
+                }
+              />
+            ) : (
+              filteredRequests.map((req) => (
+                <RequestRow
+                  key={req.id}
+                  request={req}
+                  quote={
+                    req.quoteId
+                      ? quotes.find((q) => q.id === req.quoteId) ?? null
+                      : null
+                  }
+                />
+              ))
+            )}
+          </div>
+        </>
+      ) : (
+        <ServiceResponsesTab responses={responses} />
+      )}
+
+      <NewRequestDialog open={newRequestOpen} onOpenChange={setNewRequestOpen} />
+    </>
+  );
+}
+
+// ---------- Request row (clickable card → detail page) ----------
+
+function RequestRow({
+  request,
+  quote,
+}: {
+  request: MarketRequest;
+  quote: ReturnType<typeof useAppStore.getState>["quotes"][number] | null;
+}) {
+  const next = nextBuyerActionLabel(request.status);
+  const kindBadge =
+    request.kind && request.kind !== "service" ? KIND_BADGE_TALENT : KIND_BADGE_SERVICE;
+  return (
+    <Link
+      href={`/dashboard/buyer/requests/${request.id}`}
+      className="block rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-colors hover:border-amber-400/40 hover:bg-white/[0.05]"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                "rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                kindBadge
+              )}
+            >
+              {request.kind ? KIND_LABELS[request.kind] : "Service"}
+            </span>
+            <span className="font-mono text-[11px] text-slate-400">
+              {request.reference ?? request.id}
+            </span>
+            <StatusBadge status={request.status} />
+            {next && (
+              <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-semibold text-amber-300">
+                Action needed
+              </span>
+            )}
+          </div>
+          <h3 className="mt-1.5 truncate text-base font-semibold text-white">
+            {request.title}
+          </h3>
+          <p className="mt-1 line-clamp-2 text-sm text-slate-400">
+            {request.details}
+          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
+            <span>{request.categoryName}</span>
+            <span>·</span>
+            <span>Budget {request.budgetRange}</span>
+            <span>·</span>
+            <span>Timeline {request.timeline}</span>
+            <span>·</span>
+            <span>Posted {timeAgo(request.createdAt)}</span>
+            {request.quotedAmount && (
+              <>
+                <span>·</span>
+                <span className="font-semibold text-emerald-300">
+                  Quoted {formatMoney(request.quotedAmount)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+        <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-slate-500" />
+      </div>
+
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <LifecycleStepper status={request.status} />
+      </div>
+
+      {next && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-amber-300">
+          <ArrowRight className="h-3.5 w-3.5" />
+          <span className="font-semibold">{next.label}</span>
+          <span className="text-slate-500">— {next.cta}</span>
+        </div>
+      )}
+    </Link>
+  );
+}
+
+// ---------- Service Responses tab (formerly its own page) ----------
+
+function ServiceResponsesTab({ responses }: { responses: Inquiry[] }) {
+  if (responses.length === 0) {
+    return (
+      <EmptyState
+        icon={<MessageSquareText className="h-8 w-8" />}
+        title="No responses yet"
+        description="When you submit a quote, consultation or contact request from the marketplace, the STIOOS team's responses will appear here."
+      />
+    );
+  }
+  const counts = {
+    new: responses.filter((r) => r.status === "new").length,
+    in_progress: responses.filter((r) => r.status === "in_progress").length,
+    contacted: responses.filter((r) => r.status === "contacted").length,
+    closed: responses.filter((r) => r.status === "closed").length,
+  };
+  return (
+    <div className="mt-4 space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {(["new", "in_progress", "contacted", "closed"] as const).map((s) => (
+          <div
+            key={s}
+            className="rounded-lg border border-white/10 bg-white/[0.03] p-3"
+          >
+            <p className="text-[11px] uppercase tracking-wider text-slate-500">
+              {INQUIRY_STATUS_LABELS[s]}
+            </p>
+            <p className="mt-1 text-2xl font-bold text-white">{counts[s]}</p>
+          </div>
+        ))}
+      </div>
+      <div className="overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full text-sm">
+          <thead className="bg-white/[0.04] text-left text-[11px] uppercase tracking-wider text-slate-400">
+            <tr>
+              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Type</th>
+              <th className="px-4 py-2">Service</th>
+              <th className="px-4 py-2">Budget</th>
+              <th className="px-4 py-2">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {responses.map((r) => (
+              <tr key={r.id} className="hover:bg-white/[0.02]">
+                <td className="px-4 py-3 text-slate-300">
+                  {formatDate(r.createdAt)}
+                </td>
+                <td className="px-4 py-3 capitalize text-slate-300">
+                  {r.type.replace("_", " ")}
+                </td>
+                <td className="px-4 py-3 text-slate-300">
+                  {r.serviceName ?? "—"}
+                </td>
+                <td className="px-4 py-3 text-slate-300">{r.budgetRange}</td>
+                <td className="px-4 py-3">
+                  <StatusBadge status={r.status} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-/** Expandable vertical timeline of the request's status history. */
-function RequestActivity({ request }: { request: MarketRequest }) {
-  const [open, setOpen] = useState(false);
-  const events = request.statusHistory ?? [];
+// ---------- Stats strip ----------
+
+function RequestStatsStrip({ requests }: { requests: MarketRequest[] }) {
+  const total = requests.length;
+  const actionNeeded = requests.filter(
+    (r) => nextBuyerActionLabel(r.status) !== null
+  ).length;
+  const inDelivery = requests.filter(
+    (r) => r.status === "paid" || r.status === "delivered" || r.status === "ordered"
+  ).length;
+  const closed = requests.filter(
+    (r) => r.status === "closed" || r.status === "rejected"
+  ).length;
+
+  const cards = [
+    { label: "Total Requests", value: total, tone: "text-white" },
+    { label: "Action Needed", value: actionNeeded, tone: "text-amber-300" },
+    { label: "In Delivery", value: inDelivery, tone: "text-sky-300" },
+    { label: "Closed", value: closed, tone: "text-emerald-300" },
+  ];
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground"
-          aria-expanded={open}
-          aria-label={`Activity for ${request.title}`}
+    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {cards.map((c) => (
+        <div
+          key={c.label}
+          className="rounded-lg border border-white/10 bg-white/[0.03] p-3"
         >
-          <History className="h-3.5 w-3.5" aria-hidden="true" />
-          Activity
-          <span className="rounded-full bg-muted px-1.5 text-[10px] font-semibold">{events.length}</span>
-          <ChevronDown
-            className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
-            aria-hidden="true"
-          />
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <ol className="ml-2 space-y-4 border-l pl-5 pt-2">
-          {events.map((event, index) => (
-            <li key={`${event.status}-${event.at}-${index}`} className="relative">
-              <span
-                className={cn(
-                  "absolute -left-6 top-0.5 h-2.5 w-2.5 rounded-full border-2 border-card",
-                  STATUS_DOT_COLOR[event.status]
-                )}
-                aria-hidden="true"
-              />
-              <p className="text-xs font-semibold text-foreground">{REQUEST_STATUS_LABELS[event.status]}</p>
-              {event.note && (
-                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{event.note}</p>
-              )}
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                {event.by} · {format(new Date(event.at), "MMM d, yyyy 'at' h:mm a")}
-              </p>
-            </li>
-          ))}
-          {events.length === 0 && (
-            <li className="text-xs text-muted-foreground">No activity recorded yet.</li>
-          )}
-        </ol>
-      </CollapsibleContent>
-    </Collapsible>
-  );
-}
-
-function MetaChip({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-full border border-slate-500/30 bg-slate-500/10 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-      {children}
-    </span>
-  );
-}
-
-function RequestCard({ request }: { request: MarketRequest }) {
-  const isTalentKind = request.kind !== undefined && request.kind !== "service";
-  const isEndState = request.status === "rejected" || request.status === "closed";
-
-  return (
-    <article className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-sm font-semibold text-foreground">{request.title}</h3>
-          <p className="truncate text-xs text-muted-foreground">
-            {request.categoryName}
-            {request.reference && (
-              <>
-                {" · "}
-                <span className="font-mono">{request.reference}</span>
-              </>
-            )}{" "}
-            · Posted {formatDate(request.createdAt)} ·{" "}
-            {formatDistanceToNow(new Date(request.createdAt), { addSuffix: true })}
+          <p className="text-[11px] uppercase tracking-wider text-slate-500">
+            {c.label}
           </p>
+          <p className={cn("mt-1 text-2xl font-bold", c.tone)}>{c.value}</p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-          <span
-            className={cn(
-              "inline-flex items-center whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
-              isTalentKind ? KIND_BADGE_TALENT : KIND_BADGE_SERVICE
-            )}
-          >
-            {KIND_LABELS[request.kind ?? "service"]}
-          </span>
-          <StatusBadge status={request.status} />
-        </div>
-      </div>
-
-      <p className="text-sm leading-relaxed text-muted-foreground">{request.details}</p>
-
-      <div className="flex flex-wrap items-center gap-2 border-t pt-3">
-        <MetaChip>Budget: {request.budgetRange}</MetaChip>
-        <MetaChip>Timeline: {request.timeline}</MetaChip>
-        {request.quotedAmount !== undefined && <MetaChip>Quoted: {formatMoney(request.quotedAmount)}</MetaChip>}
-        {request.orderId && (
-          <Link
-            href="/dashboard/buyer/orders"
-            className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-500/20 dark:text-emerald-300"
-          >
-            Converted to order
-            <ArrowRight className="h-3 w-3" aria-hidden="true" />
-          </Link>
-        )}
-      </div>
-
-      <div className="border-t pt-3">
-        {isEndState ? <RequestEndState status={request.status} /> : <RequestStepper status={request.status} />}
-      </div>
-
-      <div className="border-t pt-2">
-        <RequestActivity request={request} />
-      </div>
-    </article>
+      ))}
+    </div>
   );
 }
 
-// ---------- New request dialog (unchanged flow) ----------
+// ---------- New Request Dialog (Post a Service Request form) ----------
 
-function NewRequestDialog({ onCreated }: { onCreated: () => void }) {
+function NewRequestDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const user = useCurrentUser();
   const categories = useAppStore((s) => s.categories);
   const addMarketRequest = useAppStore((s) => s.addMarketRequest);
+  const router = useRouterSafe();
   const { toast } = useToast();
 
-  const [open, setOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
-  const [budgetRange, setBudgetRange] = useState("");
-  const [timeline, setTimeline] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const activeCategories = useMemo(() => categories.filter((c) => c.status === "active"), [categories]);
+  const [budgetRange, setBudgetRange] = useState(BUDGET_OPTIONS[2]);
+  const [timeline, setTimeline] = useState(TIMELINE_OPTIONS[1]);
+  const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
     setCategoryId("");
     setTitle("");
     setDetails("");
-    setBudgetRange("");
-    setTimeline("");
-    setErrors({});
+    setBudgetRange(BUDGET_OPTIONS[2]);
+    setTimeline(TIMELINE_OPTIONS[1]);
+    setError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const next: Record<string, string> = {};
-    if (!categoryId) next.category = "Choose a category.";
-    if (title.trim().length < 5) next.title = "Give your request a clear title.";
-    if (details.trim().length < 20) next.details = "Describe the work in at least a couple of sentences.";
-    if (!budgetRange) next.budget = "Select a budget range.";
-    if (!timeline) next.timeline = "Select a timeline.";
-    setErrors(next);
-    if (Object.keys(next).length > 0) return;
-
-    const category = activeCategories.find((c) => c.id === categoryId);
-    setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 500));
-    addMarketRequest({
-      categoryId,
-      categoryName: category?.name ?? "General",
+  const handleSubmit = () => {
+    setError(null);
+    if (!user) {
+      setError("You must be signed in to submit a request.");
+      return;
+    }
+    const cat = categories.find((c) => c.id === categoryId);
+    if (!cat) {
+      setError("Choose a category.");
+      return;
+    }
+    if (title.trim().length < 6) {
+      setError("Title must be at least 6 characters.");
+      return;
+    }
+    if (details.trim().length < 20) {
+      setError("Details must be at least 20 characters so the team can scope accurately.");
+      return;
+    }
+    const req = addMarketRequest({
+      categoryId: cat.id,
+      categoryName: cat.name,
       title: title.trim(),
       details: details.trim(),
       budgetRange,
       timeline,
+      kind: "service",
     });
-    setSubmitting(false);
-    setOpen(false);
-    reset();
     toast({
-      title: "Request published",
-      description: "Our expert teams will respond with proposals.",
+      title: "Request submitted",
+      description: `${req.reference} — ${req.title}. The STIOOS team will respond with a quote shortly.`,
     });
-    onCreated();
+    reset();
+    onOpenChange(false);
+    // Jump straight to the new request's detail page
+    if (router) router.push(`/dashboard/buyer/requests/${req.id}`);
   };
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        if (!o) reset();
-      }}
-    >
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          Post a Service Job
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Post a new request</DialogTitle>
-          <DialogDescription>
-            Describe what you need — vetted expert teams will respond with proposals.
+    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+      <DialogContent className="max-w-lg gap-0 p-0">
+        <DialogHeader className="border-b border-slate-200 p-5 dark:border-slate-800">
+          <DialogTitle className="text-base">Post a Service Request</DialogTitle>
+          <DialogDescription className="text-xs">
+            Describe what you need — the STIOOS delivery team will review and respond with a quote.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <div className="space-y-2">
-            <Label>Category</Label>
+
+        <div className="space-y-4 p-5">
+          <div>
+            <Label className="text-xs">Category</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
-              <SelectTrigger aria-label="Category" aria-invalid={!!errors.category}>
-                <SelectValue placeholder="Select a category" />
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a category" />
               </SelectTrigger>
               <SelectContent>
-                {activeCategories.map((c) => (
+                {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.category && <p className="text-xs font-medium text-destructive">{errors.category}</p>}
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="request-title">Title</Label>
+          <div>
+            <Label className="text-xs">Title</Label>
             <Input
-              id="request-title"
+              placeholder="e.g. Multilingual support agent for EU rollout"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Multilingual support agent for EU rollout"
-              aria-invalid={!!errors.title}
             />
-            {errors.title && <p className="text-xs font-medium text-destructive">{errors.title}</p>}
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="request-details">Details</Label>
+          <div>
+            <Label className="text-xs">Details</Label>
             <Textarea
-              id="request-details"
+              rows={4}
+              placeholder="Scope, deliverables, integration points, success metrics…"
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              rows={4}
-              placeholder="Scope, systems involved, success criteria…"
-              aria-invalid={!!errors.details}
             />
-            {errors.details && <p className="text-xs font-medium text-destructive">{errors.details}</p>}
           </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Budget range</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">Budget range</Label>
               <Select value={budgetRange} onValueChange={setBudgetRange}>
-                <SelectTrigger aria-label="Budget range" aria-invalid={!!errors.budget}>
-                  <SelectValue placeholder="Select budget" />
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {BUDGET_OPTIONS.map((b) => (
@@ -419,13 +574,12 @@ function NewRequestDialog({ onCreated }: { onCreated: () => void }) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.budget && <p className="text-xs font-medium text-destructive">{errors.budget}</p>}
             </div>
-            <div className="space-y-2">
-              <Label>Timeline</Label>
+            <div>
+              <Label className="text-xs">Timeline</Label>
               <Select value={timeline} onValueChange={setTimeline}>
-                <SelectTrigger aria-label="Timeline" aria-invalid={!!errors.timeline}>
-                  <SelectValue placeholder="Select timeline" />
+                <SelectTrigger>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {TIMELINE_OPTIONS.map((t) => (
@@ -435,124 +589,34 @@ function NewRequestDialog({ onCreated }: { onCreated: () => void }) {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.timeline && <p className="text-xs font-medium text-destructive">{errors.timeline}</p>}
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={submitting}>
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Publishing…
-                </>
-              ) : (
-                "Publish request"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+          {error && (
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-700 dark:text-rose-300">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <DialogFooter className="border-t border-slate-200 p-4 dark:border-slate-800">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            className="bg-amber-500 text-slate-900 hover:bg-amber-400"
+          >
+            Submit Request
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-// ---------- Page ----------
-
-function BuyerRequestsContent() {
-  const user = useCurrentUser();
-  const requests = useAppStore((s) => s.requests);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [tab, setTab] = useState<RequestTab>("all");
-
-  const myRequests = useMemo(() => {
-    void refreshKey;
-    return user
-      ? [...requests.filter((r) => r.buyerId === user.id)].sort(
-          (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)
-        )
-      : [];
-  }, [requests, user, refreshKey]);
-
-  const filtered = useMemo(() => {
-    if (tab === "all") return myRequests;
-    if (tab === "closed") return myRequests.filter((r) => r.status === "closed" || r.status === "rejected");
-    return myRequests.filter((r) => r.status === tab);
-  }, [myRequests, tab]);
-
-  const counts = useMemo(() => {
-    const map = new Map<RequestTab, number>([["all", myRequests.length]]);
-    for (const r of myRequests) {
-      const key: RequestTab = r.status === "rejected" ? "closed" : r.status;
-      map.set(key, (map.get(key) ?? 0) + 1);
-    }
-    return map;
-  }, [myRequests]);
-
-  return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-white">My Requests</h1>
-          <p className="text-sm text-slate-400">
-            Briefs you've published — each with a reference code and live delivery tracking.
-          </p>
-        </div>
-        <NewRequestDialog onCreated={() => setRefreshKey((k) => k + 1)} />
-      </header>
-
-      <Tabs value={tab} onValueChange={(v) => setTab(v as RequestTab)}>
-        <div className="overflow-x-auto pb-1">
-          <TabsList className="h-auto w-full justify-start sm:w-auto">
-            {REQUEST_TABS.map((t) => (
-              <TabsTrigger key={t.value} value={t.value} className="min-h-[36px] gap-1.5 px-3">
-                {t.label}
-                <span className="rounded-full bg-muted-foreground/15 px-1.5 text-[10px] font-semibold text-muted-foreground">
-                  {counts.get(t.value) ?? 0}
-                </span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
-      </Tabs>
-
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon={Inbox}
-          title="No requests here"
-          description={
-            tab === "all"
-              ? "Post a brief describing the outcome you need and let expert teams come to you."
-              : "No requests match this filter right now — try another tab."
-          }
-          action={
-            tab === "all" ? (
-              <Button asChild variant="outline">
-                <Link href="/dashboard/buyer/talent-services">Explore Talent Services</Link>
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
-          {filtered.map((request) => (
-            <RequestCard key={request.id} request={request} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function BuyerRequestsPage() {
-  return (
-    <RequireRole role="buyer">
-      <DashboardShell role="buyer" title="My Requests">
-        <BuyerRequestsContent />
-      </DashboardShell>
-    </RequireRole>
-  );
+// Safe useRouter wrapper so the dialog doesn't crash on first paint
+import { useRouter } from "next/navigation";
+function useRouterSafe() {
+  return useRouter();
 }

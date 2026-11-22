@@ -33,14 +33,17 @@ export function StoreHydration() {
       if (alive) ensureFullCatalog();
     };
 
-    // Clean up legacy persisted blobs from superseded builds (the Django/
-    // backend era wrote a v21 blob with incompatible auth fields). The
-    // current store key is v22, so v21 is harmless, but removing it avoids
-    // confusion + frees quota.
+    // Clean up legacy persisted blobs from superseded builds. The current
+    // store key is v23; v22 and earlier either have incompatible request
+    // status unions or stale auth fields, so removing them avoids confusion
+    // and frees quota.
     try {
-      ["stioos-global-v21", "stioos-global-v20", "stioos-global-v19"].forEach(
-        (k) => window.localStorage.removeItem(k)
-      );
+      [
+        "stioos-global-v22",
+        "stioos-global-v21",
+        "stioos-global-v20",
+        "stioos-global-v19",
+      ].forEach((k) => window.localStorage.removeItem(k));
     } catch {
       /* storage unavailable */
     }

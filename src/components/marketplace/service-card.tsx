@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { memo, useState } from "react";
-import { CalendarClock, FileText, Heart, Star } from "lucide-react";
+import { CalendarClock, FileText, Heart, Send, Star } from "lucide-react";
 import type { Service } from "@/types";
 import { getCategoryById } from "@/data/categories";
 import { AccentTile } from "@/components/shared/icon";
@@ -18,7 +19,7 @@ import { deliveryLabel } from "@/lib/marketplace-utils";
 export interface ServiceCardProps {
   service: Service;
   className?: string;
-  /** Called when the "Request" button is pressed. If omitted the card navigates to the detail page. */
+  /** Called when the "Request" button is pressed. If omitted the card uses the default request-creation flow. */
   onRequest?: (service: Service) => void;
 }
 
@@ -39,6 +40,7 @@ export const ServiceCard = memo(function ServiceCard({
   onRequest,
 }: ServiceCardProps) {
   const { toast } = useToast();
+  const router = useRouter();
   const [meetingOpen, setMeetingOpen] = useState(false);
   const category = getCategoryById(service.categoryId);
   const href = `/marketplace/${service.slug}`;
@@ -47,6 +49,7 @@ export const ServiceCard = memo(function ServiceCard({
 
   const wishlist = useAppStore((s) => s.wishlist);
   const toggleWishlist = useAppStore((s) => s.toggleWishlist);
+  const addMarketRequest = useAppStore((s) => s.addMarketRequest);
   const user = useCurrentUser();
   const saved = wishlist.includes(service.slug);
 
@@ -72,6 +75,45 @@ export const ServiceCard = memo(function ServiceCard({
         ? `${service.name} was removed from your wishlist.`
         : `${service.name} was added to your wishlist.`,
     });
+  };
+
+  // The new lifecycle "Request this Service" action — creates a
+  // MarketRequest directly against the service and routes the buyer
+  // to the request detail page where they can track the lifecycle
+  // (quote → order → payment → delivery → close).
+  const handleRequestService = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onRequest) {
+      onRequest(service);
+      return;
+    }
+    if (!user) {
+      toast({
+        title: "Sign in to request a service",
+        description: "Create a free buyer account to submit a service request.",
+        action: (
+          <ToastAction altText="Sign in" onClick={() => useLoginDrawer.getState().openDrawer()}>
+            Sign in
+          </ToastAction>
+        ),
+      });
+      return;
+    }
+    const req = addMarketRequest({
+      categoryId: service.categoryId,
+      categoryName: category?.name ?? "Marketplace Service",
+      title: `${service.name} — service request`,
+      details: `Buyer requested the "${service.name}" service from the marketplace.\n\n${service.shortDescription}\n\nDelivery type: ${deliveryLabel(service)}\nTimeline: ${service.timeline}`,
+      budgetRange: "Open to quote",
+      timeline: service.timeline,
+      kind: "service",
+    });
+    toast({
+      title: "Service request submitted",
+      description: `${req.reference} — the STIOOS team will review and respond with a quote.`,
+    });
+    router.push(`/dashboard/buyer/requests/${req.id}`);
   };
 
   return (
@@ -171,15 +213,23 @@ export const ServiceCard = memo(function ServiceCard({
           card navigation. No stopPropagation needed. */}
       <div className="flex items-center gap-2 border-t px-5 py-3">
         <button
-          onClick={() => useLeadModal.getState().openModal("quote", service.name)}
+          onClick={handleRequestService}
           className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-2 text-[12px] font-bold text-brand-ink transition-colors hover:bg-amber-400"
+          aria-label={`Request ${service.name}`}
+        >
+          <Send className="h-3.5 w-3.5" strokeWidth={2.2} />
+          Request Service
+        </button>
+        <button
+          onClick={() => useLeadModal.getState().openModal("quote", service.name)}
+          className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-transparent px-2 text-[12px] font-semibold text-amber-600 transition-colors hover:bg-amber-500/10 dark:text-amber-400"
         >
           <FileText className="h-3.5 w-3.5" strokeWidth={2.2} />
           Get a Quote
         </button>
         <button
           onClick={() => setMeetingOpen(true)}
-          className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-violet-500/50 bg-transparent px-2 text-[12px] font-semibold text-violet-600 transition-colors hover:bg-violet-500/10 dark:text-violet-400"
+          className="hidden sm:flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-violet-500/50 bg-transparent px-2 text-[12px] font-semibold text-violet-600 transition-colors hover:bg-violet-500/10 dark:text-violet-400"
         >
           <CalendarClock className="h-3.5 w-3.5" strokeWidth={2} />
           Book a Meeting

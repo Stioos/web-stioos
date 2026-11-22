@@ -16,17 +16,23 @@ import type {
   ID,
   Inquiry,
   InquiryStatus,
+  Invoice,
+  InvoiceItem,
   MarketOrder,
   MarketOrderStatus,
   MarketRequest,
   MarketRequestStatus,
   MarketThread,
+  PaymentMethod,
   PermissionMatrix,
+  Quote,
+  QuoteItem,
   RequestKind,
   Role,
   Service,
   ServiceStatus,
   Subcategory,
+  Transaction,
   User,
   UserStatus,
 } from "@/types";
@@ -34,12 +40,22 @@ import {
   KIND_LABELS,
   REQUEST_KIND_DEFS,
   REQUEST_STATUS_LABELS,
+  newInvoiceReference,
+  newQuoteReference,
   newRequestReference,
+  newTransactionReference,
 } from "@/lib/request-kinds";
 import { CORE_SERVICES } from "@/data/services-core";
 import { CATEGORIES, SUBCATEGORIES } from "@/data/categories";
 import { ADMINS, ROLES, USERS } from "@/data/people";
 import { ACTIVITY_LOGS, INQUIRIES, NOTIFICATIONS } from "@/data/content";
+import {
+  LIFECYCLE_INVOICES,
+  LIFECYCLE_ORDERS,
+  LIFECYCLE_QUOTES,
+  LIFECYCLE_REQUESTS,
+  LIFECYCLE_TRANSACTIONS,
+} from "@/data/marketplace-billing";
 import {
   MARKET_ORDERS,
   MARKET_REQUESTS,
@@ -146,6 +162,48 @@ interface AppState {
   ) => { ok: boolean; order?: MarketOrder; error?: string };
   sendMarketMessage: (threadId: ID, body: string) => void;
 
+  // ---- quote / invoice / transaction (lifecycle billing) ----
+  quotes: Quote[];
+  invoices: Invoice[];
+  transactions: Transaction[];
+  /** Super-admin issues a Quote against a request → request.status = "quoted". */
+  issueQuote: (input: {
+    requestId: ID;
+    items: Array<{ description: string; quantity: number; unitPrice: number }>;
+    taxRate: number;
+    validityDays: number;
+    notes?: string;
+  }) => { ok: boolean; quote?: Quote; error?: string };
+  /** Buyer accepts an issued quote → request.status = "approved", quote.status = "accepted". */
+  acceptQuote: (quoteId: ID) => { ok: boolean; error?: string };
+  /** Buyer declines a quote → request.status = "rejected", quote.status = "declined". */
+  declineQuote: (quoteId: ID, reason: string) => { ok: boolean; error?: string };
+  /** Super-admin creates an Order + Invoice against an accepted quote → request.status = "ordered". */
+  createOrderFromQuote: (input: {
+    quoteId: ID;
+    deliveryType?: "project" | "subscription" | "retainer" | "on_demand" | "self_serve";
+    dueDays?: number;
+    notes?: string;
+  }) => { ok: boolean; order?: MarketOrder; invoice?: Invoice; error?: string };
+  /** Buyer pays an issued invoice → invoice.status = "paid", order.status = "in_progress", request.status = "paid". */
+  payInvoice: (input: {
+    invoiceId: ID;
+    method: PaymentMethod;
+    gatewayReference?: string;
+  }) => { ok: boolean; transaction?: Transaction; error?: string };
+  /** Super-admin marks an order delivered → order.status = "delivered", request.status = "delivered". */
+  markOrderDelivered: (orderId: ID) => { ok: boolean; error?: string };
+  /** Buyer accepts delivery → order.status = "completed", request.status = "closed". */
+  acceptDelivery: (orderId: ID) => { ok: boolean; error?: string };
+  /** Super-admin issues a refund against a paid invoice → invoice.status = "refunded", records a refund transaction. */
+  refundInvoice: (input: {
+    invoiceId: ID;
+    reason: string;
+    amount?: number;
+  }) => { ok: boolean; transaction?: Transaction; error?: string };
+  /** Utility setters for admin quote-builder drafts (line items). */
+  voidInvoice: (invoiceId: ID, reason?: string) => { ok: boolean; error?: string };
+
   // ---- entities ----
   services: Service[];
   /**
@@ -239,10 +297,13 @@ const seed = () => ({
   inquiries: INQUIRIES,
   notifications: NOTIFICATIONS,
   activityLogs: ACTIVITY_LOGS,
-  orders: MARKET_ORDERS,
-  requests: MARKET_REQUESTS,
+  orders: [...LIFECYCLE_ORDERS, ...MARKET_ORDERS],
+  requests: [...LIFECYCLE_REQUESTS, ...MARKET_REQUESTS],
   threads: MARKET_THREADS,
   wishlist: WISHLIST_SEED,
+  quotes: LIFECYCLE_QUOTES,
+  invoices: LIFECYCLE_INVOICES,
+  transactions: LIFECYCLE_TRANSACTIONS,
 });
 
 // ============================================================
@@ -321,7 +382,7 @@ const SEED_ID_SETS: Record<string, Set<string>> = {
 // Persisted-storage key for the current build. Kept as a named constant so
 // the self-healing hydration pipeline (quarantine / purge) can reference it
 // without duplicating the literal.
-export const PERSIST_STORAGE_KEY = "stioos-global-v22";
+export const PERSIST_STORAGE_KEY = "stioos-global-v23";
 
 /**
  * Last-resort recovery for a poisoned persistence layer: drop every
@@ -831,6 +892,414 @@ export const useAppStore = create<AppState>()(
               : t
           ),
         }));
+      },
+
+      // ================= QUOTE / INVOICE / TRANSACTION (lifecycle billing) =================
+      issueQuote: ({ requestId, items, taxRate, validityDays, notes }) => {
+        const req = get().requests.find((r) => r.id === requestId);
+        if (!req) return { ok: false, error: "Request not found." };
+        if (!items.length) return { ok: false, error: "Add at least one line item." };
+        const admin = get().admins.find((a) => a.id === get().currentAdminId);
+        const quoteItems: QuoteItem[] = items.map((it, idx) => ({
+          id: uid(`qi-${idx}`),
+          description: it.description.trim(),
+          quantity: Number(it.quantity) || 1,
+          unitPrice: Number(it.unitPrice) || 0,
+          amount: (Number(it.quantity) || 1) * (Number(it.unitPrice) || 0),
+        }));
+        const subtotal = quoteItems.reduce((s, i) => s + i.amount, 0);
+        const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100;
+        const total = Math.round((subtotal + taxAmount) * 100) / 100;
+        const issuedAt = nowISO();
+        const validUntil = new Date(
+          Date.now() + (validityDays || 14) * 86_400_000
+        ).toISOString();
+        const quote: Quote = {
+          id: uid("quo"),
+          reference: newQuoteReference(),
+          requestId: req.id,
+          requestReference: req.reference,
+          buyerId: req.buyerId,
+          buyerName: req.buyerName,
+          buyerCompany: req.buyerCompany,
+          issuedById: admin?.id ?? ADMINS[0]?.id ?? "adm-001",
+          issuedByName: admin?.name ?? "STIOOS Team",
+          issuedAt,
+          items: quoteItems,
+          subtotal,
+          taxRate: Number(taxRate) || 0,
+          taxAmount,
+          discount: 0,
+          total,
+          validityDays: validityDays || 14,
+          validUntil,
+          notes: notes?.trim() || undefined,
+          status: "sent",
+        };
+        set((st) => ({
+          quotes: [quote, ...st.quotes],
+          requests: st.requests.map((r) =>
+            r.id === req.id
+              ? {
+                  ...r,
+                  quoteId: quote.id,
+                  quotedAmount: total,
+                  status: "quoted",
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "quoted",
+                      at: issuedAt,
+                      by: admin?.name ?? "STIOOS Team",
+                      note: `Quote ${quote.reference} issued — valid until ${validUntil.slice(0, 10)}`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("created", "Quote", quote.reference, `Quote ${quote.reference} issued for ${req.buyerName} — $${total.toLocaleString()}.`);
+        return { ok: true, quote };
+      },
+      acceptQuote: (quoteId) => {
+        const quote = get().quotes.find((q) => q.id === quoteId);
+        if (!quote) return { ok: false, error: "Quote not found." };
+        if (quote.status !== "sent") return { ok: false, error: "Quote is no longer awaiting a decision." };
+        const me = get().users.find((u) => u.id === get().currentUserId);
+        const at = nowISO();
+        set((st) => ({
+          quotes: st.quotes.map((q) =>
+            q.id === quoteId ? { ...q, status: "accepted", acceptedAt: at } : q
+          ),
+          requests: st.requests.map((r) =>
+            r.id === quote.requestId
+              ? {
+                  ...r,
+                  status: "approved",
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "approved",
+                      at,
+                      by: me?.name ?? "Buyer",
+                      note: `Quote ${quote.reference} accepted — proceeding to order creation.`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("updated", "Quote", quote.reference, `Buyer accepted quote ${quote.reference}.`);
+        return { ok: true };
+      },
+      declineQuote: (quoteId, reason) => {
+        const quote = get().quotes.find((q) => q.id === quoteId);
+        if (!quote) return { ok: false, error: "Quote not found." };
+        if (quote.status !== "sent") return { ok: false, error: "Quote is no longer awaiting a decision." };
+        const me = get().users.find((u) => u.id === get().currentUserId);
+        const at = nowISO();
+        const trimmed = reason.trim();
+        set((st) => ({
+          quotes: st.quotes.map((q) =>
+            q.id === quoteId
+              ? { ...q, status: "declined", declineReason: trimmed || undefined, declinedAt: at }
+              : q
+          ),
+          requests: st.requests.map((r) =>
+            r.id === quote.requestId
+              ? {
+                  ...r,
+                  status: "rejected",
+                  declineReason: trimmed || undefined,
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "rejected",
+                      at,
+                      by: me?.name ?? "Buyer",
+                      note: trimmed ? `Quote ${quote.reference} declined — ${trimmed}` : `Quote ${quote.reference} declined.`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("updated", "Quote", quote.reference, `Buyer declined quote ${quote.reference}.`);
+        return { ok: true };
+      },
+      createOrderFromQuote: ({ quoteId, deliveryType, dueDays, notes }) => {
+        const quote = get().quotes.find((q) => q.id === quoteId);
+        if (!quote) return { ok: false, error: "Quote not found." };
+        if (quote.status !== "accepted") return { ok: false, error: "Quote must be accepted before creating an order." };
+        const req = get().requests.find((r) => r.id === quote.requestId);
+        if (!req) return { ok: false, error: "Linked request not found." };
+        if (req.orderId) return { ok: false, error: "An order already exists for this request." };
+        const admin = get().admins.find((a) => a.id === get().currentAdminId);
+        const kind = req.kind ?? "service";
+        const kindDef = REQUEST_KIND_DEFS[kind];
+        const orderId = uid("mo");
+        const invoiceId = uid("inv");
+        const issuedAt = nowISO();
+        const dueDate = new Date(
+          Date.now() + (dueDays ?? 7) * 86_400_000
+        ).toISOString();
+        const order: MarketOrder = {
+          id: orderId,
+          serviceId: kind === "service" ? req.categoryId : `talent-${kind}`,
+          serviceSlug: kind === "service" ? req.categoryId : kind,
+          serviceName: req.title,
+          serviceIcon: kindDef?.icon ?? "Inbox",
+          buyerId: req.buyerId,
+          buyerName: req.buyerName,
+          buyerCompany: req.buyerCompany,
+          amount: quote.total,
+          status: "pending",
+          deliveryType: deliveryType ?? "project",
+          placedAt: issuedAt,
+          updatedAt: issuedAt,
+          requirements: req.details,
+        };
+        const invoiceItems: InvoiceItem[] = quote.items.map((it, idx) => ({
+          id: `ii-${orderId}-${idx}`,
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          amount: it.amount,
+        }));
+        const invoice: Invoice = {
+          id: invoiceId,
+          reference: newInvoiceReference(),
+          orderId,
+          requestId: req.id,
+          quoteId: quote.id,
+          buyerId: req.buyerId,
+          buyerName: req.buyerName,
+          buyerCompany: req.buyerCompany,
+          issuedById: admin?.id ?? ADMINS[0]?.id ?? "adm-001",
+          issuedByName: admin?.name ?? "STIOOS Team",
+          issuedAt,
+          dueDate,
+          items: invoiceItems,
+          subtotal: quote.subtotal,
+          taxRate: quote.taxRate,
+          taxAmount: quote.taxAmount,
+          discount: quote.discount,
+          total: quote.total,
+          status: "issued",
+          notes: notes?.trim() || "Payment due net 7 days. Make payable to STIOOS Global.",
+        };
+        set((st) => ({
+          orders: [order, ...st.orders],
+          invoices: [invoice, ...st.invoices],
+          requests: st.requests.map((r) =>
+            r.id === req.id
+              ? {
+                  ...r,
+                  status: "ordered",
+                  orderId,
+                  invoiceId,
+                  quotedAmount: quote.total,
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "ordered",
+                      at: issuedAt,
+                      by: admin?.name ?? "STIOOS Team",
+                      note: `Order ${orderId} created; invoice ${invoice.reference} issued — payment due ${dueDate.slice(0, 10)}.`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("created", "Marketplace Order", order.serviceName, `Order ${orderId} + invoice ${invoice.reference} created for ${req.buyerName}.`);
+        return { ok: true, order, invoice };
+      },
+      payInvoice: ({ invoiceId, method, gatewayReference }) => {
+        const inv = get().invoices.find((i) => i.id === invoiceId);
+        if (!inv) return { ok: false, error: "Invoice not found." };
+        if (inv.status === "paid") return { ok: false, error: "Invoice already paid." };
+        if (inv.status === "void") return { ok: false, error: "Invoice is void." };
+        const me = get().users.find((u) => u.id === get().currentUserId);
+        const at = nowISO();
+        const txn: Transaction = {
+          id: uid("txn"),
+          reference: newTransactionReference(),
+          type: "payment",
+          invoiceId: inv.id,
+          orderId: inv.orderId,
+          requestId: inv.requestId ?? null,
+          quoteId: inv.quoteId ?? null,
+          buyerId: inv.buyerId,
+          buyerName: inv.buyerName,
+          buyerCompany: inv.buyerCompany,
+          amount: inv.total,
+          currency: "USD",
+          method,
+          status: "success",
+          createdAt: at,
+          description: `Payment for invoice ${inv.reference}`,
+          initiatedById: me?.id ?? inv.buyerId,
+          initiatedByName: me?.name ?? inv.buyerName,
+          gatewayReference: gatewayReference?.trim() || undefined,
+          meta:
+            method === "card"
+              ? { last4: "4242", brand: "Visa" }
+              : method === "bank_transfer"
+              ? { bank: "ING Bank", account: "••••7821" }
+              : undefined,
+        };
+        set((st) => ({
+          transactions: [txn, ...st.transactions],
+          invoices: st.invoices.map((i) =>
+            i.id === inv.id
+              ? {
+                  ...i,
+                  status: "paid",
+                  paidAt: at,
+                  paymentMethod: method,
+                  paymentReference: txn.reference,
+                }
+              : i
+          ),
+          orders: st.orders.map((o) =>
+            o.id === inv.orderId
+              ? { ...o, status: "in_progress", updatedAt: at }
+              : o
+          ),
+          requests: st.requests.map((r) =>
+            r.id === inv.requestId
+              ? {
+                  ...r,
+                  status: "paid",
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "paid",
+                      at,
+                      by: me?.name ?? "Buyer",
+                      note: `Payment received via ${method} — ${txn.reference} ($${inv.total.toLocaleString()}).`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("created", "Transaction", txn.reference, `Payment ${txn.reference} captured for invoice ${inv.reference} — $${inv.total.toLocaleString()}.`);
+        return { ok: true, transaction: txn };
+      },
+      markOrderDelivered: (orderId) => {
+        const ord = get().orders.find((o) => o.id === orderId);
+        if (!ord) return { ok: false, error: "Order not found." };
+        if (ord.status !== "in_progress") return { ok: false, error: "Only in-progress orders can be marked delivered." };
+        const admin = get().admins.find((a) => a.id === get().currentAdminId);
+        const at = nowISO();
+        set((st) => ({
+          orders: st.orders.map((o) =>
+            o.id === orderId ? { ...o, status: "delivered", updatedAt: at } : o
+          ),
+          requests: st.requests.map((r) =>
+            r.orderId === orderId
+              ? {
+                  ...r,
+                  status: "delivered",
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "delivered",
+                      at,
+                      by: admin?.name ?? "STIOOS Team",
+                      note: `Order ${orderId} delivered — awaiting buyer acceptance.`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("updated", "Marketplace Order", ord.serviceName, `Order ${orderId} marked delivered.`);
+        return { ok: true };
+      },
+      acceptDelivery: (orderId) => {
+        const ord = get().orders.find((o) => o.id === orderId);
+        if (!ord) return { ok: false, error: "Order not found." };
+        if (ord.status !== "delivered") return { ok: false, error: "Order is not awaiting delivery acceptance." };
+        const me = get().users.find((u) => u.id === get().currentUserId);
+        const at = nowISO();
+        set((st) => ({
+          orders: st.orders.map((o) =>
+            o.id === orderId ? { ...o, status: "completed", updatedAt: at } : o
+          ),
+          requests: st.requests.map((r) =>
+            r.orderId === orderId
+              ? {
+                  ...r,
+                  status: "closed",
+                  statusHistory: [
+                    ...(r.statusHistory ?? []),
+                    {
+                      status: "closed",
+                      at,
+                      by: me?.name ?? "Buyer",
+                      note: `Delivery accepted — order ${orderId} closed.`,
+                    },
+                  ],
+                }
+              : r
+          ),
+        }));
+        get().logActivity("updated", "Marketplace Order", ord.serviceName, `Buyer accepted delivery of order ${orderId}.`);
+        return { ok: true };
+      },
+      refundInvoice: ({ invoiceId, reason, amount }) => {
+        const inv = get().invoices.find((i) => i.id === invoiceId);
+        if (!inv) return { ok: false, error: "Invoice not found." };
+        if (inv.status !== "paid") return { ok: false, error: "Only paid invoices can be refunded." };
+        const admin = get().admins.find((a) => a.id === get().currentAdminId);
+        const at = nowISO();
+        const refundAmount = amount && amount > 0 ? amount : inv.total;
+        const txn: Transaction = {
+          id: uid("txn"),
+          reference: newTransactionReference(),
+          type: "refund",
+          invoiceId: inv.id,
+          orderId: inv.orderId,
+          requestId: inv.requestId ?? null,
+          quoteId: inv.quoteId ?? null,
+          buyerId: inv.buyerId,
+          buyerName: inv.buyerName,
+          buyerCompany: inv.buyerCompany,
+          amount: -refundAmount,
+          currency: "USD",
+          method: (inv.paymentMethod as PaymentMethod) ?? "manual",
+          status: "refunded",
+          createdAt: at,
+          description: `Refund for invoice ${inv.reference} — ${reason.trim()}`,
+          initiatedById: admin?.id ?? ADMINS[0]?.id ?? "adm-001",
+          initiatedByName: admin?.name ?? "STIOOS Team",
+          meta: { reason: reason.trim() },
+        };
+        set((st) => ({
+          transactions: [txn, ...st.transactions],
+          invoices: st.invoices.map((i) =>
+            i.id === invoiceId ? { ...i, status: "refunded" } : i
+          ),
+        }));
+        get().logActivity("created", "Transaction", txn.reference, `Refund ${txn.reference} issued for invoice ${inv.reference} — $${refundAmount.toLocaleString()}.`);
+        return { ok: true, transaction: txn };
+      },
+      voidInvoice: (invoiceId, reason) => {
+        const inv = get().invoices.find((i) => i.id === invoiceId);
+        if (!inv) return { ok: false, error: "Invoice not found." };
+        if (inv.status === "paid") return { ok: false, error: "Paid invoices cannot be voided — refund instead." };
+        set((st) => ({
+          invoices: st.invoices.map((i) =>
+            i.id === invoiceId
+              ? { ...i, status: "void", notes: reason ? `${i.notes ?? ""}\nVOIDED: ${reason.trim()}`.trim() : i.notes }
+              : i
+          ),
+        }));
+        get().logActivity("updated", "Invoice", inv.reference, `Invoice ${inv.reference} voided${reason ? ` — ${reason.trim()}` : ""}.`);
+        return { ok: true };
       },
 
       // ================= DEFERRED CATALOG =================
@@ -1529,6 +1998,15 @@ function partializeImpl(state: AppState): AppState {
           updateMarketRequestStatus,
           convertRequestToOrder,
           sendMarketMessage,
+          issueQuote,
+          acceptQuote,
+          declineQuote,
+          createOrderFromQuote,
+          payInvoice,
+          markOrderDelivered,
+          acceptDelivery,
+          refundInvoice,
+          voidInvoice,
           ...rest
         } = state as unknown as Record<string, unknown>;
         const out = rest as unknown as Record<string, unknown>;
@@ -1559,6 +2037,9 @@ function partializeImpl(state: AppState): AppState {
           ["inquiries", 500],
           ["orders", 500],
           ["requests", 500],
+          ["quotes", 500],
+          ["invoices", 500],
+          ["transactions", 500],
         ] as const) {
           const list = out[key];
           if (Array.isArray(list) && list.length > max) out[key] = list.slice(-max);

@@ -79,7 +79,9 @@ function titleCase(value: string): string {
 export default function AdminOrdersPage() {
   const { toast } = useToast();
   const orders = useAppStore((s) => s.orders);
+  const requests = useAppStore((s) => s.requests);
   const updateMarketOrderStatus = useAppStore((s) => s.updateMarketOrderStatus);
+  const markOrderDelivered = useAppStore((s) => s.markOrderDelivered);
 
   const [statusFilter, setStatusFilter] = useState<MarketOrderStatus | "all">("all");
 
@@ -116,6 +118,25 @@ export default function AdminOrdersPage() {
       description: `Order "${order.serviceName}" (${order.id}) marked ${status.replace("_", " ")} for ${order.buyerName}.`,
     });
   };
+
+  const handleMarkDelivered = (order: MarketOrder) => {
+    const res = markOrderDelivered(order.id);
+    if (res.ok) {
+      toast({
+        title: "Order delivered",
+        description: `Order ${order.id} marked delivered — the buyer can now accept delivery.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Could not mark delivered",
+        description: res.error ?? "Something went wrong.",
+      });
+    }
+  };
+
+  const findRequestId = (orderId: string) =>
+    requests.find((r) => r.orderId === orderId)?.id ?? null;
 
   const columns: Column<MarketOrder>[] = [
     {
@@ -187,37 +208,66 @@ export default function AdminOrdersPage() {
     },
   ];
 
-  const rowActions = (o: MarketOrder) => (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          aria-label={`Actions for order ${o.id}`}
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">Set order status</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {ORDER_STATUSES.map((s) => {
-          const IconCmp = STATUS_ICON[s.value];
-          return (
-            <DropdownMenuItem
-              key={s.value}
-              disabled={o.status === s.value}
-              onClick={() => changeStatus(o, s.value)}
-            >
-              <IconCmp className="h-4 w-4" />
-              {s.label}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  const rowActions = (o: MarketOrder) => {
+    const requestId = findRequestId(o.id);
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={`Actions for order ${o.id}`}
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          {o.status === "in_progress" && (
+            <>
+              <DropdownMenuItem
+                onClick={() => handleMarkDelivered(o)}
+                className="text-sky-700 focus:text-sky-800"
+              >
+                <Truck className="h-4 w-4" />
+                Mark Delivered
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          {requestId && (
+            <>
+              <DropdownMenuItem asChild>
+                <a
+                  href={`/admin/service-requests?focus=${requestId}`}
+                  className="flex items-center gap-2"
+                >
+                  <PackageCheck className="h-4 w-4" />
+                  View Request
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          <DropdownMenuLabel className="text-xs text-muted-foreground">Set order status</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {ORDER_STATUSES.map((s) => {
+            const IconCmp = STATUS_ICON[s.value];
+            return (
+              <DropdownMenuItem
+                key={s.value}
+                disabled={o.status === s.value}
+                onClick={() => changeStatus(o, s.value)}
+              >
+                <IconCmp className="h-4 w-4" />
+                {s.label}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
   return (
     <div>

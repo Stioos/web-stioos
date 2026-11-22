@@ -123,7 +123,7 @@ export function SectionCard({
 
 // ---------- Status badges ----------
 
-type BadgeTone = "amber" | "sky" | "emerald" | "teal" | "rose" | "slate";
+type BadgeTone = "amber" | "sky" | "emerald" | "teal" | "rose" | "slate" | "violet";
 
 const BADGE_TONES: Record<BadgeTone, string> = {
   amber: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400",
@@ -132,6 +132,7 @@ const BADGE_TONES: Record<BadgeTone, string> = {
   teal: "border-teal-500/30 bg-teal-500/10 text-teal-700",
   rose: "border-rose-500/30 bg-rose-500/10 text-rose-700",
   slate: "border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-300",
+  violet: "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-400",
 };
 
 const ORDER_STATUS_META: Record<MarketOrderStatus, { label: string; tone: BadgeTone }> = {
@@ -144,8 +145,13 @@ const ORDER_STATUS_META: Record<MarketOrderStatus, { label: string; tone: BadgeT
 
 const REQUEST_STATUS_META: Record<MarketRequestStatus, { label: string; tone: BadgeTone }> = {
   open: { label: "Open", tone: "amber" },
-  in_review: { label: "In review", tone: "sky" },
-  in_progress: { label: "In progress", tone: "teal" },
+  in_review: { label: "In Review", tone: "sky" },
+  quoted: { label: "Quoted", tone: "violet" },
+  approved: { label: "Approved", tone: "teal" },
+  ordered: { label: "Order Created", tone: "sky" },
+  paid: { label: "Paid", tone: "emerald" },
+  in_progress: { label: "In Progress", tone: "sky" },
+  delivered: { label: "Delivered", tone: "emerald" },
   fulfilled: { label: "Fulfilled", tone: "emerald" },
   rejected: { label: "Rejected", tone: "rose" },
   closed: { label: "Closed", tone: "slate" },

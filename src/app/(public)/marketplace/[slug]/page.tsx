@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Reveal } from "@/components/motion/reveal";
 import { format } from "date-fns";
 import { findServiceBySlug, getAllPublishedServices } from "@/lib/service-data";
@@ -26,7 +26,8 @@ import {
   Zap,
 } from "lucide-react";
 import type { Service } from "@/types";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, useCurrentUser } from "@/lib/store";
+import { useToast } from "@/hooks/use-toast";
 import { getCategoryById, getSubcategoryById } from "@/data/categories";
 import { INDUSTRIES } from "@/data/content";
 import { cn } from "@/lib/utils";
@@ -206,6 +207,10 @@ export default function ServiceDetailPage() {
   const heroCtaPrimary = useAppStore((s) => s.marketplaceSettings.heroCtaPrimary);
   const heroCtaSecondary = useAppStore((s) => s.marketplaceSettings.heroCtaSecondary);
   const cardCtaPrimary = useAppStore((s) => s.marketplaceSettings.cardCtaPrimary);
+  const addMarketRequest = useAppStore((s) => s.addMarketRequest);
+  const currentUser = useCurrentUser();
+  const router = useRouter();
+  const { toast } = useToast();
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestServiceTarget, setRequestServiceTarget] = useState<Service | null>(null);
   const [heroLead, setHeroLead] = useState<LeadType | null>(null);
@@ -244,6 +249,27 @@ export default function ServiceDetailPage() {
   const serviceIcon = service.icon;
 
   const openRequest = () => {
+    // New lifecycle flow: signed-in buyers get a MarketRequest created
+    // directly and routed to the request detail page (quote → order →
+    // invoice → payment → delivery → close). Anonymous visitors fall
+    // back to the LeadModal capture funnel (handles registration).
+    if (currentUser) {
+      const req = addMarketRequest({
+        categoryId: service.categoryId,
+        categoryName: category?.name ?? "Marketplace Service",
+        title: `${service.name} — service request`,
+        details: `Buyer requested the "${service.name}" service from the marketplace.\n\n${service.shortDescription}\n\nDelivery type: ${deliveryLabel(service)}\nTimeline: ${service.timeline}`,
+        budgetRange: "Open to quote",
+        timeline: service.timeline,
+        kind: "service",
+      });
+      toast({
+        title: "Service request submitted",
+        description: `${req.reference} — the STIOOS team will review and respond with a quote.`,
+      });
+      router.push(`/dashboard/buyer/requests/${req.id}`);
+      return;
+    }
     setRequestServiceTarget(service);
     setRequestOpen(true);
   };
