@@ -12,9 +12,10 @@ import {
   Package,
   ClipboardList,
   ArrowLeftRight,
-  Heart,
-  MessageSquare,
-  UserCog,
+  Briefcase,
+  CreditCard,
+  Users,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
@@ -40,13 +41,15 @@ interface NavItem {
 }
 
 const BUYER_NAV: NavItem[] = [
-  { href: "/dashboard/buyer", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/buyer", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/buyer/post-a-job", label: "Post a Service Job", icon: Briefcase },
   { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
-  { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/dashboard/buyer/messages", label: "Messages", icon: MessageSquare },
-  { href: "/dashboard/buyer/profile", label: "Profile", icon: UserCog },
+  { href: "/dashboard/buyer/billing", label: "Billing", icon: CreditCard },
+  { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },
+  { href: "/dashboard/buyer/hire-talent", label: "Hire a Talent", icon: Briefcase },
+  { href: "/dashboard/buyer/account-settings", label: "Account Settings", icon: Settings },
 ];
 
 function initialsOf(name: string): string {
