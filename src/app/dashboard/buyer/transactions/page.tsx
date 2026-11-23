@@ -3,32 +3,35 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
   ChevronRight,
   Download,
   Inbox,
   Receipt,
-  Wallet,
 } from "lucide-react";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { StatusBadge, formatDate, timeAgo } from "@/components/dashboard/shared";
+import { formatDate, timeAgo } from "@/components/dashboard/shared";
 import {
   InvoiceDetailSheet,
   InvoiceStatusBadge,
   formatMoney,
 } from "@/components/dashboard/lifecycle/quote-invoice";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import type { Invoice, Transaction, TransactionType } from "@/types";
 
 type TxnTab = "all" | TransactionType;
 
-const TABS: { value: TxnTab; label: string }[] = [
-  { value: "all", label: "All" },
+const TAB_OPTIONS: { value: TxnTab; label: string }[] = [
+  { value: "all", label: "All Types" },
   { value: "payment", label: "Payments" },
   { value: "refund", label: "Refunds" },
   { value: "credit", label: "Credits" },
@@ -104,17 +107,6 @@ function TransactionsContent() {
     return map;
   }, [myTxns]);
 
-  const stats = useMemo(() => {
-    const paid = myTxns
-      .filter((t) => t.type === "payment" && t.status === "success")
-      .reduce((s, t) => s + t.amount, 0);
-    const refunded = myTxns
-      .filter((t) => t.type === "refund")
-      .reduce((s, t) => s + Math.abs(t.amount), 0);
-    const net = paid - refunded;
-    return { paid, refunded, net, count: myTxns.length };
-  }, [myTxns]);
-
   const selected = useMemo(() => {
     if (selectedId) {
       const found = myTxns.find((t) => t.id === selectedId);
@@ -131,15 +123,31 @@ function TransactionsContent() {
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* Sidebar — transactions list (LEFT) */}
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
-          <div className="shrink-0 border-b border-white/10 px-4 py-3">
+          <div className="shrink-0 space-y-2 border-b border-white/10 px-4 py-3">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                 Transactions ({filtered.length})
               </p>
-              <span className="text-[10px] text-slate-500">
-                {tab === "all" ? "All types" : TABS.find((t) => t.value === tab)?.label}
-              </span>
             </div>
+            {/* Type filter dropdown — replaces the stats strip + filter tabs */}
+            <Select
+              value={tab}
+              onValueChange={(v) => {
+                setTab(v as TxnTab);
+                setSelectedId(null);
+              }}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TAB_OPTIONS.map((t) => (
+                  <SelectItem key={t.value} value={t.value} className="text-xs">
+                    {t.label} ({counts.get(t.value) ?? 0})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
             {filtered.length === 0 ? (
@@ -218,73 +226,8 @@ function TransactionsContent() {
           </div>
         </aside>
 
-        {/* Inspector — transaction detail with tabs at top (RIGHT) */}
+        {/* Inspector — transaction detail (RIGHT) */}
         <section className="flex min-h-0 flex-col overflow-hidden">
-          {/* Stats strip */}
-          <div className="mb-3 grid shrink-0 grid-cols-4 gap-2">
-            <StatBox
-              label="Total Paid"
-              value={formatMoney(stats.paid)}
-              icon={<ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />}
-              tone="text-emerald-300"
-            />
-            <StatBox
-              label="Refunded"
-              value={formatMoney(stats.refunded)}
-              icon={<ArrowDownLeft className="h-3.5 w-3.5 text-rose-400" />}
-              tone="text-rose-300"
-            />
-            <StatBox
-              label="Net Spend"
-              value={formatMoney(stats.net)}
-              icon={<Wallet className="h-3.5 w-3.5 text-amber-400" />}
-              tone="text-amber-300"
-            />
-            <StatBox
-              label="Count"
-              value={String(stats.count)}
-              icon={<Receipt className="h-3.5 w-3.5 text-sky-400" />}
-              tone="text-sky-300"
-            />
-          </div>
-
-          {/* Filter tabs */}
-          <div className="mb-3 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1">
-            {TABS.map((t) => {
-              const count = counts.get(t.value) ?? 0;
-              const isActive = tab === t.value;
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => {
-                    setTab(t.value);
-                    setSelectedId(null);
-                  }}
-                  aria-pressed={isActive}
-                  className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
-                    isActive
-                      ? "bg-amber-500 text-white shadow-sm"
-                      : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
-                  )}
-                >
-                  {t.label}
-                  <span
-                    className={cn(
-                      "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                      isActive
-                        ? "bg-white/25 text-white"
-                        : "bg-white/10 text-slate-400"
-                    )}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Inspector content */}
           <div className="min-h-0 flex-1 overflow-y-auto">
             {selected ? (
@@ -315,30 +258,6 @@ function TransactionsContent() {
         open={!!invoiceOpen}
         onOpenChange={(v) => { if (!v) setInvoiceOpen(null); }}
       />
-    </div>
-  );
-}
-
-function StatBox({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  tone: string;
-}) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
-      <div className="flex items-center justify-between">
-        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        {icon}
-      </div>
-      <p className={cn("mt-1 text-sm font-bold", tone)}>{value}</p>
     </div>
   );
 }
@@ -409,7 +328,7 @@ function TransactionInspector({
               {formatMoney(txn.amount)}
             </span>
           }
-          icon={<Wallet className="h-3.5 w-3.5 text-amber-400" />}
+          icon={<Receipt className="h-3.5 w-3.5 text-amber-400" />}
         />
         <InspectorField
           label="Method"
@@ -419,7 +338,7 @@ function TransactionInspector({
         <InspectorField
           label="Date"
           value={<span className="text-slate-200">{formatDate(txn.createdAt)}</span>}
-          icon={<ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />}
+          icon={<Receipt className="h-3.5 w-3.5 text-emerald-400" />}
         />
       </div>
 
@@ -488,7 +407,7 @@ function TransactionInspector({
       {/* Footer */}
       <div className="mt-3 border-t border-white/10 pt-3">
         <Link
-          href="/dashboard/buyer/billing"
+          href="/dashboard/buyer/orders"
           className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-amber-300"
         >
           <Download className="h-3 w-3" /> View all invoices

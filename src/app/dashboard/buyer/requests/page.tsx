@@ -22,7 +22,6 @@ import {
 } from "@/components/dashboard/lifecycle/lifecycle-shared";
 import {
   DeclineQuoteDialog,
-  InvoiceCard,
   PaymentDialog,
   QuoteCard,
   formatMoney as formatLifecycleMoney,
@@ -54,8 +53,8 @@ import type { MarketRequest, MarketRequestStatus } from "@/types";
 
 type RequestTab = "all" | MarketRequestStatus;
 
-const TABS: { value: RequestTab; label: string }[] = [
-  { value: "all", label: "All" },
+const TAB_OPTIONS: { value: RequestTab; label: string }[] = [
+  { value: "all", label: "All Statuses" },
   { value: "open", label: "Open" },
   { value: "in_review", label: "In Review" },
   { value: "quoted", label: "Quoted" },
@@ -148,10 +147,6 @@ function RequestsContent() {
     return filtered[0] ?? null;
   }, [selectedId, myRequests, filtered]);
 
-  const pendingActionCount = myRequests.filter(
-    (r) => nextBuyerActionLabel(r.status) !== null
-  ).length;
-
   const handleAcceptQuote = () => {
     if (!selected?.quoteId) return;
     const res = acceptQuote(selected.quoteId);
@@ -169,7 +164,7 @@ function RequestsContent() {
     if (res.ok) {
       toast({
         title: "Delivery accepted",
-        description: "Order closed. Receipt and final invoice are available under Billing.",
+        description: "Order closed. Receipt and final invoice are available under Transactions.",
       });
     }
   };
@@ -192,7 +187,7 @@ function RequestsContent() {
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* Sidebar — requests list (LEFT) */}
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
-          <div className="shrink-0 border-b border-white/10 px-4 py-3">
+          <div className="shrink-0 space-y-2 border-b border-white/10 px-4 py-3">
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                 Requests ({filtered.length})
@@ -205,6 +200,25 @@ function RequestsContent() {
                 <Plus className="mr-1 h-3 w-3" /> New
               </Button>
             </div>
+            {/* Status filter dropdown — replaces the stats strip + filter tabs */}
+            <Select
+              value={tab}
+              onValueChange={(v) => {
+                setTab(v as RequestTab);
+                setSelectedId(null);
+              }}
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TAB_OPTIONS.map((t) => (
+                  <SelectItem key={t.value} value={t.value} className="text-xs">
+                    {t.label} ({counts.get(t.value) ?? 0})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
             {filtered.length === 0 ? (
@@ -273,53 +287,8 @@ function RequestsContent() {
           </div>
         </aside>
 
-        {/* Inspector — request detail with tabs at top (RIGHT) */}
+        {/* Inspector — request detail (RIGHT) */}
         <section className="flex min-h-0 flex-col overflow-hidden">
-          {/* Stats strip */}
-          <div className="mb-3 grid shrink-0 grid-cols-4 gap-2">
-            <StatBox label="Total" value={String(myRequests.length)} tone="text-white" />
-            <StatBox label="Action Needed" value={String(pendingActionCount)} tone="text-amber-300" />
-            <StatBox label="In Delivery" value={String(myRequests.filter((r) => r.status === "paid" || r.status === "delivered" || r.status === "ordered").length)} tone="text-sky-300" />
-            <StatBox label="Closed" value={String(myRequests.filter((r) => r.status === "closed" || r.status === "rejected").length)} tone="text-emerald-300" />
-          </div>
-
-          {/* Filter tabs */}
-          <div className="mb-3 flex shrink-0 flex-wrap items-center gap-1.5 overflow-x-auto rounded-xl border border-white/10 bg-white/[0.03] p-1">
-            {TABS.map((t) => {
-              const count = counts.get(t.value) ?? 0;
-              const isActive = tab === t.value;
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => {
-                    setTab(t.value);
-                    setSelectedId(null);
-                  }}
-                  aria-pressed={isActive}
-                  className={cn(
-                    "inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
-                    isActive
-                      ? "bg-amber-500 text-white shadow-sm"
-                      : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
-                  )}
-                >
-                  {t.label}
-                  <span
-                    className={cn(
-                      "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                      isActive
-                        ? "bg-white/25 text-white"
-                        : "bg-white/10 text-slate-400"
-                    )}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Inspector content */}
           <div className="min-h-0 flex-1 overflow-y-auto">
             {selected ? (
@@ -388,25 +357,6 @@ function RequestsContent() {
           }}
         />
       )}
-    </div>
-  );
-}
-
-function StatBox({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: string;
-}) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
-      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
-        {label}
-      </p>
-      <p className={cn("mt-1 text-sm font-bold", tone)}>{value}</p>
     </div>
   );
 }
@@ -576,7 +526,7 @@ function RequestInspector({
         )}
         {invoice && (
           <Link
-            href="/dashboard/buyer/billing"
+            href="/dashboard/buyer/transactions"
             className="group flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 transition-colors hover:border-amber-400/30 hover:bg-white/[0.05]"
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sky-400/10 ring-1 ring-sky-400/20">

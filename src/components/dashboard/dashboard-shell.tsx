@@ -12,7 +12,6 @@ import {
   Package,
   ClipboardList,
   ArrowLeftRight,
-  CreditCard,
   Users,
   Settings,
   type LucideIcon,
@@ -43,7 +42,6 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
-  { href: "/dashboard/buyer/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },
 ];
 

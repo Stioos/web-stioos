@@ -143,10 +143,10 @@ function BuyerOverview() {
           <p className="mt-2 text-sm font-semibold text-white">Hire a Talent</p>
           <p className="text-xs text-slate-500">2M+ pre-vetted professionals</p>
         </Link>
-        <Link href="/dashboard/buyer/billing" className="group rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-all hover:border-amber-400/30 hover:bg-white/[0.05]">
+        <Link href="/dashboard/buyer/transactions" className="group rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-all hover:border-amber-400/30 hover:bg-white/[0.05]">
           <DollarSign className="h-5 w-5 text-emerald-400" />
-          <p className="mt-2 text-sm font-semibold text-white">Billing</p>
-          <p className="text-xs text-slate-500">Invoices & payment methods</p>
+          <p className="mt-2 text-sm font-semibold text-white">Transactions</p>
+          <p className="text-xs text-slate-500">Payments, invoices & receipts</p>
         </Link>
         <Link href="/marketplace" className="group rounded-xl border border-white/10 bg-white/[0.03] p-4 transition-all hover:border-amber-400/30 hover:bg-white/[0.05]">
           <Sparkles className="h-5 w-5 text-violet-400" />

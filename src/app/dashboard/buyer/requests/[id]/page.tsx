@@ -436,11 +436,11 @@ function RequestDetailContent() {
                 <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
               </Link>
               <Link
-                href="/dashboard/buyer/billing"
+                href="/dashboard/buyer/transactions"
                 className="flex items-center justify-between rounded-md px-2 py-1.5 text-slate-300 hover:bg-white/[0.04]"
               >
                 <span className="flex items-center gap-2">
-                  <Download className="h-4 w-4" /> Billing & Invoices
+                  <Download className="h-4 w-4" /> Transactions & Invoices
                 </span>
                 <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
               </Link>
