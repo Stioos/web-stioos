@@ -3,39 +3,50 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
+  ChevronRight,
   CreditCard,
   Download,
   Inbox,
   Receipt,
-  Wallet,
 } from "lucide-react";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import {
-  EmptyState,
-  SectionCard,
-  StatusBadge,
-  formatMoney,
-  timeAgo,
-} from "@/components/dashboard/shared";
+import { timeAgo } from "@/components/dashboard/shared";
 import {
   InvoiceDetailSheet,
   InvoiceStatusBadge,
   PaymentDialog,
+  formatMoney,
 } from "@/components/dashboard/lifecycle/quote-invoice";
 import { Button } from "@/components/ui/button";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import type { Invoice } from "@/types";
+import type { Invoice, InvoiceStatus } from "@/types";
+
+type InvoiceTab = "all" | InvoiceStatus;
+
+const TABS: { value: InvoiceTab; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "issued", label: "Unpaid" },
+  { value: "paid", label: "Paid" },
+  { value: "refunded", label: "Refunded" },
+  { value: "void", label: "Void" },
+];
+
+const STATUS_DOT: Record<InvoiceStatus, string> = {
+  draft: "bg-slate-400",
+  issued: "bg-amber-400",
+  paid: "bg-emerald-400",
+  void: "bg-slate-500",
+  refunded: "bg-rose-400",
+};
 
 export default function BuyerBillingPage() {
   return (
     <RequireRole role="buyer">
-      <DashboardShell role="buyer" title="Billing · Buyer Dashboard">
-        <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
-          <BillingContent />
-        </div>
+      <DashboardShell role="buyer" title="Billing">
+        <BillingContent />
       </DashboardShell>
     </RequireRole>
   );
@@ -46,7 +57,9 @@ function BillingContent() {
   const invoices = useAppStore((s) => s.invoices);
   const orders = useAppStore((s) => s.orders);
   const transactions = useAppStore((s) => s.transactions);
-  const [detailOpen, setDetailOpen] = useState<Invoice | null>(null);
+  const [tab, setTab] = useState<InvoiceTab>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailInvoice, setDetailInvoice] = useState<Invoice | null>(null);
   const [payInvoice, setPayInvoice] = useState<Invoice | null>(null);
   const { toast } = useToast();
 
@@ -56,6 +69,19 @@ function BillingContent() {
       .filter((i) => i.buyerId === user.id)
       .sort((a, b) => (a.issuedAt < b.issuedAt ? 1 : -1));
   }, [invoices, user]);
+
+  const filtered = useMemo(() => {
+    if (tab === "all") return myInvoices;
+    return myInvoices.filter((i) => i.status === tab);
+  }, [myInvoices, tab]);
+
+  const counts = useMemo(() => {
+    const map = new Map<InvoiceTab, number>([["all", myInvoices.length]]);
+    for (const i of myInvoices) {
+      map.set(i.status, (map.get(i.status) ?? 0) + 1);
+    }
+    return map;
+  }, [myInvoices]);
 
   const stats = useMemo(() => {
     const totalPaid = myInvoices
@@ -75,200 +101,186 @@ function BillingContent() {
     };
   }, [myInvoices, transactions, user]);
 
-  const handlePay = (inv: Invoice) => {
-    setPayInvoice(inv);
-  };
+  const selected = useMemo(() => {
+    if (selectedId) {
+      const found = myInvoices.find((i) => i.id === selectedId);
+      if (found) return found;
+    }
+    return filtered[0] ?? null;
+  }, [selectedId, myInvoices, filtered]);
 
   return (
-    <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
-            Marketplace · Buyer
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-white sm:text-3xl">
-            Billing & Invoices
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-300">
-            Invoices issued against your service requests and talent
-            engagements. Pay outstanding invoices, view receipts, and track
-            payment history.
-          </p>
-        </div>
-        <Link href="/dashboard/buyer/transactions">
-          <Button variant="outline" size="sm">
-            <Wallet className="mr-1.5 h-4 w-4" /> View Transactions
-          </Button>
-        </Link>
-      </div>
-
-      {/* Stats cards */}
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <BillingStat
-          label="Total Paid"
-          value={formatMoney(stats.totalPaid)}
-          icon={<Receipt className="h-4 w-4 text-emerald-400" />}
-          tone="text-emerald-300"
-        />
-        <BillingStat
-          label="Outstanding"
-          value={formatMoney(stats.outstanding)}
-          icon={<CreditCard className="h-4 w-4 text-amber-400" />}
-          tone="text-amber-300"
-        />
-        <BillingStat
-          label="Refunded"
-          value={formatMoney(stats.refunded)}
-          icon={<Download className="h-4 w-4 text-rose-400" />}
-          tone="text-rose-300"
-        />
-        <BillingStat
-          label="Invoices"
-          value={String(stats.invoiceCount)}
-          icon={<Receipt className="h-4 w-4 text-sky-400" />}
-          tone="text-sky-300"
-        />
-      </div>
-
-      {/* Payment method */}
-      <SectionCard title="Payment method" className="mt-5 bg-white/[0.03]">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-14 items-center justify-center rounded-md bg-gradient-to-br from-slate-800 to-slate-900 text-xs font-bold text-white">
-              VISA
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">
-                Visa ending in 4242
+    <div className="mx-auto flex h-full w-full max-w-7xl">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
+        {/* Sidebar — invoice list (LEFT) */}
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+          <div className="shrink-0 border-b border-white/10 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                Invoices ({filtered.length})
               </p>
-              <p className="text-[11px] text-slate-400">
-                Expires 12 / 28 · Default payment method
-              </p>
+              <span className="text-[10px] text-slate-500">
+                {tab === "all" ? "All statuses" : TABS.find((t) => t.value === tab)?.label}
+              </span>
             </div>
           </div>
-          <Button variant="outline" size="sm">
-            <CreditCard className="mr-1.5 h-4 w-4" /> Manage
-          </Button>
-        </div>
-      </SectionCard>
-
-      {/* Invoices table */}
-      <SectionCard
-        title="Invoice history"
-        className="mt-5 bg-white/[0.03]"
-        action={
-          <span className="text-xs text-slate-400">
-            {myInvoices.length} invoice{myInvoices.length === 1 ? "" : "s"}
-          </span>
-        }
-      >
-        {myInvoices.length === 0 ? (
-          <EmptyState
-            icon={Inbox}
-            title="No invoices yet"
-            description="When the STIOOS team creates an order against your accepted quote, the invoice will appear here."
-          />
-        ) : (
-          <div className="overflow-hidden rounded-lg border border-white/10">
-            <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-left text-[11px] uppercase tracking-wider text-slate-400">
-                <tr>
-                  <th className="px-4 py-2">Invoice</th>
-                  <th className="px-4 py-2">Order</th>
-                  <th className="px-4 py-2">Issued</th>
-                  <th className="px-4 py-2">Due</th>
-                  <th className="px-4 py-2 text-right">Amount</th>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {myInvoices.map((inv) => {
-                  const ord = orders.find((o) => o.id === inv.orderId);
-                  return (
-                    <tr key={inv.id} className="hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 font-mono text-slate-200">
-                        {inv.reference}
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        <p className="line-clamp-1">
+          <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
+            {filtered.length === 0 ? (
+              <div className="flex h-full items-center justify-center p-6 text-center">
+                <div>
+                  <Inbox className="mx-auto h-8 w-8 text-slate-600" />
+                  <p className="mt-2 text-xs font-medium text-slate-400">
+                    No invoices match this filter
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filtered.map((inv) => {
+                const isActive = selected?.id === inv.id;
+                const ord = orders.find((o) => o.id === inv.orderId);
+                return (
+                  <button
+                    key={inv.id}
+                    type="button"
+                    onClick={() => setSelectedId(inv.id)}
+                    aria-current={isActive ? "true" : undefined}
+                    className={cn(
+                      "group w-full rounded-lg p-3 text-left transition-colors",
+                      isActive
+                        ? "bg-amber-400/10 ring-1 ring-inset ring-amber-400/30"
+                        : "hover:bg-white/[0.04]"
+                    )}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className={cn(
+                          "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                          STATUS_DOT[inv.status]
+                        )}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={cn(
+                            "truncate font-mono text-sm font-semibold",
+                            isActive ? "text-amber-300" : "text-white"
+                          )}
+                        >
+                          {inv.reference}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-400">
                           {ord?.serviceName ?? "—"}
                         </p>
-                        <p className="text-[11px] text-slate-500">
-                          {ord?.id}
-                        </p>
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        {timeAgo(inv.issuedAt)}
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        {timeAgo(inv.dueDate)}
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums text-slate-200">
-                        {formatMoney(inv.total)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <InvoiceStatusBadge status={inv.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-slate-300"
-                            onClick={() => setDetailOpen(inv)}
-                          >
-                            View
-                          </Button>
-                          {inv.status === "issued" && (
-                            <Button
-                              size="sm"
-                              className="h-7 bg-emerald-600 px-2 hover:bg-emerald-700"
-                              onClick={() => handlePay(inv)}
-                            >
-                              <CreditCard className="mr-1 h-3.5 w-3.5" /> Pay
-                            </Button>
-                          )}
-                          {inv.status === "paid" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 px-2 text-amber-300"
-                              onClick={() =>
-                                toast({
-                                  title: "Receipt downloaded",
-                                  description: `Receipt for ${inv.reference} (${formatMoney(inv.total)}) downloaded as PDF.`,
-                                })
-                              }
-                            >
-                              <Download className="h-3.5 w-3.5" /> Receipt
-                            </Button>
-                          )}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          <InvoiceStatusBadge status={inv.status} />
+                          <span className="text-[10px] font-bold tabular-nums text-emerald-300">
+                            {formatMoney(inv.total)}
+                          </span>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <p className="mt-1 text-[10px] text-slate-500">
+                          {timeAgo(inv.issuedAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
-        )}
-      </SectionCard>
+        </aside>
+
+        {/* Inspector — invoice detail with tabs + stats at top (RIGHT) */}
+        <section className="flex min-h-0 flex-col overflow-hidden">
+          {/* Stats strip */}
+          <div className="mb-3 grid shrink-0 grid-cols-4 gap-2">
+            <StatBox label="Total Paid" value={formatMoney(stats.totalPaid)} tone="text-emerald-300" />
+            <StatBox label="Outstanding" value={formatMoney(stats.outstanding)} tone="text-amber-300" />
+            <StatBox label="Refunded" value={formatMoney(stats.refunded)} tone="text-rose-300" />
+            <StatBox label="Invoices" value={String(stats.invoiceCount)} tone="text-sky-300" />
+          </div>
+
+          {/* Filter tabs */}
+          <div className="mb-3 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+            {TABS.map((t) => {
+              const count = counts.get(t.value) ?? 0;
+              const isActive = tab === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => {
+                    setTab(t.value);
+                    setSelectedId(null);
+                  }}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
+                    isActive
+                      ? "bg-amber-500 text-white shadow-sm"
+                      : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
+                  )}
+                >
+                  {t.label}
+                  <span
+                    className={cn(
+                      "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      isActive
+                        ? "bg-white/25 text-white"
+                        : "bg-white/10 text-slate-400"
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Inspector content */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {selected ? (
+              <InvoiceInspector
+                invoice={selected}
+                onViewDetail={(inv) => setDetailInvoice(inv)}
+                onPay={(inv) => setPayInvoice(inv)}
+                onReceipt={(inv) =>
+                  toast({
+                    title: "Receipt downloaded",
+                    description: `Receipt for ${inv.reference} (${formatMoney(inv.total)}) downloaded as PDF.`,
+                  })
+                }
+              />
+            ) : (
+              <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
+                <div>
+                  <Receipt className="mx-auto h-10 w-10 text-slate-600" />
+                  <p className="mt-3 text-sm font-medium text-slate-300">
+                    Select an invoice from the sidebar
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    View its details, pay outstanding invoices, and download receipts.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
 
       <InvoiceDetailSheet
-        invoice={detailOpen}
-        open={!!detailOpen}
-        onOpenChange={(v) => { if (!v) setDetailOpen(null); }}
+        invoice={detailInvoice}
+        open={!!detailInvoice}
+        onOpenChange={(v) => { if (!v) setDetailInvoice(null); }}
         actions={
-          detailOpen && detailOpen.status === "issued" ? (
+          detailInvoice && detailInvoice.status === "issued" ? (
             <Button
               onClick={() => {
-                setPayInvoice(detailOpen);
-                setDetailOpen(null);
+                setPayInvoice(detailInvoice);
+                setDetailInvoice(null);
               }}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
-              <CreditCard className="mr-1.5 h-4 w-4" /> Pay {formatMoney(detailOpen.total)}
+              <CreditCard className="mr-1.5 h-4 w-4" /> Pay {formatMoney(detailInvoice.total)}
             </Button>
           ) : null
         }
@@ -287,30 +299,178 @@ function BillingContent() {
           });
         }}
       />
-    </>
+    </div>
   );
 }
 
-function BillingStat({
+function StatBox({
   label,
   value,
-  icon,
   tone,
 }: {
   label: string;
   value: string;
-  icon: React.ReactNode;
   tone: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] uppercase tracking-wider text-slate-500">
-          {label}
-        </p>
-        {icon}
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
+      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <p className={cn("mt-1 text-sm font-bold", tone)}>{value}</p>
+    </div>
+  );
+}
+
+function InvoiceInspector({
+  invoice,
+  onViewDetail,
+  onPay,
+  onReceipt,
+}: {
+  invoice: Invoice;
+  onViewDetail: (inv: Invoice) => void;
+  onPay: (inv: Invoice) => void;
+  onReceipt: (inv: Invoice) => void;
+}) {
+  const orders = useAppStore((s) => s.orders);
+  const ord = orders.find((o) => o.id === invoice.orderId);
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+      {/* Inspector header */}
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] ring-1 ring-white/10">
+            <Receipt className="h-5 w-5 text-amber-400" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300">
+              Invoice Inspector
+            </p>
+            <h2 className="mt-0.5 font-mono text-lg font-bold text-white sm:text-xl">
+              {invoice.reference}
+            </h2>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              {ord?.serviceName ?? "—"}
+            </p>
+          </div>
+        </div>
       </div>
-      <p className={cn("mt-1 text-xl font-bold", tone)}>{value}</p>
+
+      {/* Status + actions */}
+      <div className="flex flex-wrap items-center gap-2 py-4">
+        <InvoiceStatusBadge status={invoice.status} />
+        {invoice.status === "issued" && (
+          <Button size="sm" onClick={() => onPay(invoice)} className="bg-emerald-600 hover:bg-emerald-700">
+            <CreditCard className="h-3.5 w-3.5" /> Pay {formatMoney(invoice.total)}
+          </Button>
+        )}
+        {invoice.status === "paid" && (
+          <Button size="sm" variant="outline" onClick={() => onReceipt(invoice)}>
+            <Download className="h-3.5 w-3.5" /> Download Receipt
+          </Button>
+        )}
+        <Button size="sm" variant="ghost" onClick={() => onViewDetail(invoice)} className="ml-auto text-amber-300">
+          View Full Invoice <ChevronRight className="ml-0.5 h-3 w-3" />
+        </Button>
+      </div>
+
+      {/* Detail fields */}
+      <div className="grid grid-cols-2 gap-3 py-3 sm:grid-cols-3">
+        <InspectorField
+          label="Amount Due"
+          value={
+            <span className="text-xl font-bold text-emerald-300">
+              {formatMoney(invoice.total)}
+            </span>
+          }
+        />
+        <InspectorField
+          label="Issued"
+          value={<span className="text-slate-200">{timeAgo(invoice.issuedAt)}</span>}
+        />
+        <InspectorField
+          label="Due Date"
+          value={
+            <span
+              className={cn(
+                invoice.status === "issued" && "font-semibold text-amber-300"
+              )}
+            >
+              {timeAgo(invoice.dueDate)}
+            </span>
+          }
+        />
+      </div>
+
+      {/* Payment info */}
+      {invoice.paidAt && (
+        <div className="py-3">
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Payment Details
+          </p>
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-300">Paid on</span>
+              <span className="text-white">{timeAgo(invoice.paidAt)}</span>
+            </div>
+            {invoice.paymentMethod && (
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-slate-300">Method</span>
+                <span className="capitalize text-white">
+                  {invoice.paymentMethod.replace("_", " ")}
+                </span>
+              </div>
+            )}
+            {invoice.paymentReference && (
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-slate-300">Reference</span>
+                <span className="font-mono text-white">{invoice.paymentReference}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Notes */}
+      {invoice.notes && (
+        <div className="py-3">
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Notes
+          </p>
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-300">
+            {invoice.notes}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <Link
+          href="/dashboard/buyer/transactions"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-amber-300"
+        >
+          <Receipt className="h-3 w-3" /> View transactions
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function InspectorField({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+        {label}
+      </p>
+      <div className="mt-1.5">{value}</div>
     </div>
   );
 }

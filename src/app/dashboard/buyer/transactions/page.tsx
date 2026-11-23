@@ -13,13 +13,7 @@ import {
 } from "lucide-react";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import {
-  EmptyState,
-  SectionCard,
-  StatusBadge,
-  formatDate,
-  timeAgo,
-} from "@/components/dashboard/shared";
+import { StatusBadge, formatDate, timeAgo } from "@/components/dashboard/shared";
 import {
   InvoiceDetailSheet,
   InvoiceStatusBadge,
@@ -33,7 +27,7 @@ import type { Invoice, Transaction, TransactionType } from "@/types";
 
 type TxnTab = "all" | TransactionType;
 
-const TXN_TABS: { value: TxnTab; label: string }[] = [
+const TABS: { value: TxnTab; label: string }[] = [
   { value: "all", label: "All" },
   { value: "payment", label: "Payments" },
   { value: "refund", label: "Refunds" },
@@ -49,13 +43,34 @@ const METHOD_LABELS: Record<Transaction["method"], string> = {
   manual: "Manual",
 };
 
+const TYPE_TONE: Record<TransactionType, string> = {
+  payment: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  refund: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+  credit: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  debit: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  adjustment: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+};
+
+const STATUS_TONE: Record<Transaction["status"], string> = {
+  pending: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  failed: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
+  refunded: "border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-300",
+};
+
+const STATUS_DOT: Record<TransactionType, string> = {
+  payment: "bg-emerald-400",
+  refund: "bg-rose-400",
+  credit: "bg-sky-400",
+  debit: "bg-amber-400",
+  adjustment: "bg-amber-400",
+};
+
 export default function BuyerTransactionsPage() {
   return (
     <RequireRole role="buyer">
-      <DashboardShell role="buyer" title="My Transactions · Buyer Dashboard">
-        <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
-          <TransactionsContent />
-        </div>
+      <DashboardShell role="buyer" title="My Transactions">
+        <TransactionsContent />
       </DashboardShell>
     </RequireRole>
   );
@@ -66,6 +81,7 @@ function TransactionsContent() {
   const transactions = useAppStore((s) => s.transactions);
   const invoices = useAppStore((s) => s.invoices);
   const [tab, setTab] = useState<TxnTab>("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [invoiceOpen, setInvoiceOpen] = useState<Invoice | null>(null);
 
   const myTxns = useMemo(() => {
@@ -80,6 +96,14 @@ function TransactionsContent() {
     return myTxns.filter((t) => t.type === tab);
   }, [myTxns, tab]);
 
+  const counts = useMemo(() => {
+    const map = new Map<TxnTab, number>([["all", myTxns.length]]);
+    for (const t of myTxns) {
+      map.set(t.type, (map.get(t.type) ?? 0) + 1);
+    }
+    return map;
+  }, [myTxns]);
+
   const stats = useMemo(() => {
     const paid = myTxns
       .filter((t) => t.type === "payment" && t.status === "success")
@@ -88,243 +112,209 @@ function TransactionsContent() {
       .filter((t) => t.type === "refund")
       .reduce((s, t) => s + Math.abs(t.amount), 0);
     const net = paid - refunded;
-    return {
-      paid,
-      refunded,
-      net,
-      count: myTxns.length,
-    };
+    return { paid, refunded, net, count: myTxns.length };
   }, [myTxns]);
 
-  const tabCount = (t: TxnTab) =>
-    t === "all" ? myTxns.length : myTxns.filter((x) => x.type === t).length;
+  const selected = useMemo(() => {
+    if (selectedId) {
+      const found = myTxns.find((t) => t.id === selectedId);
+      if (found) return found;
+    }
+    return filtered[0] ?? null;
+  }, [selectedId, myTxns, filtered]);
+
+  const findInvoice = (txn: Transaction) =>
+    txn.invoiceId ? invoices.find((i) => i.id === txn.invoiceId) ?? null : null;
 
   return (
-    <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
-            Marketplace · Buyer
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-white sm:text-3xl">
-            My Transactions
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-300">
-            Every payment, refund and adjustment tied to your service requests,
-            orders and talent engagements.
-          </p>
-        </div>
-        <Link href="/dashboard/buyer/billing">
-          <Button variant="outline" size="sm">
-            <Download className="mr-1.5 h-4 w-4" /> Download Invoices
-          </Button>
-        </Link>
-      </div>
-
-      {/* Stats strip */}
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatBox
-          label="Total Paid"
-          value={formatMoney(stats.paid)}
-          icon={<ArrowUpRight className="h-4 w-4 text-emerald-400" />}
-          tone="text-emerald-300"
-        />
-        <StatBox
-          label="Refunded"
-          value={formatMoney(stats.refunded)}
-          icon={<ArrowDownLeft className="h-4 w-4 text-rose-400" />}
-          tone="text-rose-300"
-        />
-        <StatBox
-          label="Net Spend"
-          value={formatMoney(stats.net)}
-          icon={<Wallet className="h-4 w-4 text-amber-400" />}
-          tone="text-amber-300"
-        />
-        <StatBox
-          label="Transactions"
-          value={String(stats.count)}
-          icon={<Receipt className="h-4 w-4 text-sky-400" />}
-          tone="text-sky-300"
-        />
-      </div>
-
-      {/* Filter tabs */}
-      <Tabs value={tab} onValueChange={(v) => setTab(v as TxnTab)} className="mt-5">
-        <TabsList className="flex w-full flex-wrap justify-start gap-1 h-auto p-1 bg-white/[0.03]">
-          {TXN_TABS.map((t) => (
-            <TabsTrigger
-              key={t.value}
-              value={t.value}
-              className="data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-300 text-xs"
-            >
-              {t.label}
-              <span className="ml-1.5 rounded-full bg-white/10 px-1.5 py-0.5 text-[10px] font-bold">
-                {tabCount(t.value)}
+    <div className="mx-auto flex h-full w-full max-w-7xl">
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
+        {/* Sidebar — transactions list (LEFT) */}
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+          <div className="shrink-0 border-b border-white/10 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                Transactions ({filtered.length})
+              </p>
+              <span className="text-[10px] text-slate-500">
+                {tab === "all" ? "All types" : TABS.find((t) => t.value === tab)?.label}
               </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      {/* Transactions list */}
-      <div className="mt-4">
-        {filtered.length === 0 ? (
-          <EmptyState
-            icon={Inbox}
-            title="No transactions yet"
-            description="Payments you make against invoices will appear here, with linked receipts."
-          />
-        ) : (
-          <div className="overflow-hidden rounded-xl border border-white/10">
-            <table className="w-full text-sm">
-              <thead className="bg-white/[0.04] text-left text-[11px] uppercase tracking-wider text-slate-400">
-                <tr>
-                  <th className="px-4 py-2">Reference</th>
-                  <th className="px-4 py-2">Type</th>
-                  <th className="px-4 py-2">Description</th>
-                  <th className="px-4 py-2">Method</th>
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2 text-right">Amount</th>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {filtered.map((txn) => {
-                  const invoice = txn.invoiceId
-                    ? invoices.find((i) => i.id === txn.invoiceId) ?? null
-                    : null;
-                  return (
-                    <tr key={txn.id} className="hover:bg-white/[0.02]">
-                      <td className="px-4 py-3 font-mono text-slate-200">
-                        {txn.reference}
-                      </td>
-                      <td className="px-4 py-3">
-                        <TxnTypeBadge type={txn.type} />
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        <p className="line-clamp-1">{txn.description}</p>
-                        {invoice && (
-                          <p className="text-[11px] text-slate-500">
-                            Invoice {invoice.reference}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        {METHOD_LABELS[txn.method]}
-                      </td>
-                      <td className="px-4 py-3 text-slate-300">
-                        {formatDate(txn.createdAt)}
-                      </td>
-                      <td
-                        className={cn(
-                          "px-4 py-3 text-right font-bold tabular-nums",
-                          txn.amount >= 0 ? "text-emerald-300" : "text-rose-300"
-                        )}
-                      >
-                        {txn.amount >= 0 ? "+" : ""}
-                        {formatMoney(txn.amount)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <TxnStatusPill status={txn.status} />
-                      </td>
-                      <td className="px-4 py-3">
-                        {invoice && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-amber-300"
-                            onClick={() => setInvoiceOpen(invoice)}
-                          >
-                            <Receipt className="mr-1 h-3.5 w-3.5" /> Invoice
-                            <ChevronRight className="ml-0.5 h-3 w-3" />
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            </div>
           </div>
-        )}
-      </div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
+            {filtered.length === 0 ? (
+              <div className="flex h-full items-center justify-center p-6 text-center">
+                <div>
+                  <Inbox className="mx-auto h-8 w-8 text-slate-600" />
+                  <p className="mt-2 text-xs font-medium text-slate-400">
+                    No transactions match this filter
+                  </p>
+                </div>
+              </div>
+            ) : (
+              filtered.map((txn) => {
+                const isActive = selected?.id === txn.id;
+                return (
+                  <button
+                    key={txn.id}
+                    type="button"
+                    onClick={() => setSelectedId(txn.id)}
+                    aria-current={isActive ? "true" : undefined}
+                    className={cn(
+                      "group w-full rounded-lg p-3 text-left transition-colors",
+                      isActive
+                        ? "bg-amber-400/10 ring-1 ring-inset ring-amber-400/30"
+                        : "hover:bg-white/[0.04]"
+                    )}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className={cn(
+                          "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                          STATUS_DOT[txn.type]
+                        )}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={cn(
+                            "truncate text-sm font-semibold",
+                            isActive ? "text-amber-300" : "text-white"
+                          )}
+                        >
+                          {txn.reference}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-400">
+                          {txn.description}
+                        </p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold capitalize",
+                              TYPE_TONE[txn.type]
+                            )}
+                          >
+                            {txn.type}
+                          </span>
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold tabular-nums",
+                              txn.amount >= 0 ? "text-emerald-300" : "text-rose-300"
+                            )}
+                          >
+                            {txn.amount >= 0 ? "+" : ""}
+                            {formatMoney(txn.amount)}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[10px] text-slate-500">
+                          {timeAgo(txn.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
 
-      {/* Related: linked invoices summary */}
-      <SectionCard title="Linked invoices" className="mt-5 bg-white/[0.03]">
-        <p className="mb-3 text-xs text-slate-400">
-          Invoices issued against your service requests and talent engagements.
-        </p>
-        <RelatedInvoices />
-      </SectionCard>
+        {/* Inspector — transaction detail with tabs at top (RIGHT) */}
+        <section className="flex min-h-0 flex-col overflow-hidden">
+          {/* Stats strip */}
+          <div className="mb-3 grid shrink-0 grid-cols-4 gap-2">
+            <StatBox
+              label="Total Paid"
+              value={formatMoney(stats.paid)}
+              icon={<ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />}
+              tone="text-emerald-300"
+            />
+            <StatBox
+              label="Refunded"
+              value={formatMoney(stats.refunded)}
+              icon={<ArrowDownLeft className="h-3.5 w-3.5 text-rose-400" />}
+              tone="text-rose-300"
+            />
+            <StatBox
+              label="Net Spend"
+              value={formatMoney(stats.net)}
+              icon={<Wallet className="h-3.5 w-3.5 text-amber-400" />}
+              tone="text-amber-300"
+            />
+            <StatBox
+              label="Count"
+              value={String(stats.count)}
+              icon={<Receipt className="h-3.5 w-3.5 text-sky-400" />}
+              tone="text-sky-300"
+            />
+          </div>
+
+          {/* Filter tabs */}
+          <div className="mb-3 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+            {TABS.map((t) => {
+              const count = counts.get(t.value) ?? 0;
+              const isActive = tab === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => {
+                    setTab(t.value);
+                    setSelectedId(null);
+                  }}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
+                    isActive
+                      ? "bg-amber-500 text-white shadow-sm"
+                      : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
+                  )}
+                >
+                  {t.label}
+                  <span
+                    className={cn(
+                      "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      isActive
+                        ? "bg-white/25 text-white"
+                        : "bg-white/10 text-slate-400"
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Inspector content */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {selected ? (
+              <TransactionInspector
+                txn={selected}
+                invoice={findInvoice(selected)}
+                onViewInvoice={(inv) => setInvoiceOpen(inv)}
+              />
+            ) : (
+              <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
+                <div>
+                  <Receipt className="mx-auto h-10 w-10 text-slate-600" />
+                  <p className="mt-3 text-sm font-medium text-slate-300">
+                    Select a transaction from the sidebar
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    View its details, linked invoice, and payment metadata.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
 
       <InvoiceDetailSheet
         invoice={invoiceOpen}
         open={!!invoiceOpen}
         onOpenChange={(v) => { if (!v) setInvoiceOpen(null); }}
       />
-    </>
-  );
-}
-
-function RelatedInvoices() {
-  const user = useCurrentUser();
-  const invoices = useAppStore((s) => s.invoices);
-  const orders = useAppStore((s) => s.orders);
-  const myInvoices = useMemo(() => {
-    if (!user) return [];
-    return invoices
-      .filter((i) => i.buyerId === user.id)
-      .sort((a, b) => (a.issuedAt < b.issuedAt ? 1 : -1));
-  }, [invoices, user]);
-
-  if (myInvoices.length === 0) {
-    return (
-      <p className="text-sm text-slate-500">No invoices issued yet.</p>
-    );
-  }
-  return (
-    <div className="overflow-hidden rounded-lg border border-white/10">
-      <table className="w-full text-sm">
-        <thead className="bg-white/[0.04] text-left text-[11px] uppercase tracking-wider text-slate-400">
-          <tr>
-            <th className="px-3 py-2">Invoice</th>
-            <th className="px-3 py-2">Order</th>
-            <th className="px-3 py-2">Issued</th>
-            <th className="px-3 py-2">Due</th>
-            <th className="px-3 py-2 text-right">Amount</th>
-            <th className="px-3 py-2">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
-          {myInvoices.map((inv) => {
-            const ord = orders.find((o) => o.id === inv.orderId);
-            return (
-              <tr key={inv.id} className="hover:bg-white/[0.02]">
-                <td className="px-3 py-2 font-mono text-slate-200">
-                  {inv.reference}
-                </td>
-                <td className="px-3 py-3 text-slate-300">
-                  {ord?.serviceName ?? "—"}
-                </td>
-                <td className="px-3 py-2 text-slate-300">
-                  {formatDate(inv.issuedAt)}
-                </td>
-                <td className="px-3 py-2 text-slate-300">
-                  {formatDate(inv.dueDate)}
-                </td>
-                <td className="px-3 py-2 text-right tabular-nums text-slate-200">
-                  {formatMoney(inv.total)}
-                </td>
-                <td className="px-3 py-2">
-                  <InvoiceStatusBadge status={inv.status} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
     </div>
   );
 }
@@ -341,54 +331,191 @@ function StatBox({
   tone: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-2.5">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] uppercase tracking-wider text-slate-500">
+        <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
           {label}
         </p>
         {icon}
       </div>
-      <p className={cn("mt-1 text-xl font-bold", tone)}>{value}</p>
+      <p className={cn("mt-1 text-sm font-bold", tone)}>{value}</p>
     </div>
   );
 }
 
-function TxnTypeBadge({ type }: { type: TransactionType }) {
-  const map: Record<TransactionType, { label: string; tone: string }> = {
-    payment: { label: "Payment", tone: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" },
-    refund: { label: "Refund", tone: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300" },
-    credit: { label: "Credit", tone: "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300" },
-    debit: { label: "Adjustment", tone: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300" },
-    adjustment: { label: "Adjustment", tone: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300" },
-  };
-  const meta = map[type];
+function TransactionInspector({
+  txn,
+  invoice,
+  onViewInvoice,
+}: {
+  txn: Transaction;
+  invoice: Invoice | null;
+  onViewInvoice: (inv: Invoice) => void;
+}) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-semibold",
-        meta.tone
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+      {/* Inspector header */}
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] ring-1 ring-white/10">
+            <Receipt className="h-5 w-5 text-amber-400" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300">
+              Transaction Inspector
+            </p>
+            <h2 className="mt-0.5 text-lg font-bold text-white sm:text-xl">
+              {txn.reference}
+            </h2>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              {txn.description}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Amount + status */}
+      <div className="flex flex-wrap items-center gap-2 py-4">
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize",
+            TYPE_TONE[txn.type]
+          )}
+        >
+          {txn.type}
+        </span>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize",
+            STATUS_TONE[txn.status]
+          )}
+        >
+          {txn.status}
+        </span>
+      </div>
+
+      {/* Detail fields */}
+      <div className="grid grid-cols-2 gap-3 py-3 sm:grid-cols-3">
+        <InspectorField
+          label="Amount"
+          value={
+            <span
+              className={cn(
+                "text-xl font-bold",
+                txn.amount >= 0 ? "text-emerald-300" : "text-rose-300"
+              )}
+            >
+              {txn.amount >= 0 ? "+" : ""}
+              {formatMoney(txn.amount)}
+            </span>
+          }
+          icon={<Wallet className="h-3.5 w-3.5 text-amber-400" />}
+        />
+        <InspectorField
+          label="Method"
+          value={<span className="capitalize text-slate-200">{METHOD_LABELS[txn.method]}</span>}
+          icon={<Receipt className="h-3.5 w-3.5 text-sky-400" />}
+        />
+        <InspectorField
+          label="Date"
+          value={<span className="text-slate-200">{formatDate(txn.createdAt)}</span>}
+          icon={<ArrowUpRight className="h-3.5 w-3.5 text-emerald-400" />}
+        />
+      </div>
+
+      {/* Gateway reference */}
+      {txn.gatewayReference && (
+        <div className="py-3">
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Gateway Reference
+          </p>
+          <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 font-mono text-sm text-slate-300">
+            {txn.gatewayReference}
+          </div>
+        </div>
       )}
-    >
-      {meta.label}
-    </span>
+
+      {/* Metadata */}
+      {txn.meta && Object.keys(txn.meta).length > 0 && (
+        <div className="py-3">
+          <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            Payment Metadata
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(txn.meta).map(([k, v]) => (
+              <div
+                key={k}
+                className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-sm"
+              >
+                <p className="text-[10px] uppercase tracking-wider text-slate-500">{k}</p>
+                <p className="mt-0.5 text-slate-200">{v}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Linked invoice */}
+      <div className="mt-2 space-y-3 py-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+          Linked Records
+        </p>
+        {invoice ? (
+          <button
+            type="button"
+            onClick={() => onViewInvoice(invoice)}
+            className="group flex w-full items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-left transition-colors hover:border-amber-400/30 hover:bg-white/[0.05]"
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sky-400/10 ring-1 ring-sky-400/20">
+              <Receipt className="h-4 w-4 text-sky-400" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-300">Invoice</p>
+              <p className="truncate font-mono text-sm text-white">
+                {invoice.reference} · {formatMoney(invoice.total)}
+              </p>
+            </div>
+            <InvoiceStatusBadge status={invoice.status} />
+            <ChevronRight className="h-4 w-4 text-slate-500 transition-colors group-hover:text-amber-300" />
+          </button>
+        ) : (
+          <div className="rounded-lg border border-dashed border-white/10 p-3 text-xs text-slate-500">
+            No linked invoice for this transaction.
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-3 border-t border-white/10 pt-3">
+        <Link
+          href="/dashboard/buyer/billing"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 hover:text-amber-300"
+        >
+          <Download className="h-3 w-3" /> View all invoices
+        </Link>
+      </div>
+    </div>
   );
 }
 
-function TxnStatusPill({ status }: { status: Transaction["status"] }) {
-  const map: Record<Transaction["status"], string> = {
-    pending: "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    failed: "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
-    refunded: "border-slate-500/30 bg-slate-500/10 text-slate-600 dark:text-slate-300",
-  };
+function InspectorField({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon: React.ReactNode;
+}) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize",
-        map[status]
-      )}
-    >
-      {status}
-    </span>
+    <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+      <div className="flex items-center gap-1.5">
+        {icon}
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          {label}
+        </p>
+      </div>
+      <div className="mt-1.5">{value}</div>
+    </div>
   );
 }
