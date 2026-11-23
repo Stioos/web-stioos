@@ -14,6 +14,8 @@ import {
   ArrowLeftRight,
   Users,
   Settings,
+  Heart,
+  Briefcase,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
@@ -43,6 +45,9 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
   { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },
+  { href: "/marketplace", label: "Marketplace", icon: Store },
+  { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
+  { href: "/dashboard/buyer/post-a-job", label: "Post a Job", icon: Briefcase },
 ];
 
 function initialsOf(name: string): string {
