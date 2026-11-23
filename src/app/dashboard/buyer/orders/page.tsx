@@ -159,28 +159,7 @@ function OrdersContent() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl">
-      {/* Page header */}
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
-            Marketplace · Buyer
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            My Orders
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-300">
-            Track orders from payment through delivery. Select an order from the
-            sidebar to inspect its details, linked invoice, and lifecycle status.
-          </p>
-        </div>
-        <Link href="/dashboard/buyer/requests">
-          <Button variant="outline" size="sm">
-            <ClipboardList className="mr-1.5 h-4 w-4" /> View Requests
-          </Button>
-        </Link>
-      </header>
-
+    <div className="mx-auto flex h-full w-full max-w-7xl flex-col">
       {/* Tab bar (image 2 reference) */}
       <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1">
         {TAB_LABELS.map((t) => {
@@ -218,7 +197,7 @@ function OrdersContent() {
         })}
       </div>
 
-      {/* Split layout: sidebar list + inspector panel */}
+      {/* Split layout: inspector LEFT + sidebar list RIGHT (swapped per request) */}
       {filtered.length === 0 ? (
         <EmptyState
           icon={Inbox}
@@ -237,10 +216,38 @@ function OrdersContent() {
           }
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[380px_1fr]">
-          {/* Sidebar — order list (image 1 reference) */}
-          <aside className="flex max-h-[calc(100vh-220px)] flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
-            <div className="border-b border-white/10 px-4 py-3">
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_360px]">
+          {/* Inspector — order detail panel (LEFT side) */}
+          <section className="min-h-0 overflow-y-auto">
+            {selected ? (
+              <OrderInspector
+                order={selected}
+                requestId={findRequestId(selected.id)}
+                invoice={findInvoice(selected.id)}
+                transaction={findTransaction(selected.id)}
+                onAccept={handleAccept}
+                onDispute={handleDispute}
+                onPay={handlePay}
+                onClose={() => setSelectedId(null)}
+              />
+            ) : (
+              <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
+                <div>
+                  <Package className="mx-auto h-10 w-10 text-slate-600" />
+                  <p className="mt-3 text-sm font-medium text-slate-300">
+                    Select an order from the sidebar
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    View its details, linked invoice, payment status, and delivery actions.
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Sidebar — order list (RIGHT side, opposite) */}
+          <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+            <div className="shrink-0 border-b border-white/10 px-4 py-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                   Orders ({filtered.length})
@@ -250,7 +257,7 @@ function OrdersContent() {
                 </span>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-1.5">
+            <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
               {filtered.map((order) => {
                 const isActive = selected?.id === order.id;
                 const hint = PROGRESS_HINTS[order.status];
@@ -305,34 +312,6 @@ function OrdersContent() {
               })}
             </div>
           </aside>
-
-          {/* Inspector — order detail panel (image 1 reference) */}
-          <section className="lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto">
-            {selected ? (
-              <OrderInspector
-                order={selected}
-                requestId={findRequestId(selected.id)}
-                invoice={findInvoice(selected.id)}
-                transaction={findTransaction(selected.id)}
-                onAccept={handleAccept}
-                onDispute={handleDispute}
-                onPay={handlePay}
-                onClose={() => setSelectedId(null)}
-              />
-            ) : (
-              <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
-                <div>
-                  <Package className="mx-auto h-10 w-10 text-slate-600" />
-                  <p className="mt-3 text-sm font-medium text-slate-300">
-                    Select an order from the sidebar
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    View its details, linked invoice, payment status, and delivery actions.
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
         </div>
       )}
     </div>

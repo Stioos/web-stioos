@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { PublicFooter } from "@/components/layout/public-footer";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,6 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
   { href: "/dashboard/buyer/billing", label: "Billing", icon: CreditCard },
   { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },
-  { href: "/dashboard/buyer/account-settings", label: "Account Settings", icon: Settings },
 ];
 
 function initialsOf(name: string): string {
@@ -94,7 +92,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-brand-ink text-white">
+    <div className="flex h-screen flex-col overflow-hidden bg-brand-ink text-white">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-amber-500 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-ink"
@@ -103,7 +101,7 @@ export function DashboardShell({
       </a>
 
       {/* Main header — logo + account (minimal) */}
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-ink/95 backdrop-blur">
+      <header className="shrink-0 border-b border-white/10 bg-brand-ink/95 backdrop-blur">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
           {/* Mobile navigation */}
           <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
@@ -241,6 +239,9 @@ export function DashboardShell({
                 <DropdownMenuItem onClick={() => router.push("/marketplace")}>
                   <Store className="h-4 w-4" /> Marketplace
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/dashboard/buyer/account-settings")}>
+                  <Settings className="h-4 w-4" /> Account Settings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
@@ -254,12 +255,10 @@ export function DashboardShell({
         </div>
       </header>
 
-      {/* Body — full width, no sidebar */}
-      <main id="main" className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+      {/* Body — full width, fills viewport (no footer so everything fits on laptop/desktop) */}
+      <main id="main" className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-6">
         {children}
       </main>
-
-      <PublicFooter />
     </div>
   );
 }

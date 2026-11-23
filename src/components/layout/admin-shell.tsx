@@ -322,7 +322,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const initials = admin?.name.split(" ").map((p) => p[0]).slice(0, 2).join("") ?? "?";
 
   return (
-    <div className="admin-fixed flex min-h-screen bg-muted/40">
+    <div className="admin-fixed flex h-screen bg-muted/40">
       {/* Desktop sidebar */}
       <aside
         className={cn(
@@ -369,9 +369,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </Sheet>
 
       {/* Main area */}
-      <div className={cn("flex min-h-screen w-full flex-col transition-all duration-200", collapsed ? "lg:pl-[68px]" : "lg:pl-64")}>
+      <div className={cn("flex h-screen w-full flex-col overflow-hidden transition-all duration-200", collapsed ? "lg:pl-[68px]" : "lg:pl-64")}>
         {/* Top header */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur sm:px-6">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setMobileOpen(true)}
@@ -448,16 +448,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6">
+        {/* Page content — fills viewport (no footer so everything fits on laptop/desktop) */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="mx-auto w-full max-w-7xl">{children}</div>
         </main>
-
-        <footer className="mt-auto border-t bg-background px-6 py-4">
-          <p className="text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} {brand.siteName} — Admin Platform · Demo environment, data stored locally
-          </p>
-        </footer>
       </div>
 
       <AdminSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
