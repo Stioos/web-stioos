@@ -12,10 +12,10 @@ import {
   Package,
   ClipboardList,
   ArrowLeftRight,
-  Users,
   Settings,
   Heart,
   Briefcase,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
@@ -44,10 +44,10 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/orders", label: "My Orders", icon: Package },
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
-  { href: "/dashboard/buyer/talent-solutions", label: "Talent Solutions", icon: Users },
+  { href: "/dashboard/buyer/talent-solutions", label: "Hire Talent", icon: Briefcase },
   { href: "/marketplace", label: "Marketplace", icon: Store },
   { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/dashboard/buyer/post-a-job", label: "Post a Job", icon: Briefcase },
+  { href: "/dashboard/buyer/rodaas-solutions", label: "RODaaS Solutions", icon: Trophy },
 ];
 
 function initialsOf(name: string): string {
