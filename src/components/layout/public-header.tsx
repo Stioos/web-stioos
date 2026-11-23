@@ -558,12 +558,6 @@ export function PublicHeader() {
               onFocus={() => hoverOpenMenu("talent")}
             />
 
-            {/* Standard header nav — Solutions, Services, Marketplace,
-                Industries, Insights, Resources, About (xl+ only) */}
-            <div onMouseEnter={dismissFlyouts}>
-              <HeaderNav />
-            </div>
-
             {/* Worksonn removed entirely (header + routes) per product decision — */}
 
             {/* Right actions — entering the cluster dismisses nav flyouts.
