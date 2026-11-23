@@ -558,6 +558,12 @@ export function PublicHeader() {
               onFocus={() => hoverOpenMenu("talent")}
             />
 
+            {/* Standard header nav — Solutions, Services, Marketplace,
+                Industries, Insights, Resources, About (xl+ only) */}
+            <div onMouseEnter={dismissFlyouts}>
+              <HeaderNav />
+            </div>
+
             {/* Worksonn removed entirely (header + routes) per product decision — */}
 
             {/* Right actions — entering the cluster dismisses nav flyouts.
@@ -1495,7 +1501,7 @@ function HeaderNavItem({ item }: { item: NavItem }) {
 
 function HeaderNav() {
   return (
-    <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Main navigation">
+    <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Main navigation">
       {HEADER_NAV_ITEMS.map((item) => (
         <HeaderNavItem key={item.label} item={item} />
       ))}
@@ -2405,8 +2411,11 @@ function MobileNav({
   };
 
   const pageLinks: { label: string; href: string }[] = [
-    { label: "Marketplace", href: "/marketplace" },
     { label: "Solutions", href: "/solutions" },
+    { label: "Services", href: "/services" },
+    { label: "Marketplace", href: "/marketplace" },
+    { label: "Industries", href: "/industries" },
+    { label: "Insights", href: "/insights" },
     { label: "Talent Solutions", href: "/talent-solutions" },
     { label: "Resources", href: "/resources" },
     { label: "About", href: "/about" },
