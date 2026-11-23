@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { EmptyState, StatusBadge, formatDate, formatMoney } from "@/components/dashboard/shared";
+import { StatusBadge, formatDate, formatMoney } from "@/components/dashboard/shared";
 import { Icon } from "@/components/shared/icon";
 import { Button } from "@/components/ui/button";
 import { useAppStore, useCurrentUser } from "@/lib/store";
@@ -159,66 +159,11 @@ function OrdersContent() {
   };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-7xl flex-col">
-      {/* Tab bar (image 2 reference) */}
-      <div className="mb-4 flex flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1">
-        {TAB_LABELS.map((t) => {
-          const count = counts.get(t.value) ?? 0;
-          const isActive = tab === t.value;
-          return (
-            <button
-              key={t.value}
-              type="button"
-              onClick={() => {
-                setTab(t.value);
-                setSelectedId(null);
-              }}
-              aria-pressed={isActive}
-              className={cn(
-                "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
-                isActive
-                  ? "bg-amber-500 text-white shadow-sm"
-                  : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
-              )}
-            >
-              {t.label}
-              <span
-                className={cn(
-                  "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                  isActive
-                    ? "bg-white/25 text-white"
-                    : "bg-white/10 text-slate-400"
-                )}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Split layout: sidebar list LEFT + inspector panel RIGHT */}
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon={Inbox}
-          title="No orders here"
-          description={
-            tab === "all"
-              ? "When the STIOOS team creates an order from your accepted quote, it will appear here."
-              : "No orders match this filter right now — try another tab."
-          }
-          action={
-            tab === "all" ? (
-              <Button asChild variant="outline">
-                <Link href="/dashboard/buyer/requests">View My Requests</Link>
-              </Button>
-            ) : undefined
-          }
-        />
-      ) : (
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
-          {/* Sidebar — order list (LEFT side, below header) */}
-          <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+    <div className="mx-auto flex h-full w-full max-w-7xl">
+      {/* Split layout: sidebar list LEFT + inspector panel (with tabs) RIGHT */}
+      <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
+        {/* Sidebar — order list (LEFT side, below header) */}
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
             <div className="shrink-0 border-b border-white/10 px-4 py-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
@@ -230,63 +175,113 @@ function OrdersContent() {
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
-              {filtered.map((order) => {
-                const isActive = selected?.id === order.id;
-                const hint = PROGRESS_HINTS[order.status];
-                return (
-                  <button
-                    key={order.id}
-                    type="button"
-                    onClick={() => setSelectedId(order.id)}
-                    aria-current={isActive ? "true" : undefined}
-                    className={cn(
-                      "group w-full rounded-lg p-3 text-left transition-colors",
-                      isActive
-                        ? "bg-amber-400/10 ring-1 ring-inset ring-amber-400/30"
-                        : "hover:bg-white/[0.04]"
-                    )}
-                  >
-                    <div className="flex items-start gap-2.5">
-                      <span
-                        className={cn(
-                          "mt-1.5 h-2 w-2 shrink-0 rounded-full",
-                          STATUS_DOT[order.status]
-                        )}
-                        aria-hidden="true"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p
+              {filtered.length === 0 ? (
+                <div className="flex h-full items-center justify-center p-6 text-center">
+                  <div>
+                    <Inbox className="mx-auto h-8 w-8 text-slate-600" />
+                    <p className="mt-2 text-xs font-medium text-slate-400">
+                      No orders match this filter
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                filtered.map((order) => {
+                  const isActive = selected?.id === order.id;
+                  const hint = PROGRESS_HINTS[order.status];
+                  return (
+                    <button
+                      key={order.id}
+                      type="button"
+                      onClick={() => setSelectedId(order.id)}
+                      aria-current={isActive ? "true" : undefined}
+                      className={cn(
+                        "group w-full rounded-lg p-3 text-left transition-colors",
+                        isActive
+                          ? "bg-amber-400/10 ring-1 ring-inset ring-amber-400/30"
+                          : "hover:bg-white/[0.04]"
+                      )}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span
                           className={cn(
-                            "truncate text-sm font-semibold",
-                            isActive ? "text-amber-300" : "text-white"
+                            "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                            STATUS_DOT[order.status]
                           )}
-                        >
-                          {order.serviceName}
-                        </p>
-                        <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-400">
-                          {hint ?? "Fulfilled by the STIOOS delivery team"}
-                        </p>
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          <StatusBadge status={order.status} />
-                          <span className="text-[10px] font-semibold text-emerald-300">
-                            {formatMoney(order.amount)}
-                          </span>
+                          aria-hidden="true"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className={cn(
+                              "truncate text-sm font-semibold",
+                              isActive ? "text-amber-300" : "text-white"
+                            )}
+                          >
+                            {order.serviceName}
+                          </p>
+                          <p className="mt-0.5 line-clamp-1 text-[11px] text-slate-400">
+                            {hint ?? "Fulfilled by the STIOOS delivery team"}
+                          </p>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <StatusBadge status={order.status} />
+                            <span className="text-[10px] font-semibold text-emerald-300">
+                              {formatMoney(order.amount)}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-[10px] text-slate-500">
+                            {formatDistanceToNow(new Date(order.placedAt), {
+                              addSuffix: true,
+                            })}
+                          </p>
                         </div>
-                        <p className="mt-1 text-[10px] text-slate-500">
-                          {formatDistanceToNow(new Date(order.placedAt), {
-                            addSuffix: true,
-                          })}
-                        </p>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </aside>
 
-          {/* Inspector — order detail panel (RIGHT side) */}
-          <section className="min-h-0 overflow-y-auto">
+        {/* Inspector — order detail panel with tabs at top (RIGHT side, opposite sidebar) */}
+        <section className="flex min-h-0 flex-col overflow-hidden">
+          {/* Status filter tabs — moved to top of inspector (opposite of sidebar) */}
+          <div className="mb-3 flex shrink-0 flex-wrap items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] p-1">
+            {TAB_LABELS.map((t) => {
+              const count = counts.get(t.value) ?? 0;
+              const isActive = tab === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => {
+                    setTab(t.value);
+                    setSelectedId(null);
+                  }}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
+                    isActive
+                      ? "bg-amber-500 text-white shadow-sm"
+                      : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
+                  )}
+                >
+                  {t.label}
+                  <span
+                    className={cn(
+                      "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
+                      isActive
+                        ? "bg-white/25 text-white"
+                        : "bg-white/10 text-slate-400"
+                    )}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Inspector content */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
             {selected ? (
               <OrderInspector
                 order={selected}
@@ -311,9 +306,9 @@ function OrdersContent() {
                 </div>
               </div>
             )}
-          </section>
-        </div>
-      )}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
