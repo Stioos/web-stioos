@@ -177,7 +177,7 @@ function OrdersContent() {
               className={cn(
                 "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-xs font-semibold transition-all",
                 isActive
-                  ? "bg-white text-slate-900 shadow-sm"
+                  ? "bg-amber-500 text-white shadow-sm"
                   : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
               )}
             >
@@ -186,7 +186,7 @@ function OrdersContent() {
                 className={cn(
                   "inline-flex min-w-[18px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold",
                   isActive
-                    ? "bg-slate-900/10 text-slate-700"
+                    ? "bg-white/25 text-white"
                     : "bg-white/10 text-slate-400"
                 )}
               >
@@ -197,7 +197,7 @@ function OrdersContent() {
         })}
       </div>
 
-      {/* Split layout: inspector LEFT + sidebar list RIGHT (swapped per request) */}
+      {/* Split layout: sidebar list LEFT + inspector panel RIGHT */}
       {filtered.length === 0 ? (
         <EmptyState
           icon={Inbox}
@@ -216,36 +216,8 @@ function OrdersContent() {
           }
         />
       ) : (
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_360px]">
-          {/* Inspector — order detail panel (LEFT side) */}
-          <section className="min-h-0 overflow-y-auto">
-            {selected ? (
-              <OrderInspector
-                order={selected}
-                requestId={findRequestId(selected.id)}
-                invoice={findInvoice(selected.id)}
-                transaction={findTransaction(selected.id)}
-                onAccept={handleAccept}
-                onDispute={handleDispute}
-                onPay={handlePay}
-                onClose={() => setSelectedId(null)}
-              />
-            ) : (
-              <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
-                <div>
-                  <Package className="mx-auto h-10 w-10 text-slate-600" />
-                  <p className="mt-3 text-sm font-medium text-slate-300">
-                    Select an order from the sidebar
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    View its details, linked invoice, payment status, and delivery actions.
-                  </p>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* Sidebar — order list (RIGHT side, opposite) */}
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
+          {/* Sidebar — order list (LEFT side, below header) */}
           <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
             <div className="shrink-0 border-b border-white/10 px-4 py-3">
               <div className="flex items-center justify-between">
@@ -312,6 +284,34 @@ function OrdersContent() {
               })}
             </div>
           </aside>
+
+          {/* Inspector — order detail panel (RIGHT side) */}
+          <section className="min-h-0 overflow-y-auto">
+            {selected ? (
+              <OrderInspector
+                order={selected}
+                requestId={findRequestId(selected.id)}
+                invoice={findInvoice(selected.id)}
+                transaction={findTransaction(selected.id)}
+                onAccept={handleAccept}
+                onDispute={handleDispute}
+                onPay={handlePay}
+                onClose={() => setSelectedId(null)}
+              />
+            ) : (
+              <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
+                <div>
+                  <Package className="mx-auto h-10 w-10 text-slate-600" />
+                  <p className="mt-3 text-sm font-medium text-slate-300">
+                    Select an order from the sidebar
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    View its details, linked invoice, payment status, and delivery actions.
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
         </div>
       )}
     </div>

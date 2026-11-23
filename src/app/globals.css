@@ -302,6 +302,108 @@ html[data-theme="light"] .text-gradient-brand {
   color: transparent;
 }
 
+/* ============================================================
+   DASHBOARD SHELL — light-mode text + surface adaptation
+   The buyer dashboard uses bg-brand-ink as its root surface.
+   In light mode that surface flips to #eef2f8 (above), but the
+   hardcoded text-white / text-slate-300 / border-white/10
+   utilities used throughout the shell stay light — making nav
+   items, labels and dividers invisible. These scoped overrides
+   flip every hardcoded dark-mode utility to a visible light
+   equivalent INSIDE a .bg-brand-ink container only.
+   ============================================================ */
+
+/* Default text color inside the dashboard becomes slate-900 */
+html[data-theme="light"] .bg-brand-ink {
+  color: #0f172a;
+}
+html[data-theme="light"] .bg-brand-ink .text-white {
+  color: #0f172a;
+}
+html[data-theme="light"] .bg-brand-ink .text-slate-200 {
+  color: #334155;
+}
+html[data-theme="light"] .bg-brand-ink .text-slate-300 {
+  color: #475569;
+}
+html[data-theme="light"] .bg-brand-ink .text-emerald-300 {
+  color: #059669;
+}
+html[data-theme="light"] .bg-brand-ink .text-sky-300 {
+  color: #0284c7;
+}
+html[data-theme="light"] .bg-brand-ink .text-violet-300 {
+  color: #7c3aed;
+}
+html[data-theme="light"] .bg-brand-ink .text-rose-300 {
+  color: #e11d48;
+}
+html[data-theme="light"] .bg-brand-ink .text-slate-600 {
+  color: #1e293b;
+}
+
+/* Borders flip from white-alpha to slate-alpha */
+html[data-theme="light"] .bg-brand-ink .border-white\/10 {
+  border-color: rgb(203 213 225 / 0.7);
+}
+html[data-theme="light"] .bg-brand-ink .border-white\/15 {
+  border-color: rgb(203 213 225 / 0.8);
+}
+html[data-theme="light"] .bg-brand-ink .border-white\/8 {
+  border-color: rgb(203 213 225 / 0.6);
+}
+html[data-theme="light"] .bg-brand-ink .border-white\/\[0\.07\] {
+  border-color: rgb(203 213 225 / 0.7);
+}
+html[data-theme="light"] .bg-brand-ink .border-white\/\[0\.06\] {
+  border-color: rgb(203 213 225 / 0.6);
+}
+
+/* Surface fills flip from white-alpha to slate-alpha */
+html[data-theme="light"] .bg-brand-ink .bg-white\/\[0\.02\] {
+  background-color: rgb(241 245 249 / 0.5);
+}
+html[data-theme="light"] .bg-brand-ink .bg-white\/\[0\.03\] {
+  background-color: rgb(241 245 249 / 0.7);
+}
+html[data-theme="light"] .bg-brand-ink .bg-white\/\[0\.04\] {
+  background-color: rgb(226 232 240 / 0.5);
+}
+html[data-theme="light"] .bg-brand-ink .bg-white\/\[0\.05\] {
+  background-color: rgb(226 232 240 / 0.7);
+}
+html[data-theme="light"] .bg-brand-ink .bg-white\/\[0\.06\] {
+  background-color: rgb(226 232 240 / 0.7);
+}
+html[data-theme="light"] .bg-brand-ink .bg-white\/\[0\.08\] {
+  background-color: rgb(226 232 240 / 0.8);
+}
+html[data-theme="light"] .bg-brand-ink .bg-white\/10 {
+  background-color: rgb(226 232 240 / 0.8);
+}
+
+/* Hover states flip from white-alpha to slate-alpha */
+html[data-theme="light"] .bg-brand-ink .hover\:bg-white\/\[0\.04\]:hover {
+  background-color: rgb(226 232 240 / 0.5);
+}
+html[data-theme="light"] .bg-brand-ink .hover\:bg-white\/\[0\.05\]:hover {
+  background-color: rgb(226 232 240 / 0.6);
+}
+html[data-theme="light"] .bg-brand-ink .hover\:bg-white\/\[0\.06\]:hover {
+  background-color: rgb(226 232 240 / 0.7);
+}
+html[data-theme="light"] .bg-brand-ink .hover\:bg-white\/\[0\.09\]:hover {
+  background-color: rgb(226 232 240 / 0.8);
+}
+html[data-theme="light"] .bg-brand-ink .hover\:bg-white\/10:hover {
+  background-color: rgb(226 232 240 / 0.8);
+}
+
+/* Ring insets flip from white-alpha to slate-alpha */
+html[data-theme="light"] .bg-brand-ink .ring-white\/10 {
+  --tw-ring-color: rgb(203 213 225 / 0.6);
+}
+
 /* Scrollbars inside now-light brand surfaces */
 html[data-theme="light"] .bg-brand-ink ::-webkit-scrollbar-thumb,
 html[data-theme="light"] .bg-brand-navy ::-webkit-scrollbar-thumb {
