@@ -123,31 +123,31 @@ function TransactionsContent() {
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* Sidebar — transactions list (LEFT) */}
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
-          <div className="shrink-0 space-y-2 border-b border-white/10 px-4 py-3">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                Transactions ({filtered.length})
+          <div className="shrink-0 border-b border-white/10 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <p className="shrink-0 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                Txns ({filtered.length})
               </p>
+              {/* Type filter dropdown — inline next to count */}
+              <Select
+                value={tab}
+                onValueChange={(v) => {
+                  setTab(v as TxnTab);
+                  setSelectedId(null);
+                }}
+              >
+                <SelectTrigger className="h-7 min-w-[140px] flex-1 text-[11px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TAB_OPTIONS.map((t) => (
+                    <SelectItem key={t.value} value={t.value} className="text-xs">
+                      {t.label} ({counts.get(t.value) ?? 0})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            {/* Type filter dropdown — replaces the stats strip + filter tabs */}
-            <Select
-              value={tab}
-              onValueChange={(v) => {
-                setTab(v as TxnTab);
-                setSelectedId(null);
-              }}
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TAB_OPTIONS.map((t) => (
-                  <SelectItem key={t.value} value={t.value} className="text-xs">
-                    {t.label} ({counts.get(t.value) ?? 0})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
             {filtered.length === 0 ? (

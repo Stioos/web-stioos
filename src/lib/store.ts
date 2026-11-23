@@ -288,6 +288,11 @@ interface AppState {
 }
 
 const seed = () => ({
+  // Auto-login the demo buyer (Daniel Osei, usr-001) so the dashboard
+  // always shows lifecycle data. currentUserId is NOT persisted (see
+  // partializeImpl) so a stale localStorage blob can never strand the
+  // visitor on an empty dashboard.
+  currentUserId: "usr-001" as ID | null,
   services: CORE_SERVICES,
   categories: CATEGORIES,
   subcategories: SUBCATEGORIES,
@@ -1972,6 +1977,15 @@ function mergePersistedState(persisted: unknown, current: AppState): AppState {
         ) {
           merged.currentUserId = null;
         }
+        // Force the demo buyer (usr-001) as the logged-in user if no valid
+        // session survived the merge — ensures the buyer dashboard always
+        // shows lifecycle data instead of an empty state.
+        if (
+          !merged.currentUserId &&
+          (mergedUsers ?? []).some((u) => u.id === "usr-001")
+        ) {
+          merged.currentUserId = "usr-001";
+        }
         return merged as unknown as AppState;
   }
 }
@@ -2047,6 +2061,10 @@ function partializeImpl(state: AppState): AppState {
         // Admin roster / roles are force-reseeded by merge — never persist.
   delete out.admins;
   delete out.roles;
+  // currentUserId is seeded to the demo buyer (usr-001) on every load.
+  // Never persist it so a stale localStorage blob can never strand the
+  // visitor on an empty dashboard with no logged-in buyer.
+  delete out.currentUserId;
   // catalogReady is a runtime readiness flag, not session state: it must
   // stay false across reloads until the deferred catalog chunk re-arrives,
   // otherwise detail-page deep links flash "not found" during the gap.
