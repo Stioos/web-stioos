@@ -76,11 +76,15 @@ export function DashboardShell({
   const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  // Auto-login demo buyer (usr-001 = Daniel Osei) if none is signed in.
+  // Runs both synchronously on first render AND via useEffect as a
+  // safety net — covers the case where persist hydration lands AFTER
+  // the component mounts and resets currentUserId to null.
   useEffect(() => {
-    if (!user) {
+    if (!useAppStore.getState().currentUserId) {
       quickMarketLogin("usr-001");
     }
-  }, [user, quickMarketLogin]);
+  }, [quickMarketLogin]);
 
   const initials = user ? initialsOf(user.name) : "?";
 
@@ -173,18 +177,38 @@ export function DashboardShell({
             </SheetContent>
           </Sheet>
 
-          <Logo href="/" className="h-7 w-auto" priority />
+          <Logo href="/" className="h-7 w-auto shrink-0" priority />
 
-          {/* Workspace label — replaces the search bar / Browse Categories */}
-          <div className="hidden min-w-0 flex-1 items-center md:flex">
-            <span className="text-sm font-medium text-slate-400">
-              Buyer Workspace
-            </span>
-            <span className="mx-2 text-slate-600">·</span>
-            <span className="truncate text-sm text-slate-500">
-              {title?.replace("· Buyer Dashboard", "").trim() || "Dashboard"}
-            </span>
-          </div>
+          {/* Primary nav — inline in main header (replaces secondary strip) */}
+          <nav
+            aria-label="Buyer workspace navigation"
+            className="ml-2 hidden min-w-0 flex-1 items-center md:flex"
+          >
+            <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto">
+              {BUYER_NAV.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={active ? "page" : undefined}
+                    title={item.label}
+                    className={cn(
+                      "group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 transition-colors duration-200",
+                      active
+                        ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
+                        : "border-transparent bg-transparent text-slate-300 hover:bg-white/[0.08] hover:text-white"
+                    )}
+                  >
+                    <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="whitespace-nowrap text-[11px] font-semibold leading-none xl:text-xs">
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
 
           {/* Right cluster */}
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
@@ -228,36 +252,6 @@ export function DashboardShell({
             </DropdownMenu>
           </div>
         </div>
-
-        {/* Secondary header strip — navigation pills */}
-        <nav
-          aria-label="Buyer workspace navigation"
-          className="hidden h-[46px] items-center border-t border-white/[0.07] px-4 sm:px-6 lg:px-8 lg:flex"
-        >
-          <div className="no-scrollbar flex flex-1 items-center gap-1 xl:gap-1.5 overflow-x-auto">
-            {BUYER_NAV.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 transition-colors duration-200",
-                    active
-                      ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
-                      : "border-white/15 bg-white/[0.05] text-slate-200 hover:bg-white/[0.09]"
-                  )}
-                >
-                  <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span className="text-[11px] font-semibold whitespace-nowrap leading-none xl:text-xs">
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
       </header>
 
       {/* Body — full width, no sidebar */}
