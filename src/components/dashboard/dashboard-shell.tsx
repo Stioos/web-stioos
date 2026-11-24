@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { useAppStore, useCurrentUser } from "@/lib/store";
+import { useAuth } from "@/providers/auth-provider";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -72,26 +72,14 @@ export function DashboardShell({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const user = useCurrentUser();
-  const marketLogout = useAppStore((s) => s.marketLogout);
-  const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
+  const { user, logout } = useAuth();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  // Auto-login demo buyer (usr-001 = Daniel Osei) if none is signed in.
-  // Runs both synchronously on first render AND via useEffect as a
-  // safety net — covers the case where persist hydration lands AFTER
-  // the component mounts and resets currentUserId to null.
-  useEffect(() => {
-    if (!useAppStore.getState().currentUserId) {
-      quickMarketLogin("usr-001");
-    }
-  }, [quickMarketLogin]);
 
   const initials = user ? initialsOf(user.name) : "?";
 
   const signOut = () => {
-    marketLogout();
-    router.push("/");
+    logout();
+    router.push("/auth/login");
   };
 
   return (

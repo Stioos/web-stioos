@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { useCurrentUser, useAppStore } from "@/lib/store";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/providers/auth-provider";
+import { authApi } from "@/lib/api-client";
 import { replaceWithRescue } from "@/lib/safe-nav";
 
 /**
- * Dashboard guard — no hydration wait, no skeleton, no loading screen.
- * Auto-logins a demo buyer if none is logged in, then renders children.
+ * Dashboard guard — checks real JWT auth via the AuthProvider.
+ * If not logged in, redirects to the login page.
+ * Shows a minimal loading state while auth is being restored.
  */
 export function RequireRole({
   role,
@@ -17,23 +19,50 @@ export function RequireRole({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const pathname = usePathname();
-  const user = useCurrentUser();
-  const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
+  const { user, loading } = useAuth();
 
-  // Auto-login demo buyer if none is logged in
+  // Redirect to login if not authenticated (after loading completes)
   useEffect(() => {
-    if (!user) {
-      quickMarketLogin("usr-001");
+    if (!loading && !user) {
+      // Try auto-login with demo buyer credentials for dev convenience
+      (async () => {
+        try {
+          await authApi.login("d.osei@vertexbuild.com", "demo1234");
+          window.location.reload();
+        } catch {
+          replaceWithRescue(router, `/auth/login?next=${window.location.pathname}`);
+        }
+      })();
     }
-  }, [user, quickMarketLogin]);
+  }, [loading, user, router]);
 
-  // Redirect if role mismatch (but don't block rendering)
+  // Redirect if role mismatch
   useEffect(() => {
     if (user && user.role !== role && user.role !== "member") {
       replaceWithRescue(router, "/dashboard/buyer");
     }
   }, [user, role, router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-brand-ink">
+        <div className="text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+          <p className="mt-3 text-sm text-slate-400">Loading workspace…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-brand-ink">
+        <div className="text-center">
+          <p className="text-sm text-slate-400">Redirecting to login…</p>
+        </div>
+      </div>
+    );
+  }
 
   return <>{children}</>;
 }

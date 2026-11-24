@@ -3,7 +3,7 @@
 import { Suspense, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAppStore } from "@/lib/store";
+import { useAuth } from "@/providers/auth-provider";
 import { resolveRedirect, type LoginRole } from "@/lib/auth";
 import { pushWithRescue } from "@/lib/safe-nav";
 import { useToast } from "@/hooks/use-toast";
@@ -44,14 +44,9 @@ function LoginForm() {
   const params = useSearchParams();
   const next = params.get("next");
   const { toast } = useToast();
+  const { login: apiLogin } = useAuth();
 
-  const marketLogin = useAppStore((s) => s.marketLogin);
-  const quickMarketLogin = useAppStore((s) => s.quickMarketLogin);
-  const quickLogin = useAppStore((s) => s.quickLogin);
-
-  // Remembered email is read via useSyncExternalStore: the server snapshot is
-  // empty and the client value applies right after hydration — no effect
-  // setState and no hydration mismatch.
+  // Remembered email is read via useSyncExternalStore
   const rememberedEmail = useSyncExternalStore(
     emptySubscribe,
     () => window.localStorage.getItem(REMEMBER_KEY) ?? "",
@@ -99,83 +94,92 @@ function LoginForm() {
       return;
     }
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 700));
 
-    const result = marketLogin(email, password);
-    if (!result.ok) {
-      const base = result.error ?? "Unable to sign in.";
-      const hint = base.startsWith("No ")
-        ? " Demo accounts: buyer@stioos.com (Buyer) or aarav@stioos.com (Super Admin) — password demo1234."
-        : "";
-      setError(base + hint);
+    try {
+      const user = await apiLogin(email.trim(), password);
+
+      if (remember) {
+        window.localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
+      } else {
+        window.localStorage.removeItem(REMEMBER_KEY);
+      }
+
+      const role: LoginRole = (user.role as LoginRole) ?? "buyer";
+      toast({
+        title: `Welcome back, ${user.name}`,
+        description:
+          role === "buyer"
+            ? "Opening your buyer workspace…"
+            : "Opening your workspace…",
+      });
+      pushWithRescue(router, resolveRedirect(next, role));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unable to sign in.";
+      setError(
+        msg.startsWith("Invalid")
+          ? msg + " Demo accounts: d.osei@vertexbuild.com / demo1234 (Buyer) or admin@stioos.com / admin123 (Admin)."
+          : msg
+      );
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    if (remember) {
-      window.localStorage.setItem(REMEMBER_KEY, email.trim().toLowerCase());
-    } else {
-      window.localStorage.removeItem(REMEMBER_KEY);
-    }
-
-    const state = useAppStore.getState();
-    const lower = email.trim().toLowerCase();
-    const marketUser = state.users.find((u) => u.email.toLowerCase() === lower);
-    const adminUser = state.admins.find((a) => a.email.toLowerCase() === lower);
-    const name = marketUser?.name ?? adminUser?.name ?? "there";
-    const role: LoginRole =
-      result.role ?? (marketUser?.role as LoginRole | undefined) ?? "member";
-
-    toast({
-      title: `Welcome back, ${name}`,
-      description:
-        role === "buyer"
-          ? "Opening your buyer workspace…"
-          : "Opening your workspace…",
-    });
-    pushWithRescue(router, resolveRedirect(next, role));
   };
 
   const handleQuickMarketLogin = async (userId: string) => {
     setQuickBusy(userId);
-    await new Promise((r) => setTimeout(r, 400));
-    const result = quickMarketLogin(userId);
-    if (!result.ok) {
+    // Map quick-login IDs to real seeded credentials
+    const demoAccounts: Record<string, { email: string; password: string }> = {
+      "usr-001": { email: "d.osei@vertexbuild.com", password: "demo1234" },
+      "usr-mkt-buyer": { email: "buyer@stioos.com", password: "demo1234" },
+      "adm-001": { email: "admin@stioos.com", password: "admin123" },
+    };
+    const creds = demoAccounts[userId];
+    if (!creds) {
+      toast({
+        title: "Demo account unavailable",
+        description: "Could not sign in to this demo account.",
+        variant: "destructive",
+      });
+      setQuickBusy(null);
+      return;
+    }
+    try {
+      const user = await apiLogin(creds.email, creds.password);
+      const role: LoginRole = (user.role as LoginRole) ?? "buyer";
+      toast({
+        title: `Welcome, ${user.name}`,
+        description: "Opening your workspace…",
+      });
+      pushWithRescue(router, resolveRedirect(next, role));
+    } catch {
       toast({
         title: "Demo account unavailable",
         description: "Could not sign in to this demo account. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setQuickBusy(null);
-      return;
     }
-    const user = useAppStore.getState().users.find((u) => u.id === userId);
-    toast({
-      title: `Welcome back, ${user?.name ?? "there"}`,
-      description: `Signed in to your ${result.role ?? "marketplace"} workspace.`,
-    });
-    pushWithRescue(router, resolveRedirect(next, result.role));
   };
 
   const handleQuickAdminLogin = async () => {
     setQuickBusy("adm-001");
-    await new Promise((r) => setTimeout(r, 400));
-    const admin = useAppStore.getState().admins.find((a) => a.id === "adm-001");
-    if (!admin) {
+    try {
+      const user = await apiLogin("admin@stioos.com", "admin123");
+      toast({
+        title: `Welcome, ${user.name}`,
+        description: "Opening your admin workspace…",
+      });
+      pushWithRescue(router, resolveRedirect(next, "member"));
+    } catch {
       toast({
         title: "Demo account unavailable",
         description: "Could not sign in to the admin demo. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setQuickBusy(null);
-      return;
     }
-    quickLogin(admin.id);
-    toast({
-      title: `Welcome back, ${admin.name}`,
-      description: `Signed in as ${admin.title}.`,
-    });
-    pushWithRescue(router, resolveRedirect(next, "member"));
   };
 
   const quickBusyAny =

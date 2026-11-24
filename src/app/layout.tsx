@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { StoreHydration } from "@/components/store-hydration";
+import { AuthProvider } from "@/providers/auth-provider";
 import { AppWatchdog } from "@/components/system/app-watchdog";
 import { ErrorRecovery } from "@/components/system/error-recovery";
 import { getAppStamp } from "@/lib/app-stamp";
@@ -124,10 +125,12 @@ function showBar() {
           disableTransitionOnChange
         >
           <ErrorRecovery>
-            <StoreHydration />
-            <AppWatchdog />
-            {children}
-            <Toaster />
+            <AuthProvider>
+              <StoreHydration />
+              <AppWatchdog />
+              {children}
+              <Toaster />
+            </AuthProvider>
           </ErrorRecovery>
         </ThemeProvider>
       </body>
