@@ -213,14 +213,6 @@ export const ServiceCard = memo(function ServiceCard({
           card navigation. No stopPropagation needed. */}
       <div className="flex items-center gap-2 border-t px-5 py-3">
         <button
-          onClick={handleRequestService}
-          className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-500 px-2 text-[12px] font-bold text-brand-ink transition-colors hover:bg-amber-400"
-          aria-label={`Request ${service.name}`}
-        >
-          <Send className="h-3.5 w-3.5" strokeWidth={2.2} />
-          Request Service
-        </button>
-        <button
           onClick={() => useLeadModal.getState().openModal("quote", service.name)}
           className="flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-transparent px-2 text-[12px] font-semibold text-amber-600 transition-colors hover:bg-amber-500/10 dark:text-amber-400"
         >

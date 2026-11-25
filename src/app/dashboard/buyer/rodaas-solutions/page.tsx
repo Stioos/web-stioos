@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Trophy, TrendingUp, Workflow, Code2 } from "lucide-react";
+import { ArrowRight, CalendarClock, Trophy, TrendingUp, Workflow, Code2 } from "lucide-react";
+import { useState } from "react";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { SOLUTIONS } from "@/data/solutions";
 import { cn } from "@/lib/utils";
+import { MeetingDialog } from "@/components/marketplace/meeting-dialog";
 
 export default function RodaaSSolutionsPage() {
   return (
@@ -19,6 +21,8 @@ export default function RodaaSSolutionsPage() {
 }
 
 function RODaaSContent() {
+  const [meetingSolution, setMeetingSolution] = useState<(typeof SOLUTIONS)[number] | null>(null);
+
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-8">
       {/* Hero */}
@@ -43,9 +47,8 @@ function RODaaSContent() {
           {SOLUTIONS.map((sol) => {
             const IconCmp = sol.icon;
             return (
-              <Link
+              <article
                 key={sol.id}
-                href={`/solutions/${sol.slug}`}
                 className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition-all hover:border-amber-400/30 hover:shadow-lg"
               >
                 {/* Gradient header */}
@@ -89,15 +92,26 @@ function RODaaSContent() {
                       {sol.charge}
                     </span>
                   </div>
-                  <p className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-amber-300 transition-colors group-hover:text-amber-200">
-                    Explore solution
-                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setMeetingSolution(sol)}
+                    className="mt-4 inline-flex items-center gap-1 rounded-md text-xs font-semibold text-amber-300 transition-colors hover:text-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+                  >
+                    <CalendarClock className="h-3.5 w-3.5" />
+                    Book a Meeting
+                  </button>
                 </div>
-              </Link>
+              </article>
             );
           })}
         </div>
+        {meetingSolution && (
+          <MeetingDialog
+            service={meetingSolution}
+            open={Boolean(meetingSolution)}
+            onOpenChange={(open) => !open && setMeetingSolution(null)}
+          />
+        )}
       </section>
 
       {/* RODaaS highlight section */}
