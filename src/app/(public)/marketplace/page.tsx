@@ -31,7 +31,7 @@ interface FilterChip {
   clear: () => void;
 }
 
-function MarketplaceContent() {
+export function MarketplaceContent({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -104,6 +104,7 @@ function MarketplaceContent() {
   // state → URL (debounced; category, subcategory and search term are reflected)
   const skipFirstUrlSync = useRef(true);
   useEffect(() => {
+    if (embedded) return;
     if (skipFirstUrlSync.current) {
       skipFirstUrlSync.current = false;
       return;
@@ -119,7 +120,7 @@ function MarketplaceContent() {
       router.replace(qs ? `/marketplace?${qs}` : "/marketplace", { scroll: false });
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [filters.category, filters.subcategories, filters.q, router]);
+  }, [embedded, filters.category, filters.subcategories, filters.q, router]);
 
   const openRequest = useCallback((service: Service) => {
     setRequestService(service);
@@ -170,10 +171,13 @@ function MarketplaceContent() {
   if (filters.popularOnly)
     chips.push({ key: "popular", label: "Popular", clear: () => updateFilters({ popularOnly: false }) });
 
+  const contentWidth = embedded ? "max-w-[1600px]" : "max-w-7xl";
+
   return (
     <div className="flex flex-col">
       {/* ---------- NEW secondary header: filter bar ---------- */}
       <MarketplaceFilterBar
+        embedded={embedded}
         filters={filters}
         updateFilters={updateFilters}
         sort={sort}
@@ -186,7 +190,7 @@ function MarketplaceContent() {
 
       {/* ---------- Maintenance notice ---------- */}
       {marketplaceSettings.status === "maintenance" && (
-        <div className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <div className={`mx-auto w-full ${contentWidth} px-4 pt-6 sm:px-6 lg:px-8`}>
           <div
             role="status"
             className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3"
@@ -201,7 +205,7 @@ function MarketplaceContent() {
       )}
 
       {/* ---------- Listing (full width, no sidebar) ---------- */}
-      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+      <div className={`mx-auto w-full ${contentWidth} flex-1 px-4 py-8 sm:px-6 lg:px-8`}>
         <div id="results" className="min-w-0 scroll-mt-32">
           {/* Toolbar — results count */}
           <div className="mb-5 flex flex-wrap items-center gap-3">

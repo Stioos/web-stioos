@@ -74,7 +74,7 @@ function BuyerOverview() {
   const completionRate = myOrders.length > 0 ? Math.round((completedCount / myOrders.length) * 100) : 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1600px] space-y-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-white">
           Welcome back, {user.name.split(" ")[0]}

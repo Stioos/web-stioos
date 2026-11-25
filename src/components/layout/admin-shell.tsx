@@ -438,7 +438,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 <DropdownMenuItem asChild><Link href="/"><Globe className="h-4 w-4" /> View Public Site</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => { logout(); router.push("/auth/login"); }}
+                  onClick={() => { logout(); router.push("/"); }}
                   className="text-red-600 focus:text-red-600"
                 >
                   <LogOut className="h-4 w-4" /> Sign out

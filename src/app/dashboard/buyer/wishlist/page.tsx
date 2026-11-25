@@ -26,7 +26,7 @@ function WishlistContent() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
+    <div className="mx-auto w-full max-w-[1600px] space-y-6">
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-white">Wishlist</h1>
         <p className="text-sm text-slate-400">

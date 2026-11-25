@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
  * supplied design reference exactly.
  */
 interface FilterBarProps {
+  embedded?: boolean;
   filters: MarketplaceFilterState;
   updateFilters: (patch: Partial<MarketplaceFilterState>) => void;
   sort: MarketplaceSort;
@@ -102,6 +103,7 @@ function PillSelect({
 }
 
 export function MarketplaceFilterBar({
+  embedded = false,
   filters,
   updateFilters,
   sort,
@@ -138,7 +140,12 @@ export function MarketplaceFilterBar({
   return (
     // Full-width light-gray band — spans the entire screen (no max-w
     // container) so the pills run edge to edge like the reference design.
-    <section className="sticky top-[57px] z-30 w-full border-b border-border bg-muted/50 backdrop-blur">
+    <section
+      className={cn(
+        "sticky z-30 w-full border-b border-border bg-muted/50 backdrop-blur",
+        embedded ? "top-0" : "top-[57px]"
+      )}
+    >
       <div className="w-full px-3 py-2.5 sm:px-4">
         <div className="flex flex-wrap items-stretch gap-2 sm:flex-nowrap">
           {/* Category */}

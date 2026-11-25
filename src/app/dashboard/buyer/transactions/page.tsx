@@ -119,7 +119,7 @@ function TransactionsContent() {
     txn.invoiceId ? invoices.find((i) => i.id === txn.invoiceId) ?? null : null;
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-7xl">
+    <div className="mx-auto flex h-full w-full max-w-[1600px]">
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* Sidebar — transactions list (LEFT) */}
         <aside className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">

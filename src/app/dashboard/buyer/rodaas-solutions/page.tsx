@@ -20,7 +20,7 @@ export default function RodaaSSolutionsPage() {
 
 function RODaaSContent() {
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8">
+    <div className="mx-auto w-full max-w-[1600px] space-y-8">
       {/* Hero */}
       <section className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -21,6 +21,8 @@ import {
 import { Logo } from "@/components/shared/logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useAuth } from "@/providers/auth-provider";
+import { useAppStore, useCurrentUser } from "@/lib/store";
+import { MarketplaceContent } from "@/app/(public)/marketplace/page";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -37,6 +39,7 @@ interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  marketplace?: boolean;
 }
 
 const BUYER_NAV: NavItem[] = [
@@ -45,7 +48,7 @@ const BUYER_NAV: NavItem[] = [
   { href: "/dashboard/buyer/requests", label: "My Requests", icon: ClipboardList },
   { href: "/dashboard/buyer/transactions", label: "My Transactions", icon: ArrowLeftRight },
   { href: "/dashboard/buyer/talent-solutions", label: "Hire Talent", icon: Briefcase },
-  { href: "/marketplace", label: "Marketplace", icon: Store },
+  { href: "/marketplace", label: "Marketplace", icon: Store, marketplace: true },
   { href: "/dashboard/buyer/wishlist", label: "Wishlist", icon: Heart },
   { href: "/dashboard/buyer/rodaas-solutions", label: "RODaaS Solutions", icon: Trophy },
 ];
@@ -72,14 +75,19 @@ export function DashboardShell({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const user = useCurrentUser();
+  const marketLogout = useAppStore((s) => s.marketLogout);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [marketplacePathname, setMarketplacePathname] = useState<string | null>(null);
+  const marketplaceOpen = marketplacePathname === pathname;
 
   const initials = user ? initialsOf(user.name) : "?";
 
   const signOut = () => {
-    logout();
-    router.push("/auth/login");
+    marketLogout();
+    void logout();
+    router.push("/");
   };
 
   return (
@@ -122,7 +130,28 @@ export function DashboardShell({
                 <div className="flex-1 overflow-y-auto p-4">
                   <nav aria-label="Buyer workspace navigation" className="flex flex-col gap-1">
                     {BUYER_NAV.map((item) => {
-                      const active = pathname === item.href;
+                      const active = item.marketplace
+                        ? marketplaceOpen
+                        : !marketplaceOpen && pathname === item.href;
+                      if (item.marketplace) {
+                        return (
+                          <button
+                            key={item.href}
+                            type="button"
+                            onClick={() => { setMarketplacePathname(pathname); setMobileNavOpen(false); }}
+                            aria-current={active ? "page" : undefined}
+                            className={cn(
+                              "flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                              active
+                                ? "bg-amber-400/10 text-amber-300 ring-1 ring-inset ring-amber-400/25"
+                                : "text-slate-300 hover:bg-white/[0.05] hover:text-white"
+                            )}
+                          >
+                            <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                            {item.label}
+                          </button>
+                        );
+                      }
                       return (
                         <Link
                           key={item.href}
@@ -175,7 +204,31 @@ export function DashboardShell({
           >
             <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto">
               {BUYER_NAV.map((item) => {
-                const active = pathname === item.href;
+                const active = item.marketplace
+                  ? marketplaceOpen
+                  : !marketplaceOpen && pathname === item.href;
+                if (item.marketplace) {
+                  return (
+                    <button
+                      key={item.href}
+                      type="button"
+                      onClick={() => setMarketplacePathname(pathname)}
+                      aria-current={active ? "page" : undefined}
+                      title={item.label}
+                      className={cn(
+                        "group inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 transition-colors duration-200",
+                        active
+                          ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
+                          : "border-transparent bg-transparent text-slate-300 hover:bg-white/[0.08] hover:text-white"
+                      )}
+                    >
+                      <item.icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      <span className="whitespace-nowrap text-[11px] font-semibold leading-none xl:text-xs">
+                        {item.label}
+                      </span>
+                    </button>
+                  );
+                }
                 return (
                   <Link
                     key={item.href}
@@ -227,7 +280,7 @@ export function DashboardShell({
                 <DropdownMenuItem onClick={() => router.push("/dashboard/buyer")}>
                   <LayoutDashboard className="h-4 w-4" /> Dashboard home
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push("/marketplace")}>
+                <DropdownMenuItem onClick={() => setMarketplacePathname(pathname)}>
                   <Store className="h-4 w-4" /> Marketplace
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push("/dashboard/buyer/account-settings")}>
@@ -247,8 +300,18 @@ export function DashboardShell({
       </header>
 
       {/* Body — full width, fills viewport (no footer so everything fits on laptop/desktop) */}
-      <main id="main" className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-6">
-        {children}
+      <main
+        id="main"
+        className={cn(
+          "min-w-0 flex-1 overflow-y-auto",
+          marketplaceOpen ? "p-0" : "p-4 sm:p-6 lg:p-6"
+        )}
+      >
+        {marketplaceOpen ? (
+          <Suspense fallback={null}>
+            <MarketplaceContent embedded />
+          </Suspense>
+        ) : children}
       </main>
     </div>
   );

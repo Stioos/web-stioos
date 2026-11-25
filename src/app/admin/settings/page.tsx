@@ -952,7 +952,7 @@ function DangerPanel() {
 
   const handleSignOut = () => {
     logout();
-    router.push("/auth/login");
+    router.push("/");
   };
 
   return (

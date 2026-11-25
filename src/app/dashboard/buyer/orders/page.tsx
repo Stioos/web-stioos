@@ -159,7 +159,7 @@ function OrdersContent() {
   };
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-7xl">
+    <div className="mx-auto flex h-full w-full max-w-[1600px]">
       {/* Split layout: sidebar list LEFT + inspector panel (with tabs) RIGHT */}
       <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_1fr]">
         {/* Sidebar — order list (LEFT side, below header) */}
