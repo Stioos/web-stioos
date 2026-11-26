@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { useAuth } from "@/providers/auth-provider";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { MarketplaceContent } from "@/app/(public)/marketplace/page";
+import { LeadModalProvider } from "@/components/shared/lead-modal";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -313,6 +314,7 @@ export function DashboardShell({
           </Suspense>
         ) : children}
       </main>
+      <LeadModalProvider />
     </div>
   );
 }

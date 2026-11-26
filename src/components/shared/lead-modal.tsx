@@ -133,7 +133,14 @@ export function LeadModal({ open, onOpenChange, type, context, title }: LeadModa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto bg-card sm:max-w-lg">
+      <DialogContent
+        className={cn(
+          "bg-card",
+          type === "quote"
+            ? "overflow-hidden p-5 sm:max-w-xl"
+            : "max-h-[90vh] overflow-y-auto sm:max-w-lg"
+        )}
+      >
         {/* Keyed by type so switching CTA remounts a fresh form; the whole
             subtree unmounts on close, discarding visitor-entered state
             without effect-based resets. */}
@@ -339,8 +346,8 @@ function LeadForm({
         </p>
       )}
 
-      <form onSubmit={handleSubmit} noValidate className="mt-1">
-        <div className="grid gap-4 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} noValidate className="mt-0 min-w-0">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           <Field label="Full name" required error={errors.name} htmlFor="lm-name">
             <Input
               id="lm-name"
@@ -418,7 +425,7 @@ function LeadForm({
                 value={form.message}
                 onChange={(e) => set("message", e.target.value)}
                 placeholder="Describe your goals, current systems, and what success looks like…"
-                rows={4}
+                rows={3}
                 aria-invalid={!!errors.message}
                 className={errors.message ? "border-destructive" : undefined}
               />
@@ -429,7 +436,7 @@ function LeadForm({
         <Button
           type="submit"
           disabled={submitting}
-          className="mt-5 h-11 w-full bg-amber-500 text-sm font-semibold text-brand-ink hover:bg-amber-400"
+          className="mt-3 h-11 w-full bg-amber-500 text-sm font-semibold text-brand-ink hover:bg-amber-400"
         >
           {submitting ? (
             <>
@@ -443,7 +450,7 @@ function LeadForm({
             </>
           )}
         </Button>
-        <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
           Your request goes straight to the STIOOS team and is tracked with the reference shown
           after sending. We never share your details with third parties.
         </p>
