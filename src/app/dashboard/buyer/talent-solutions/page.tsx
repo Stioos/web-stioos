@@ -162,22 +162,13 @@ function TalentSolutionsContent() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div>
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-white">Talent Solutions</h1>
           <p className="mt-1 text-sm text-slate-400">
             Hire, train, and deploy job-ready professionals — track your talent transactions here.
           </p>
         </div>
-        <Button
-          asChild
-          className="bg-amber-500 text-slate-900 hover:bg-amber-400"
-        >
-          <Link href="/dashboard/buyer/hire-talent">
-            <Briefcase className="mr-1.5 h-4 w-4" />
-            Hire a Talent
-          </Link>
-        </Button>
       </div>
 
       {/* Stats */}
