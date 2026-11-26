@@ -6,9 +6,11 @@ import {
   ClipboardCheck,
   FileText,
   GraduationCap,
+  Layers,
   Rocket,
   Target,
   TrendingUp,
+  UserCheck,
   Users,
 } from "lucide-react";
 import {
@@ -1449,6 +1451,1299 @@ const CONTENT: Record<string, CandidateSubPageContent> = {
     ctaKicker: "Code that hiring managers can run",
     ctaTitle: "Build a portfolio of real client-shaped projects",
   },
+
+  // ─────────────── Build Talent (Employer) ───────────────
+
+  "build-talent/train-to-hire-cohorts": {
+    groupSlug: "build-talent",
+    subSlug: "train-to-hire-cohorts",
+    heroEyebrow: "Build Talent · For Employers",
+    heroSubtitle:
+      "Custom training cohorts built around your stack — graduate job-ready professionals who join your team.",
+    heroStats: [
+      {
+        value: "96%",
+        label: "Trainee conversion rate",
+        detail: "Cohort graduates hired as full-time engineers within 60 days of program completion.",
+      },
+      {
+        value: "8–12 wks",
+        label: "Intensive training ramp",
+        detail: "Role-specific syllabus ending in a client-designed production capstone.",
+      },
+      {
+        value: "Zero",
+        label: "Upfront employer risk",
+        detail: "Placement fees apply only when candidates successfully graduate and join your workforce.",
+      },
+    ],
+    overview: {
+      p1: "Off-the-shelf hiring rarely gives you engineers who understand your code conventions, architectural patterns, and internal tooling from day one. STIOOS Train to Hire Cohorts builds a tailored talent factory for your company, co-designing intensive 8–12 week bootcamps around your exact technology stack.",
+      p2: "We source high-aptitude graduates and mid-level career switchers, screen them through rigorous logic and coding tests, and train them with senior industry mentors. Trainees build production-shaped capstones mimicking your internal microservices, ensuring they deploy features on their very first sprint.",
+    },
+    capabilities: [
+      {
+        icon: "BookOpen",
+        title: "Co-designed curriculum",
+        description:
+          "Syllabus built hand-in-hand with your tech leads to cover your exact tech stack, frameworks, and conventions.",
+      },
+      {
+        icon: "Target",
+        title: "Targeted cohort sourcing",
+        description:
+          "High-volume intake from top universities and engineering programs screened for aptitude and learning agility.",
+      },
+      {
+        icon: "Code",
+        title: "Real-world production capstones",
+        description:
+          "Learners build and defend full-stack systems with CI/CD, testing, observability, and containerization.",
+      },
+      {
+        icon: "Users",
+        title: "Daily senior mentorship",
+        description:
+          "Experienced developers lead pair programming, review pull requests, and enforce enterprise code quality.",
+      },
+      {
+        icon: "ClipboardCheck",
+        title: "Weekly milestone assessments",
+        description:
+          "Transparent progress tracking with automated testing and mentor evaluations shared with your team.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Risk-free hiring model",
+        description:
+          "Evaluate trainees during capstone presentations; extend offers only to candidates who exceed your bar.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Curriculum & role alignment",
+        duration: "Week 0",
+        description:
+          "Define target engineering roles, stack requirements, and capstone criteria with STIOOS curriculum architects.",
+      },
+      {
+        step: "02",
+        title: "Cohort selection & screening",
+        duration: "Week 1",
+        description:
+          "AI screening and proctored technical evaluations select the top 5% of applicants into the cohort.",
+      },
+      {
+        step: "03",
+        title: "Intensive mentor sprints",
+        duration: "Week 2–10",
+        description:
+          "Hands-on development sprints covering system fundamentals, advanced frameworks, and enterprise patterns.",
+      },
+      {
+        step: "04",
+        title: "Capstone defense & hiring",
+        duration: "Week 11–12",
+        description:
+          "Graduates present production capstones to your engineering team; selected candidates join as FTEs.",
+      },
+    ],
+    benefits: [
+      {
+        value: "96%",
+        label: "Graduation-to-hire",
+        description: "Over 96% of cohort graduates receive and accept full-time offers with partner employers.",
+      },
+      {
+        value: "Day 1",
+        label: "Productivity ramp",
+        description: "Engineers arrive familiar with your repository structure, code standards, and workflows.",
+      },
+      {
+        value: "50%",
+        label: "Lower recruiting costs",
+        description: "Replace costly recruiter headhunter fees with predictable, volume-scaled cohort pricing.",
+      },
+      {
+        value: "90-day",
+        label: "Replacement guarantee",
+        description: "Written warranty protecting your investment in every full-time hire made from the cohort.",
+      },
+    ],
+    faqs: [
+      {
+        q: "Who covers the cost of training the cohort?",
+        a: "Training costs are subsidized or shared through corporate sponsorship and candidate commitments, with employer fees tied to confirmed hires.",
+      },
+      {
+        q: "Are we obligated to hire every graduate in the cohort?",
+        a: "No. You commit to interviewing the cohort and only hire candidates who meet or exceed your engineering bar during the final capstone defense.",
+      },
+      {
+        q: "Can our engineers participate as guest lecturers or mentors?",
+        a: "Yes! Many enterprise clients participate in code reviews, tech talks, and weekly checkpoint evaluations to build strong cultural affinity early.",
+      },
+      {
+        q: "What tech stacks can be covered in a custom cohort?",
+        a: "We have established curricula for React/Next.js, Node/TypeScript, Python/FastAPI, Java/Spring Boot, Go, AWS/Azure Cloud, and GenAI/LLM orchestration.",
+      },
+      {
+        q: "Where do training sessions take place?",
+        a: "Programs can be conducted fully remote, hybrid, or on-site at your corporate facilities or STIOOS delivery hubs.",
+      },
+    ],
+    ctaKicker: "Ready to build your custom engineering cohort?",
+    ctaTitle: "Co-design your talent pipeline today",
+  },
+
+  "build-talent/hire-to-train-programs": {
+    groupSlug: "build-talent",
+    subSlug: "hire-to-train-programs",
+    heroEyebrow: "Build Talent · For Employers",
+    heroSubtitle:
+      "Hire promising candidates and we train them to your exact role requirements — ramped in weeks, not months.",
+    heroStats: [
+      {
+        value: "100%",
+        label: "Role-specific training",
+        detail: "Targeted upskilling designed specifically around your project's technology stack.",
+      },
+      {
+        value: "4–8 wks",
+        label: "Fast-track onboarding",
+        detail: "Accelerate time-to-productivity for newly hired campus or lateral engineers.",
+      },
+      {
+        value: "90-day",
+        label: "Performance warranty",
+        detail: "Full replacement support during probation if candidates fail to meet key milestones.",
+      },
+    ],
+    overview: {
+      p1: "Finding pre-packaged candidates with the exact combination of modern tools your architecture requires is increasingly rare and expensive. With STIOOS Hire to Train Programs, you identify smart, high-aptitude talent, extend contingent offers, and entrust us with ramping them to enterprise production standards.",
+      p2: "We take your new hires through an intensive, custom-crafted finishing school. Under the guidance of seasoned tech leads, they learn your codebase architecture, security protocols, and operational workflows — transforming promising recruits into high-output contributors before their first sprint.",
+    },
+    capabilities: [
+      {
+        icon: "UserCheck",
+        title: "Aptitude-first hiring",
+        description:
+          "Select candidates based on fundamental problem-solving and logical ability rather than obsolete keyword matching.",
+      },
+      {
+        icon: "BookOpen",
+        title: "Customized ramp syllabus",
+        description:
+          "Targeted upskilling curriculum focused strictly on the gaps between university fundamentals and your stack.",
+      },
+      {
+        icon: "Code",
+        title: "Simulated codebase immersion",
+        description:
+          "New hires practice bug fixes, feature branches, and code reviews on an isolated clone of your environment.",
+      },
+      {
+        icon: "Users",
+        title: "Dedicated mentor coaching",
+        description:
+          "1-on-1 guidance from staff-level engineers who provide daily feedback, unblock blockers, and instill best practices.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Probation & milestone tracking",
+        description:
+          "Quantitative competency benchmarks ensure transparent visibility into candidate progress throughout probation.",
+      },
+      {
+        icon: "Zap",
+        title: "Toolchain & DevOps fluency",
+        description:
+          "Hands-on mastery of Git workflows, Docker, CI/CD pipelines, unit testing, and cloud infrastructure.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Selection & contingent offer",
+        duration: "Week 0",
+        description:
+          "Interview and hire candidates based on aptitude; enroll them into the tailored upskilling program.",
+      },
+      {
+        step: "02",
+        title: "Diagnostic gap assessment",
+        duration: "Week 1",
+        description:
+          "Assess each candidate's strengths and weaknesses to personalize module pacing and mentor pairing.",
+      },
+      {
+        step: "03",
+        title: "Guided technical immersion",
+        duration: "Week 2–6",
+        description:
+          "Hands-on coding sprints, architecture walkthroughs, and weekly competency tests against industry rubrics.",
+      },
+      {
+        step: "04",
+        title: "Project handoff & integration",
+        duration: "Week 7–8",
+        description:
+          "Graduate successfully onto your live product team with full architectural context and confident velocity.",
+      },
+    ],
+    benefits: [
+      {
+        value: "60%",
+        label: "Faster time to productivity",
+        description: "New hires commit production code in their first week on the team instead of taking months to ramp.",
+      },
+      {
+        value: "45%",
+        label: "Salary budget optimization",
+        description: "Hire high-potential junior/mid talent and train them rather than overpaying for scarce senior hires.",
+      },
+      {
+        value: "95%",
+        label: "Probation pass rate",
+        description: "Structured mentorship and clear expectations ensure new hires succeed during probation.",
+      },
+      {
+        value: "Zero",
+        label: "Senior engineering distraction",
+        description: "Keep your lead architects focused on core roadmap delivery instead of hand-holding new recruits.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How does Hire to Train differ from Train to Hire?",
+        a: "In Hire to Train, you select and make employment offers to candidates first, and we train your confirmed hires. In Train to Hire, we train an open cohort and you select candidates at graduation.",
+      },
+      {
+        q: "What size cohorts can you accommodate?",
+        a: "We support cohort sizes from individual specialist hires (1–3 engineers) up to enterprise campus batches of 100+ graduates.",
+      },
+      {
+        q: "How do you tailor the training to our codebase?",
+        a: "Our curriculum leads work with your engineering managers under NDA to create mock repositories and coding exercises matching your architecture.",
+      },
+      {
+        q: "Can training occur while candidates are already on our payroll?",
+        a: "Yes. Many enterprise clients pay candidates their starting salary while STIOOS runs the training program full-time for the first 6–8 weeks.",
+      },
+      {
+        q: "What happens if a candidate fails the final assessment?",
+        a: "We provide targeted remedial sprints for borderline cases, or invoke replacement guarantees depending on your contractual preference.",
+      },
+    ],
+    ctaKicker: "Have new hires who need fast upskilling?",
+    ctaTitle: "Launch your Hire to Train program today",
+  },
+
+  "build-talent/corporate-training-programs": {
+    groupSlug: "build-talent",
+    subSlug: "corporate-training-programs",
+    heroEyebrow: "Build Talent · For Employers",
+    heroSubtitle:
+      "Custom corporate training programs designed to upskill your teams across AI, cloud, data, and full-stack.",
+    heroStats: [
+      {
+        value: "200+",
+        label: "Corporate modules",
+        detail: "Enterprise curricula covering GenAI, cloud modernization, distributed systems, and DevOps.",
+      },
+      {
+        value: "4.9/5",
+        label: "Learner satisfaction",
+        detail: "Consistently top-rated by engineering teams, managers, and enterprise L&D directors.",
+      },
+      {
+        value: "100%",
+        label: "Practical project focus",
+        detail: "Real internal enterprise challenges solved during capstone hackathons.",
+      },
+    ],
+    overview: {
+      p1: "Technology moves faster than annual hiring cycles. Upskilling your existing engineering and product workforce is the most cost-effective way to adopt Generative AI, modernize legacy systems, and improve retention. STIOOS Corporate Training Programs delivers expert-led, sprint-based learning tailored to your engineering culture.",
+      p2: "Unlike generic video course platforms with sub-10% completion rates, STIOOS programs combine live interactive workshops, hands-on lab environments, and real internal capstone projects. Your developers learn by doing, guided by senior technology practitioners who build in the field every day.",
+    },
+    capabilities: [
+      {
+        icon: "Award",
+        title: "GenAI & LLM engineering tracks",
+        description:
+          "Practical RAG architectures, prompt engineering, vector databases, and fine-tuning open-source models.",
+      },
+      {
+        icon: "Cloud",
+        title: "Cloud modernization & Kubernetes",
+        description:
+          "Microservices decomposition, container orchestration, Terraform IaC, and cloud-native observability.",
+      },
+      {
+        icon: "Code",
+        title: "Modern web & backend stacks",
+        description:
+          "Advanced TypeScript, React 19, Next.js, FastAPI, Go, and high-throughput event-driven microservices.",
+      },
+      {
+        icon: "Brain",
+        title: "Data engineering & analytics",
+        description:
+          "Data modeling, Snowflake, Databricks, Apache Spark, real-time Kafka streaming, and modern dbt workflows.",
+      },
+      {
+        icon: "Users",
+        title: "Live cohort-based learning",
+        description:
+          "Interactive instructor-led sessions, peer code reviews, and group hackathons that foster team collaboration.",
+      },
+      {
+        icon: "TrendingUp",
+        title: "Measurable skills benchmarking",
+        description:
+          "Pre- and post-training skill assessments provide executive leadership with verifiable ROI metrics.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Skills gap audit",
+        duration: "Week 0",
+        description:
+          "Evaluate team capabilities and align curriculum topics with upcoming strategic technical roadmaps.",
+      },
+      {
+        step: "02",
+        title: "Custom syllabus co-design",
+        duration: "Week 1",
+        description:
+          "Design modules, coding labs, and internal capstone projects using your existing tools and architecture.",
+      },
+      {
+        step: "03",
+        title: "Sprint delivery & labs",
+        duration: "Week 2–6",
+        description:
+          "Deliver modular weekly sessions, hands-on cloud sandboxes, and asynchronous mentor code feedback.",
+      },
+      {
+        step: "04",
+        title: "Internal capstone showcase",
+        duration: "Week 7",
+        description:
+          "Teams present working prototypes addressing real internal company challenges to leadership.",
+      },
+    ],
+    benefits: [
+      {
+        value: "85%",
+        label: "Course completion rate",
+        description: "Mentor-led accountability and live labs achieve 8x the engagement of passive video libraries.",
+      },
+      {
+        value: "3x",
+        label: "Internal mobility rate",
+        description: "Promote existing loyal staff into senior modern engineering roles instead of recruiting externally.",
+      },
+      {
+        value: "Immediate",
+        label: "Strategic impact",
+        description: "Capstone projects frequently graduate directly into production features and automation pipelines.",
+      },
+      {
+        value: "30+",
+        label: "Global certifications",
+        description: "Curricula prepare employees for AWS, Azure, GCP, CKA, and industry accreditation exams.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do you accommodate employee work schedules?",
+        a: "We offer flexible delivery formats including weekend workshops, 2-hour bi-weekly sprints, or intensive 1-week full-time bootcamps to avoid disrupting roadmap deliverables.",
+      },
+      {
+        q: "What cloud lab environments are provided?",
+        a: "STIOOS provisions isolated cloud sandboxes (AWS/GCP/Azure) with pre-configured datasets and compute, so learners do not incur costs on your corporate cloud bills.",
+      },
+      {
+        q: "Can the training be customized to our internal frameworks?",
+        a: "Yes. Our instructors incorporate your internal SDKs, style guides, and architectural patterns into the coding exercises.",
+      },
+      {
+        q: "What reporting is provided to L&D and engineering leadership?",
+        a: "You receive automated weekly attendance, quiz performance, lab completion metrics, and individual skill progression scorecards.",
+      },
+      {
+        q: "Do you offer enterprise-wide licensing or per-cohort pricing?",
+        a: "We offer both: per-cohort packages for targeted team sprints, and enterprise annual subscriptions for ongoing multi-track training.",
+      },
+    ],
+    ctaKicker: "Want to future-proof your engineering team?",
+    ctaTitle: "Plan your corporate training program",
+  },
+
+  // ─────────────── Hire Talent (Employer) ───────────────
+
+  "hire-talent/staffing-solutions": {
+    groupSlug: "hire-talent",
+    subSlug: "staffing-solutions",
+    heroEyebrow: "Hire Talent · For Employers",
+    heroSubtitle:
+      "Flexible staffing models — contract, permanent, or project-based — from a 2M+ pre-vetted talent pool.",
+    heroStats: [
+      {
+        value: "48h",
+        label: "To shortlist",
+        detail: "5–8 vetted candidate profiles delivered within 48 hours of requirement intake.",
+      },
+      {
+        value: "90-day",
+        label: "Replacement warranty",
+        detail: "Free replacement if a placed candidate exits or underperforms within 90 days.",
+      },
+      {
+        value: "2M+",
+        label: "Pre-vetted pool",
+        detail: "Engineers, cloud architects, AI practitioners and product specialists ready to deploy.",
+      },
+    ],
+    overview: {
+      p1: "Hiring velocity should never compromise talent quality. STIOOS Staffing Solutions connects engineering leaders and talent acquisition teams with pre-vetted professionals across contract, permanent, and project-based engagement models. Every candidate is evaluated through AI-proctored technical assessments, mentor code reviews, and background verification before their profile reaches your desk.",
+      p2: "Whether you need a senior distributed systems architect for a 6-month migration or a permanent full-stack team to scale your core product, our staffing engine matches your exact technical stack and company culture in 48 hours. Backed by written SLAs, transparent pricing, pay-after-join terms, and a 90-day replacement guarantee.",
+    },
+    capabilities: [
+      {
+        icon: "Briefcase",
+        title: "Contract staffing",
+        description:
+          "Deploy agile engineering and operational talent for defined project timelines with zero long-term payroll liabilities.",
+      },
+      {
+        icon: "Building2",
+        title: "Permanent hiring",
+        description:
+          "Direct-hire placements for core team roles with rigorous cultural alignment and 90-day replacement warranties.",
+      },
+      {
+        icon: "Layers",
+        title: "Contract-to-hire (C2H)",
+        description:
+          "Evaluate on-the-job execution for 3–6 months before converting contract talent into full-time employees.",
+      },
+      {
+        icon: "Zap",
+        title: "Project-based squads",
+        description:
+          "Turnkey multi-disciplinary teams assembled to deliver specific milestones with dedicated delivery management.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Complete compliance & EOR",
+        description:
+          "Full payroll, statutory compliance, PF/ESI, tax withholding, and IP assignment agreements handled by STIOOS.",
+      },
+      {
+        icon: "Target",
+        title: "Stack-exact matching",
+        description:
+          "AI screening calibrated to your specific tech stack, architecture patterns, and seniority requirements.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Requirement intake",
+        duration: "Day 0",
+        description:
+          "Share your role specifications, technical stack, budget, and timeline in a 20-minute kickoff with our staffing director.",
+      },
+      {
+        step: "02",
+        title: "AI-matched shortlist",
+        duration: "Day 1–2",
+        description:
+          "Receive 5–8 pre-screened profiles with verified assessment scorecards, code samples, and interview recordings.",
+      },
+      {
+        step: "03",
+        title: "Client interviews",
+        duration: "Day 3–5",
+        description:
+          "Meet shortlisted candidates in streamlined technical and culture-fit rounds coordinated seamlessly by STIOOS.",
+      },
+      {
+        step: "04",
+        title: "Offer & onboarding",
+        duration: "Day 6–10",
+        description:
+          "Finalize engagement terms; candidate is onboarded with hardware, security policies, and NDA in place.",
+      },
+    ],
+    benefits: [
+      {
+        value: "48h",
+        label: "Shortlist turnaround",
+        description: "Go from requirement kickoff to interviewing pre-screened talent in two business days.",
+      },
+      {
+        value: "90-day",
+        label: "Replacement guarantee",
+        description: "Zero-cost replacement guarantee if a candidate does not meet your performance expectations.",
+      },
+      {
+        value: "40%",
+        label: "Hiring cost reduction",
+        description: "Eliminate expensive recruitment agency retainers and reduce internal HR bandwidth spend.",
+      },
+      {
+        value: "98%",
+        label: "Offer acceptance rate",
+        description: "Pre-aligned expectations on compensation, role scope, and work arrangement prevent dropouts.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How quickly can contract staff start after selection?",
+        a: "Most contract professionals from our active bench can onboard within 3 to 7 business days once contracts and compliance documentation are finalized.",
+      },
+      {
+        q: "What is your replacement policy if a candidate does not work out?",
+        a: "Every placement includes a 90-day written replacement guarantee. If a hire exits or does not meet agreed performance standards, we provide a replacement shortlist within 48 hours at zero additional cost.",
+      },
+      {
+        q: "How are payroll, taxes, and legal compliance managed for contract staff?",
+        a: "STIOOS acts as the Employer of Record (EOR) for contract hires. We handle statutory benefits, payroll processing, tax filings, insurance, and IP assignment agreements.",
+      },
+      {
+        q: "Can we convert a contract hire to a permanent employee?",
+        a: "Yes. Our contract-to-hire (C2H) model includes clear conversion milestones and transparent conversion fee structures after a 3 to 6-month trial period.",
+      },
+      {
+        q: "Do you support specialized tech stacks and niche engineering skills?",
+        a: "Yes. Our 2M+ talent network covers niche domains including GenAI, MLOps, Rust, Go, distributed cloud infrastructure, Salesforce, SAP, and embedded systems.",
+      },
+    ],
+    ctaKicker: "Need pre-vetted talent on your team?",
+    ctaTitle: "Get candidate shortlists delivered in 48 hours",
+  },
+
+  "hire-talent/talent-sourcing-recruitment": {
+    groupSlug: "hire-talent",
+    subSlug: "talent-sourcing-recruitment",
+    heroEyebrow: "Hire Talent · For Employers",
+    heroSubtitle:
+      "AI-powered talent sourcing from 2M+ candidates — shortlists delivered within 48 hours.",
+    heroStats: [
+      {
+        value: "2M+",
+        label: "Candidate network",
+        detail: "Continuously refreshed talent graph spanning engineering, AI, product and cloud.",
+      },
+      {
+        value: "48h",
+        label: "Average time to shortlist",
+        detail: "Calibrated matching models rank the top 1% fit for your specific technical stack.",
+      },
+      {
+        value: "85%",
+        label: "Interview-to-offer ratio",
+        detail: "High-precision screening ensures your engineering managers spend time only on viable candidates.",
+      },
+    ],
+    overview: {
+      p1: "Traditional sourcing is broken: recruiters flood hiring managers with hundreds of uncalibrated resumes, wasting dozens of senior engineering hours on screening calls. STIOOS Talent Sourcing & Recruitment flips the model with an AI-driven candidate discovery and evaluation engine trained on verified hiring outcomes.",
+      p2: "We search passive and active talent across our 2M+ talent network, evaluate their real-world code repositories and benchmarked assessment results, and deliver a tight shortlist of 5–8 thoroughly vetted professionals. You interview only high-probability hires, cutting time-to-hire from months to days.",
+    },
+    capabilities: [
+      {
+        icon: "Target",
+        title: "AI candidate discovery",
+        description:
+          "Multi-channel sourcing across verified databases, open-source contributors, and alumni networks.",
+      },
+      {
+        icon: "Code",
+        title: "Automated code analysis",
+        description:
+          "Automated inspection of public repositories and capstone submissions to evaluate real engineering depth.",
+      },
+      {
+        icon: "Users",
+        title: "Technical pre-screening",
+        description:
+          "Every candidate completes a rigorous 45-minute technical screen conducted by experienced mentors.",
+      },
+      {
+        icon: "FileCheck",
+        title: "Reference & background checks",
+        description:
+          "Prior employer verification, educational validation, and criminal history checks completed upfront.",
+      },
+      {
+        icon: "TrendingUp",
+        title: "Compensation benchmarking",
+        description:
+          "Real-time market salary data ensure competitive offers that close top candidates without overpaying.",
+      },
+      {
+        icon: "CheckCircle2",
+        title: "Offer negotiation support",
+        description:
+          "Dedicated talent partners manage candidate expectations and negotiate terms to secure 95%+ offer acceptance.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Role calibration",
+        duration: "Day 0",
+        description:
+          "Define required competencies, architectural challenges, team culture, and compensation range.",
+      },
+      {
+        step: "02",
+        title: "Deep sourcing & screening",
+        duration: "Day 1–2",
+        description:
+          "AI sourcing algorithm queries 2M+ profiles, followed by technical evaluation of top matches.",
+      },
+      {
+        step: "03",
+        title: "Shortlist presentation",
+        duration: "Day 2–3",
+        description:
+          "Review calibrated shortlists with complete assessment dossiers, code artifacts, and salary expectations.",
+      },
+      {
+        step: "04",
+        title: "Interview & closing",
+        duration: "Day 4–14",
+        description:
+          "Conduct client interviews, extend offers with STIOOS closing support, and finalize start dates.",
+      },
+    ],
+    benefits: [
+      {
+        value: "48h",
+        label: "Rapid shortlisting",
+        description: "Skip the weeks of resume reviewing with instant access to pre-screened talent.",
+      },
+      {
+        value: "85%",
+        label: "Offer acceptance",
+        description: "Transparent pre-alignment on salary and expectations prevents last-minute dropouts.",
+      },
+      {
+        value: "60%",
+        label: "Time-to-hire reduction",
+        description: "Close critical senior engineering openings in under two weeks rather than two months.",
+      },
+      {
+        value: "90-day",
+        label: "Replacement guarantee",
+        description: "Guaranteed replacement within 48 hours if a hired candidate leaves within 90 days.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How does STIOOS source passive candidates?",
+        a: "Our sourcing engine continuously tracks open-source repositories, developer communities, and specialized technical networks to engage top 1% talent not active on traditional job boards.",
+      },
+      {
+        q: "What information is included in candidate dossiers?",
+        a: "Each dossier contains verified technical assessment scores, portfolio code links, mentor interview notes, current compensation breakdown, and notice period details.",
+      },
+      {
+        q: "What are your fee terms for recruitment services?",
+        a: "We operate on a contingency pay-after-join model: you only pay when a candidate successfully joins your team, backed by a 90-day replacement warranty.",
+      },
+      {
+        q: "Can you help hire across international remote locations?",
+        a: "Yes, STIOOS supports global recruitment across North America, Europe, India, Southeast Asia, and Latin America with full EOR capabilities.",
+      },
+      {
+        q: "How do you ensure candidate diversity in shortlists?",
+        a: "Our AI sourcing filters focus strictly on verified competencies and code benchmarks, removing bias and surfacing diverse candidate pipelines.",
+      },
+    ],
+    ctaKicker: "Looking to hire senior technical talent?",
+    ctaTitle: "Start sourcing with STIOOS today",
+  },
+
+  "hire-talent/talent-deployment": {
+    groupSlug: "hire-talent",
+    subSlug: "talent-deployment",
+    heroEyebrow: "Hire Talent · For Employers",
+    heroSubtitle:
+      "Deploy pre-vetted talent pods on demand — contract, project-based, or dedicated team engagement.",
+    heroStats: [
+      {
+        value: "7 days",
+        label: "Pod deployment",
+        detail: "Complete cross-functional teams assembled, equipped, and productive in one week.",
+      },
+      {
+        value: "100%",
+        label: "IP ownership",
+        detail: "All code, documentation, and IP transferred immediately with full legal protection.",
+      },
+      {
+        value: "98%",
+        label: "Sprint delivery SLA",
+        detail: "Tracked sprint velocity and milestone completion overseen by STIOOS delivery managers.",
+      },
+    ],
+    overview: {
+      p1: "When high-stakes product initiatives face looming deadlines, hiring individuals one by one is too slow and risky. STIOOS Talent Deployment delivers fully assembled, cross-functional engineering pods on demand — including tech leads, full-stack engineers, cloud architects, and QA specialists who have already delivered together.",
+      p2: "Our deployment model provides agile capacity that scales up or down based on your roadmap demands. We handle workspace setup, security compliance, hardware provisioning, and daily operational management, allowing you to focus on strategy while our pods execute sprint by sprint.",
+    },
+    capabilities: [
+      {
+        icon: "Layers",
+        title: "Dedicated engineering pods",
+        description:
+          "Pre-configured teams of 3 to 12 engineers aligned to your exact architectural patterns and development rituals.",
+      },
+      {
+        icon: "Rocket",
+        title: "Rapid pod deployment",
+        description:
+          "From contract sign-off to first sprint kickoff in as little as 5 to 7 business days.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Enterprise security & compliance",
+        description:
+          "SOC 2, ISO 27001, and GDPR-aligned processes with MDM-managed devices and zero-trust VPN access.",
+      },
+      {
+        icon: "TrendingUp",
+        title: "Delivery governance & metrics",
+        description:
+          "Weekly velocity reports, burndown tracking, and direct sprint reviews led by an experienced Scrum lead.",
+      },
+      {
+        icon: "Users",
+        title: "Seamless toolchain integration",
+        description:
+          "Pods integrate directly into your Jira, Slack, GitHub/GitLab, and cloud environments as extended team members.",
+      },
+      {
+        icon: "RefreshCw",
+        title: "Flexible elastic scaling",
+        description:
+          "Scale pod capacity up or down with 30-day notice as project phases and feature priorities evolve.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Architecture & pod scoping",
+        duration: "Day 0–2",
+        description:
+          "Define project deliverables, architectural blueprint, team composition, and integration requirements.",
+      },
+      {
+        step: "02",
+        title: "Pod assembly & match",
+        duration: "Day 3–4",
+        description:
+          "Select pre-vetted engineers and technical lead with proven domain experience on your tech stack.",
+      },
+      {
+        step: "03",
+        title: "Environment & onboarding",
+        duration: "Day 5–6",
+        description:
+          "Setup code repositories, access credentials, secure workspaces, and communication channels.",
+      },
+      {
+        step: "04",
+        title: "Sprint 0 & ongoing execution",
+        duration: "Day 7+",
+        description:
+          "Execute Sprint 0 kickoff, begin feature delivery, and maintain weekly stakeholder velocity reporting.",
+      },
+    ],
+    benefits: [
+      {
+        value: "7 days",
+        label: "Deployment speed",
+        description: "Launch complex engineering initiatives weeks faster than conventional hiring allows.",
+      },
+      {
+        value: "100%",
+        label: "Full IP transfer",
+        description: "Zero IP encumbrance — all code and technical artifacts belong entirely to your company.",
+      },
+      {
+        value: "35%",
+        label: "Operational savings",
+        description: "Lower overhead compared to traditional systems integrators or internal team expansion.",
+      },
+      {
+        value: "Zero",
+        label: "Management overhead",
+        description: "Our dedicated delivery leads handle scrum ceremonies, sprint tracking, and HR admin.",
+      },
+    ],
+    faqs: [
+      {
+        q: "What roles typically make up an on-demand pod?",
+        a: "A typical pod consists of a Technical Lead/Architect, 2–4 Full-Stack or Backend Engineers, a Frontend/Mobile Engineer, a QA Automation Engineer, and an optional Scrum/Delivery Manager.",
+      },
+      {
+        q: "How do pods coordinate with our in-house engineering team?",
+        a: "Pods attend your daily standups, follow your PR review guidelines, write code directly in your repos, and participate in your regular planning and retrospective rituals.",
+      },
+      {
+        q: "What happens if a pod member needs to be swapped out?",
+        a: "We provide seamless replacement within 5 business days at zero overlap cost, including knowledge transfer managed by our delivery lead.",
+      },
+      {
+        q: "Can we hire deployed pod members as permanent employees?",
+        a: "Yes. We offer transparent conversion pathways for clients who wish to transition deployed contractors into full-time staff.",
+      },
+      {
+        q: "How is billing structured for deployed talent pods?",
+        a: "Billing is structured as a transparent monthly sprint retainer based on pod size and seniority, with no hidden platform fees.",
+      },
+    ],
+    ctaKicker: "Ready to scale your engineering velocity?",
+    ctaTitle: "Deploy a dedicated engineering pod in 7 days",
+  },
+
+  // ─────────────── Scale Workforce (Employer) ───────────────
+
+  "scale-workforce/workforce-management": {
+    groupSlug: "scale-workforce",
+    subSlug: "workforce-management",
+    heroEyebrow: "Scale Workforce · For Employers",
+    heroSubtitle:
+      "Complete workforce management from hiring to retention — one partner throughout the lifecycle.",
+    heroStats: [
+      {
+        value: "360°",
+        label: "Talent operations",
+        detail: "Sourcing, onboarding, payroll, performance, retention, and offboarding under one unified SLA.",
+      },
+      {
+        value: "99.9%",
+        label: "Statutory compliance",
+        detail: "Zero-penalty track record covering global labor laws, tax withholding, and benefit mandates.",
+      },
+      {
+        value: "35%",
+        label: "HR overhead reduction",
+        detail: "Consolidate multiple staffing vendors, payroll agencies, and contractors into one partnership.",
+      },
+    ],
+    overview: {
+      p1: "Scaling a distributed technical workforce across regions introduces complex operational friction — vendor proliferation, compliance exposure, fragmented onboarding, and inconsistent performance metrics. STIOOS Workforce Management provides an end-to-end operational operating system for modern distributed teams.",
+      p2: "We manage talent sourcing, contractor payroll, Employer of Record (EOR) services, benefits administration, hardware logistics, and continuous performance monitoring. You get a single transparent invoice, robust governance, and complete operational freedom to focus on your core product mission.",
+    },
+    capabilities: [
+      {
+        icon: "Users",
+        title: "Vendor consolidation",
+        description:
+          "Replace dozens of fragmented staffing agencies with a single consolidated management partner and contract.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Global Employer of Record (EOR)",
+        description:
+          "Hire legal contractors and full-time employees in 50+ countries without establishing local business entities.",
+      },
+      {
+        icon: "FileCheck",
+        title: "Statutory & tax compliance",
+        description:
+          "Automated handling of local labor laws, social security, provident funds, health coverage, and tax filings.",
+      },
+      {
+        icon: "Briefcase",
+        title: "IT hardware & asset logistics",
+        description:
+          "Zero-touch procurement, MDM provisioning, secure delivery, and recovery of laptops and peripheral assets.",
+      },
+      {
+        icon: "TrendingUp",
+        title: "Performance & bench retention",
+        description:
+          "Regular engagement check-ins, performance scorecards, and proactive retention programs that minimize churn.",
+      },
+      {
+        icon: "DollarSign",
+        title: "Transparent centralized billing",
+        description:
+          "One monthly consolidated invoice with transparent rate breakdowns, time tracking, and expense auditing.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Operations discovery",
+        duration: "Week 0",
+        description:
+          "Audit existing workforce composition, vendor agreements, compliance posture, and cost structures.",
+      },
+      {
+        step: "02",
+        title: "Transition & onboarding plan",
+        duration: "Week 1",
+        description:
+          "Build a structured migration timeline to re-badge or onboard existing contractors with zero operational downtime.",
+      },
+      {
+        step: "03",
+        title: "EOR & payroll transition",
+        duration: "Week 2–3",
+        description:
+          "Execute compliant contracts, configure payroll engines, and transition team members seamlessly.",
+      },
+      {
+        step: "04",
+        title: "Ongoing lifecycle management",
+        duration: "Ongoing",
+        description:
+          "Deliver automated payroll, monthly compliance audits, IT asset management, and dedicated account support.",
+      },
+    ],
+    benefits: [
+      {
+        value: "35%",
+        label: "Admin cost savings",
+        description: "Eliminate vendor markups and reduce internal HR and legal hours dedicated to contractor management.",
+      },
+      {
+        value: "Zero",
+        label: "Misclassification risk",
+        description: "Bulletproof contractor and EOR classifications safeguard your company against regulatory fines.",
+      },
+      {
+        value: "48h",
+        label: "Rapid employee onboarding",
+        description: "Onboard new team members across geographies with compliant contracts and equipment in 48 hours.",
+      },
+      {
+        value: "Single",
+        label: "Consolidated point of contact",
+        description: "A dedicated senior account director handles all operational queries, scaling requests, and escalations.",
+      },
+    ],
+    faqs: [
+      {
+        q: "What is an Employer of Record (EOR) service?",
+        a: "As your EOR, STIOOS legally employs workers on your behalf in regions where you do not have a registered legal entity, handling local payroll, benefits, and taxes while you direct their day-to-day work.",
+      },
+      {
+        q: "Can you transition our existing contractors onto your platform?",
+        a: "Yes. We offer painless transition programs that re-badge and consolidate existing freelancers and agency contractors with no disruption to ongoing project work.",
+      },
+      {
+        q: "How do you protect intellectual property across distributed teams?",
+        a: "All employment and contractor agreements include comprehensive, jurisdiction-specific IP assignment clauses, non-disclosure agreements, and strict data confidentiality protocols.",
+      },
+      {
+        q: "What countries do you support for international payroll?",
+        a: "We support compliant payroll and EOR operations across 50+ countries spanning North America, Europe, Latin America, and Asia-Pacific.",
+      },
+      {
+        q: "How does billing and invoicing work?",
+        a: "You receive a single, detailed monthly invoice in your preferred currency, summarizing approved timesheets, contractor costs, statutory fees, and asset expenses.",
+      },
+    ],
+    ctaKicker: "Ready to streamline your distributed operations?",
+    ctaTitle: "Simplify your workforce management with STIOOS",
+  },
+
+  "scale-workforce/talent-assessment-programs": {
+    groupSlug: "scale-workforce",
+    subSlug: "talent-assessment-programs",
+    heroEyebrow: "Scale Workforce · For Employers",
+    heroSubtitle:
+      "AI-powered assessments to evaluate technical skills, aptitude, and job readiness at scale.",
+    heroStats: [
+      {
+        value: "500+",
+        label: "Pre-built skill tests",
+        detail: "Standardized assessments across software engineering, AI, DevOps, data, and soft skills.",
+      },
+      {
+        value: "99.4%",
+        label: "Proctoring integrity",
+        detail: "AI-proctored environment with webcam monitoring, keystroke analysis, and plagiarism detection.",
+      },
+      {
+        value: "75%",
+        label: "Screening time saved",
+        detail: "Automate top-of-funnel technical screening and focus engineering interviews on verified talent.",
+      },
+    ],
+    overview: {
+      p1: "Evaluating technical candidates through self-reported resumes and basic coding quizzes leads to bad hires and wasted engineering hours. STIOOS Talent Assessment Programs delivers enterprise-grade, AI-proctored technical benchmarking that evaluates real problem-solving, architectural acumen, and code quality.",
+      p2: "Our assessment suite includes live coding playgrounds, full-stack take-home sandboxes, and behavioral aptitude evaluations. Detailed candidate scorecards provide granular benchmarks against national percentiles, giving hiring managers definitive data to make confident offers.",
+    },
+    capabilities: [
+      {
+        icon: "ClipboardCheck",
+        title: "AI-proctored coding sandboxes",
+        description:
+          "Real IDE environments supporting 40+ programming languages with automated test suite validation.",
+      },
+      {
+        icon: "Brain",
+        title: "Adaptive difficulty scoring",
+        description:
+          "Assessment questions adapt dynamically based on candidate performance to pinpoint exact skill boundaries.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Anti-cheating & plagiarism defense",
+        description:
+          "Advanced webcam proctoring, dual-screen detection, ChatGPT/AI copy-paste flags, and syntax tree comparisons.",
+      },
+      {
+        icon: "Target",
+        title: "Custom role-aligned benchmarks",
+        description:
+          "Tailor test questions to mirror your specific production bugs, architectural decisions, and APIs.",
+      },
+      {
+        icon: "TrendingUp",
+        title: "Comparative candidate analytics",
+        description:
+          "Benchmark applicants against 500,000+ historical assessments with percentile rankings and skill heatmaps.",
+      },
+      {
+        icon: "Layers",
+        title: "Seamless ATS integration",
+        description:
+          "Integrates directly with Greenhouse, Lever, Ashby, Workday, and standard enterprise applicant tracking systems.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Assessment design",
+        duration: "Day 0",
+        description:
+          "Select from pre-built question libraries or co-create custom coding challenges tailored to your role.",
+      },
+      {
+        step: "02",
+        title: "Candidate invitation",
+        duration: "Automated",
+        description:
+          "Invite candidates via automated ATS triggers or direct email links with flexible completion deadlines.",
+      },
+      {
+        step: "03",
+        title: "Proctored execution",
+        duration: "45–90 min",
+        description:
+          "Candidates complete interactive coding challenges under secure AI-proctored conditions.",
+      },
+      {
+        step: "04",
+        title: "Instant scorecard delivery",
+        duration: "Real-time",
+        description:
+          "Receive automated reports detailing code efficiency, edge-case coverage, code style, and proctoring integrity.",
+      },
+    ],
+    benefits: [
+      {
+        value: "75%",
+        label: "Engineering time saved",
+        description: "Eliminate low-signal initial technical phone screens conducted by expensive senior developers.",
+      },
+      {
+        value: "0%",
+        label: "AI cheating vulnerability",
+        description: "Advanced proctoring algorithms detect automated code generators and copy-pasted LLM outputs.",
+      },
+      {
+        value: "3x",
+        label: "Hiring velocity",
+        description: "Automatically advance qualified test-takers directly to final team interviews in minutes.",
+      },
+      {
+        value: "Objective",
+        label: "Unbiased hiring data",
+        description: "Standardized scoring rubrics remove unconscious bias and promote meritocratic hiring decisions.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How do your assessments prevent candidates from using ChatGPT or AI tools?",
+        a: "Our testing sandbox features browser lockouts, disabled copy-paste, webcam gaze tracking, keystroke pattern verification, and an AI detector that compares code structure against known LLM output models.",
+      },
+      {
+        q: "Can we create our own custom coding challenges?",
+        a: "Yes! You can author private challenges, upload your own test cases and starter repos, or customize existing library questions.",
+      },
+      {
+        q: "What programming languages and frameworks are supported?",
+        a: "We support over 40 languages including JavaScript/TypeScript, Python, Java, C++, Go, Rust, C#, PHP, Ruby, SQL, and modern frameworks like React, Next.js, and Django.",
+      },
+      {
+        q: "How does the ATS integration work?",
+        a: "Our integrations automatically trigger assessment invites when a candidate enters a specific ATS stage and pushes completed scores and reports back into the candidate profile.",
+      },
+      {
+        q: "Can assessments be used for internal employee skill evaluations?",
+        a: "Yes. Many enterprise clients use our platform for internal technical reviews, annual promotion evaluations, and training gap identification.",
+      },
+    ],
+    ctaKicker: "Ready to upgrade your technical screening?",
+    ctaTitle: "Deploy AI-proctored assessments today",
+  },
+
+  "scale-workforce/placement-services": {
+    groupSlug: "scale-workforce",
+    subSlug: "placement-services",
+    heroEyebrow: "Scale Workforce · For Employers",
+    heroSubtitle:
+      "Dedicated placement cell connecting your trained talent with hiring employers across industries.",
+    heroStats: [
+      {
+        value: "500+",
+        label: "Hiring enterprise partners",
+        detail: "Active network of tech unicorns, Fortune 500 enterprises, and fast-growing startups.",
+      },
+      {
+        value: "92%",
+        label: "60-day placement rate",
+        detail: "Trained candidates placed into verified full-time positions within two months of graduation.",
+      },
+      {
+        value: "90-day",
+        label: "Replacement guarantee",
+        detail: "Full replacement warranty backing every placement made through our corporate network.",
+      },
+    ],
+    overview: {
+      p1: "Connecting qualified technical talent with the right enterprise opportunities requires more than a job board. STIOOS Placement Services operates a dedicated, high-touch placement cell that bridges trained, verified candidates with active engineering demand across 500+ hiring organizations.",
+      p2: "We manage the entire placement lifecycle: role matching, interview scheduling, compensation alignment, background verification, and initial onboarding support. For candidates, we offer guaranteed interview pipelines; for employers, we provide a constant flow of job-ready talent with verified technical track records.",
+    },
+    capabilities: [
+      {
+        icon: "TrendingUp",
+        title: "Enterprise placement cell",
+        description:
+          "Dedicated placement managers actively pitch verified candidate portfolios directly to hiring engineering VPs.",
+      },
+      {
+        icon: "Target",
+        title: "Precision match scoring",
+        description:
+          "AI matching engine aligns candidate skill profiles, compensation expectations, and culture preferences with open JDs.",
+      },
+      {
+        icon: "Users",
+        title: "Mock interview masterclasses",
+        description:
+          "Rigorous technical and behavioral interview preparation customized to the specific interview styles of target employers.",
+      },
+      {
+        icon: "Briefcase",
+        title: "Campus & institutional tie-ups",
+        description:
+          "Comprehensive placement drives connecting university cohorts and bootcamp graduates with corporate hiring teams.",
+      },
+      {
+        icon: "FileCheck",
+        title: "Offer & documentation management",
+        description:
+          "End-to-end handling of offer letters, negotiation advisory, background verification, and joining logistics.",
+      },
+      {
+        icon: "ShieldCheck",
+        title: "Post-joining onboarding support",
+        description:
+          "90-day check-in cadence ensuring candidates ramp effectively and resolve early operational challenges.",
+      },
+    ],
+    process: [
+      {
+        step: "01",
+        title: "Talent verification & profile lock",
+        duration: "Day 0",
+        description:
+          "Validate assessment scores, capstone projects, and candidate availability into a verified talent profile.",
+      },
+      {
+        step: "02",
+        title: "Enterprise matching & pitches",
+        duration: "Day 1–7",
+        description:
+          "Placement managers share vetted candidate dossiers with hiring managers across relevant open roles.",
+      },
+      {
+        step: "03",
+        title: "Interview coordination",
+        duration: "Day 8–20",
+        description:
+          "Coordinate multi-stage interviews, debrief candidates, and communicate real-time employer feedback.",
+      },
+      {
+        step: "04",
+        title: "Offer rollout & onboarding",
+        duration: "Day 21–30",
+        description:
+          "Finalize formal offer letters, align start dates, and oversee joining formalities with 90-day warranty.",
+      },
+    ],
+    benefits: [
+      {
+        value: "92%",
+        label: "Placement success rate",
+        description: "Over nine out of ten qualified graduates secure confirmed full-time offers within 60 days.",
+      },
+      {
+        value: "500+",
+        label: "Active hiring partners",
+        description: "Direct relationship with leading engineering organizations across North America, Europe, and Asia.",
+      },
+      {
+        value: "48h",
+        label: "Shortlist turnaround",
+        description: "Hiring partners receive curated candidate slates within 48 hours of posting requirements.",
+      },
+      {
+        value: "90-day",
+        label: "Replacement protection",
+        description: "Risk-free hiring terms with free candidate replacement if a placement exits within three months.",
+      },
+    ],
+    faqs: [
+      {
+        q: "How does STIOOS Placement Services work for hiring companies?",
+        a: "Hiring companies share their open role requirements with our placement cell. We deliver pre-screened, interview-ready candidate dossiers within 48 hours on a pay-after-join basis.",
+      },
+      {
+        q: "What industries do your placement partners represent?",
+        a: "Our network spans software SaaS, fintech, healthcare tech, ecommerce, automotive, consulting, and AI technology firms.",
+      },
+      {
+        q: "Are candidates available for both remote and on-site roles?",
+        a: "Yes. Our talent pool includes professionals open to fully remote, hybrid, or on-site relocation based on your company preferences.",
+      },
+      {
+        q: "What guarantees do you offer employers?",
+        a: "Every hire made through STIOOS Placement Services includes a 90-day replacement guarantee backed by written contract terms.",
+      },
+      {
+        q: "How can academic institutions or bootcamps partner with STIOOS?",
+        a: "We offer institutional placement partnerships where we act as the dedicated placement cell for graduating cohorts, connecting students directly to employer demand.",
+      },
+    ],
+    ctaKicker: "Looking to hire verified talent or place a cohort?",
+    ctaTitle: "Connect with our placement team today",
+  },
 };
 
 // ============================================================
@@ -1644,6 +2939,102 @@ export const CANDIDATE_AUDIENCES: Record<string, CandidateAudience[]> = {
       ctaHref: "/contact",
     },
   ],
+  "build-talent": [
+    {
+      icon: "GraduationCap",
+      kicker: "For Engineering Leaders",
+      title: "Co-design your talent pipeline",
+      description:
+        "Sponsor custom cohorts trained on your exact stack, architecture, and coding conventions — graduates arrive as contributors, not novices.",
+      bullets: [
+        "Curricula co-designed around your production stack and tools",
+        "Daily mentor pairing and weekly code review checkpoints",
+        "Client-specific capstone defended to your engineering panel",
+        "Pay-after-join model with 90-day replacement warranty",
+      ],
+      ctaLabel: "Sponsor a cohort",
+      ctaHref: "/contact",
+    },
+    {
+      icon: "Building2",
+      kicker: "For Enterprise L&D",
+      title: "Upskill internal engineering teams",
+      description:
+        "Practical sprint-based training across Generative AI, cloud-native architecture, and DevOps that drives immediate internal mobility.",
+      bullets: [
+        "Interactive mentor-led sprints and cloud sandbox labs",
+        "Capstone projects solving real internal engineering problems",
+        "Objective skills benchmarking before and after training",
+        "Flexible scheduling designed around sprint commitments",
+      ],
+      ctaLabel: "Plan corporate training",
+      ctaHref: "/contact",
+    },
+  ],
+  "hire-talent": [
+    {
+      icon: "Briefcase",
+      kicker: "For Hiring Managers",
+      title: "Tap pre-vetted engineering talent",
+      description:
+        "Access a 2M+ candidate pool with shortlists delivered in 48 hours — technical screening, code verification, and background checks pre-completed.",
+      bullets: [
+        "48-hour shortlists with AI-matched, verified candidates",
+        "Contract, permanent, and contract-to-hire engagement models",
+        "Full statutory compliance and payroll handled via EOR",
+        "90-day no-questions-asked replacement guarantee",
+      ],
+      ctaLabel: "Request a shortlist",
+      ctaHref: "/contact",
+    },
+    {
+      icon: "Building2",
+      kicker: "For Scaling Companies",
+      title: "Deploy on-demand engineering pods",
+      description:
+        "Turnkey multi-disciplinary squads deployed in 7 days to accelerate product roadmap delivery with dedicated delivery management.",
+      bullets: [
+        "Fully equipped teams of 3 to 12 experienced engineers",
+        "Seamless integration into your Jira, GitHub, and Slack workflows",
+        "Weekly velocity reporting and transparent milestone tracking",
+        "100% intellectual property ownership transferred immediately",
+      ],
+      ctaLabel: "Deploy a talent pod",
+      ctaHref: "/contact",
+    },
+  ],
+  "scale-workforce": [
+    {
+      icon: "TrendingUp",
+      kicker: "For Operations Leaders",
+      title: "End-to-end workforce operations",
+      description:
+        "Consolidate contractor management, global EOR, payroll, compliance, and IT logistics under a single trusted operating partner.",
+      bullets: [
+        "Single consolidated invoice across all global contractors",
+        "Compliant payroll and EOR operations in 50+ countries",
+        "Zero-touch laptop procurement, MDM, and asset retrieval",
+        "Bulletproof protection against worker misclassification",
+      ],
+      ctaLabel: "Consolidate workforce",
+      ctaHref: "/contact",
+    },
+    {
+      icon: "Building2",
+      kicker: "For Talent Acquisition",
+      title: "AI-proctored skills assessment",
+      description:
+        "Standardize technical screening across 500+ skill tracks with automated test sandboxes and anti-cheating proctoring.",
+      bullets: [
+        "AI-proctored code execution supporting 40+ languages",
+        "Plagiarism and ChatGPT detection algorithms built in",
+        "Automated candidate scorecards integrated into your ATS",
+        "Eliminate low-signal initial technical phone screens",
+      ],
+      ctaLabel: "Explore assessments",
+      ctaHref: "/contact",
+    },
+  ],
 };
 
 // ============================================================
@@ -1664,12 +3055,15 @@ export function findCandidateSubPage(
   return { group, subPage, content };
 }
 
-/** The 3 group icons (kept here so the page file doesn't need
+/** The 6 group icons (kept here so the page file doesn't need
  *  to import them individually). */
 export const GROUP_ICONS: Record<string, LucideIcon> = {
   "get-trained": GraduationCap,
   "get-placed": Briefcase,
   "get-certified": Award,
+  "build-talent": Users,
+  "hire-talent": UserCheck,
+  "scale-workforce": TrendingUp,
 };
 
 /** Override the sub-page icon for the hero tile (the strip icon
@@ -1685,4 +3079,13 @@ export const SUB_PAGE_ICONS: Record<string, LucideIcon> = {
   "skills-assessment": ClipboardCheck,
   "industry-certifications": Award,
   "career-portfolio": TrendingUp,
+  "train-to-hire-cohorts": GraduationCap,
+  "hire-to-train-programs": UserCheck,
+  "corporate-training-programs": Award,
+  "staffing-solutions": Briefcase,
+  "talent-sourcing-recruitment": Target,
+  "talent-deployment": Layers,
+  "workforce-management": Users,
+  "talent-assessment-programs": ClipboardCheck,
+  "placement-services": TrendingUp,
 };

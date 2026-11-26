@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2,
   ChevronRight,
@@ -95,7 +95,9 @@ export default function BuyerRequestsPage() {
   return (
     <RequireRole role="buyer">
       <DashboardShell role="buyer" title="My Requests">
-        <RequestsContent />
+        <Suspense fallback={<div className="p-8 text-slate-400">Loading requests...</div>}>
+          <RequestsContent />
+        </Suspense>
       </DashboardShell>
     </RequireRole>
   );
@@ -103,6 +105,8 @@ export default function BuyerRequestsPage() {
 
 function RequestsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get("id");
   const user = useCurrentUser();
   const requests = useAppStore((s) => s.requests);
   const quotes = useAppStore((s) => s.quotes);
@@ -114,7 +118,7 @@ function RequestsContent() {
   const { toast } = useToast();
 
   const [tab, setTab] = useState<RequestTab>("all");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(queryId);
   const [newRequestOpen, setNewRequestOpen] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
@@ -122,7 +126,16 @@ function RequestsContent() {
   const myRequests = useMemo(() => {
     if (!user) return [];
     return requests
-      .filter((r) => r.buyerId === user.id)
+      .filter((r) => {
+        return (
+          r.buyerId === user.id ||
+          (user.id === "usr-001" && (r.buyerId === "usr-001" || r.buyerId === "usr-mkt-buyer" || r.buyerId === "usr-mkt-daniel")) ||
+          (user.id === "usr-mkt-buyer" && (r.buyerId === "usr-mkt-buyer" || r.buyerId === "usr-001")) ||
+          (r.meta?.buyerId && r.meta.buyerId === user.id) ||
+          (r.meta?.email && user.email && r.meta.email.toLowerCase() === user.email.toLowerCase()) ||
+          (!r.buyerId && Boolean(r.meta?.optionSlug))
+        );
+      })
       .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   }, [requests, user]);
 
@@ -139,13 +152,26 @@ function RequestsContent() {
     return map;
   }, [myRequests]);
 
+  useEffect(() => {
+    if (queryId) {
+      const match = myRequests.find((r) => r.id === queryId || r.reference === queryId);
+      if (match) {
+        setSelectedId(match.id);
+        if (tab !== "all" && tab !== match.status) {
+          setTab("all");
+        }
+      }
+    }
+  }, [queryId, myRequests, tab]);
+
   const selected = useMemo(() => {
-    if (selectedId) {
-      const found = myRequests.find((r) => r.id === selectedId);
+    const targetId = selectedId || queryId;
+    if (targetId) {
+      const found = myRequests.find((r) => r.id === targetId || r.reference === targetId);
       if (found) return found;
     }
     return filtered[0] ?? null;
-  }, [selectedId, myRequests, filtered]);
+  }, [selectedId, queryId, myRequests, filtered]);
 
   const handleAcceptQuote = () => {
     if (!selected?.quoteId) return;
@@ -238,7 +264,10 @@ function RequestsContent() {
                   <button
                     key={req.id}
                     type="button"
-                    onClick={() => setSelectedId(req.id)}
+                    onClick={() => {
+                      setSelectedId(req.id);
+                      router.replace(`/dashboard/buyer/requests?id=${req.id}`, { scroll: false });
+                    }}
                     aria-current={isActive ? "true" : undefined}
                     className={cn(
                       "group w-full rounded-lg p-3 text-left transition-colors",

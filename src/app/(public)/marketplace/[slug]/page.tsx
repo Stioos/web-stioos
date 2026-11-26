@@ -602,7 +602,7 @@ export default function ServiceDetailPage() {
                       onClick={() => openHeroLead("quote")}
                       className="h-11 w-full rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 hover:bg-amber-400"
                     >
-                      {heroCtaPrimary || "Get a Quote"}
+                      {heroCtaPrimary || "Get Started"}
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </Button>
                     <Button

@@ -18,7 +18,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "talent built to your spec",
     subtitle:
       "We source high-potential candidates, train them on your exact stack and processes, then deliver job-ready professionals who join your team from day one.",
-    primaryCta: { label: "Build my talent pipeline", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Talk to a talent expert", href: "/contact" },
     heroStats: [
       { value: "8–12 wks", label: "Ready-to-join" },
@@ -318,7 +318,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "we train the skills on the job",
     subtitle:
       "Hire promising candidates on aptitude and attitude first, then STIOOS trains them on the job — your stack, your processes, your standards — into the exact role you need filled.",
-    primaryCta: { label: "Hire & start training", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Explore all talent services", href: "/talent-solutions" },
     heroStats: [
       { value: "2–3 wks", label: "Offer to onboard" },
@@ -618,7 +618,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "a workforce ready for what's next",
     subtitle:
       "Custom curricula and cohort programs that upskill hundreds or thousands of existing employees at once — technology, data, AI and leadership tracks with L&D ROI you can actually measure.",
-    primaryCta: { label: "Plan a program", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Browse L&D resources", href: "/resources" },
     heroStats: [
       { value: "28,000+", label: "Employees upskilled" },
@@ -918,7 +918,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "our AI finds them in 48 hours",
     subtitle:
       "AI-powered sourcing across a 2M+ verified candidate pool surfaces your next hire in days, not months — direct-hire recruitment with shortlists in 48 hours and pay-after-join pricing.",
-    primaryCta: { label: "Send a role brief", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Explore staffing options", href: "/talent-solutions#staffing-solutions" },
     heroStats: [
       { value: "48h", label: "To first shortlist" },
@@ -1218,7 +1218,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "scale up or down in days",
     subtitle:
       "Contract, project-based and on-demand pods of pre-vetted professionals plug into your teams fast — and flex down just as fast when priorities shift. One bench, one invoice, zero admin.",
-    primaryCta: { label: "Staff my pod", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Compare all engagement models", href: "/talent-solutions#staffing-solutions" },
     heroStats: [
       { value: "5 days", label: "Avg. to kickoff" },
@@ -1518,7 +1518,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "one accountable partner",
     subtitle:
       "Planning, hiring, onboarding, management, retention and analytics — an end-to-end operating partner for the workforce decisions that used to live in six different vendors.",
-    primaryCta: { label: "Map my workforce", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Why one partner", href: "/about" },
     heroStats: [
       { value: "6→1", label: "Vendors consolidated" },
@@ -1818,7 +1818,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "proctored, verifiable, instant",
     subtitle:
       "AI-powered assessments of technical skill, aptitude, communication and job-readiness — proctored, anti-cheat and verifiable. Employers hire on evidence; candidates prove skills no CV can show.",
-    primaryCta: { label: "Assess my candidates", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Prove your skills", href: "/talent-solutions#placements" },
     heroStats: [
       { value: "1.4M", label: "Assessments taken" },
@@ -2118,7 +2118,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "48h shortlists, guarantees in writing",
     subtitle:
       "Contract, contract-to-hire, permanent and project-based staffing from one bench — AI-matched shortlists in 48 hours, compliance handled end to end and a 90-day replacement guarantee on every placement.",
-    primaryCta: { label: "Send my requirement", href: "/contact" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "See placement services", href: "/talent-solutions#placements" },
     heroStats: [
       { value: "48h", label: "To shortlist" },
@@ -2418,7 +2418,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "one placement engine",
     subtitle:
       "Job seekers get matched into live roles by AI that reads verified skills; employers get placement-ready talent from a pipeline that's already been trained, assessed and vetted. Both sides win faster.",
-    primaryCta: { label: "Find my next role", href: "/talent-solutions#placements" },
+    primaryCta: { label: "Apply Now", href: "/contact" },
     secondaryCta: { label: "Hire placement-ready talent", href: "/contact" },
     heroStats: [
       { value: "9,300+", label: "Placements to date" },

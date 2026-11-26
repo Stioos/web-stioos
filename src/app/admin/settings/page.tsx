@@ -436,7 +436,7 @@ function MarketplacePanel() {
       // Trim CTA labels; a blank can never render an empty button.
       const safe: MarketplaceSettings = {
         ...draft,
-        heroCtaPrimary: draft.heroCtaPrimary.trim() || "Get a Quote",
+        heroCtaPrimary: draft.heroCtaPrimary.trim() || "Get Started",
         heroCtaSecondary: draft.heroCtaSecondary.trim() || "Schedule Consultation",
         cardCtaPrimary: draft.cardCtaPrimary.trim() || "Request Service",
         cardCtaSecondary: draft.cardCtaSecondary.trim() || "Contact an Expert",
@@ -534,7 +534,7 @@ function MarketplacePanel() {
                 className="mt-1.5"
                 value={draft.heroCtaPrimary}
                 onChange={(e) => setDraft((d) => ({ ...d, heroCtaPrimary: e.target.value }))}
-                placeholder="Get a Quote"
+                placeholder="Get Started"
               />
             </div>
             <div>

@@ -130,9 +130,12 @@ export function DashboardShell({
                 <div className="flex-1 overflow-y-auto p-4">
                   <nav aria-label="Buyer workspace navigation" className="flex flex-col gap-1">
                     {BUYER_NAV.map((item) => {
+                      const isTalentSolutions =
+                        item.href === "/dashboard/buyer/talent-solutions" &&
+                        (pathname === "/dashboard/buyer/talent-solutions" || pathname.startsWith("/dashboard/buyer/talent-"));
                       const active = item.marketplace
                         ? marketplaceOpen
-                        : !marketplaceOpen && pathname === item.href;
+                        : !marketplaceOpen && (pathname === item.href || isTalentSolutions);
                       if (item.marketplace) {
                         return (
                           <button
@@ -204,9 +207,12 @@ export function DashboardShell({
           >
             <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto">
               {BUYER_NAV.map((item) => {
+                const isTalentSolutions =
+                  item.href === "/dashboard/buyer/talent-solutions" &&
+                  (pathname === "/dashboard/buyer/talent-solutions" || pathname.startsWith("/dashboard/buyer/talent-"));
                 const active = item.marketplace
                   ? marketplaceOpen
-                  : !marketplaceOpen && pathname === item.href;
+                  : !marketplaceOpen && (pathname === item.href || isTalentSolutions);
                 if (item.marketplace) {
                   return (
                     <button

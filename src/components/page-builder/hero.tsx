@@ -13,6 +13,7 @@ import { TALENT_STRIP_OPTIONS } from "@/data/talent-solutions";
 import { ACCENT } from "./accents";
 import { Reveal } from "@/components/motion/reveal";
 import { Icon } from "@/components/shared/icon";
+import { TalentCtaGroup } from "@/components/talent/talent-cta-group";
 
 // ============================================================
 // PAGE BUILDER HERO — mirrors the service detail page hero
@@ -23,7 +24,7 @@ import { Icon } from "@/components/shared/icon";
 //     subtitle + tags + 4-cell stats row + engaging description
 //   • Right column (1fr): Live Impact Signal panel (donut gauge +
 //     KPI before→after cards + progress bars + score badge + quote)
-//     + 3 CTAs (primary + Get a Quote + Schedule Consultation)
+//     + 3 CTAs (primary + Get Started + Schedule Consultation)
 //
 // All data is pulled from the PageSpec so each talent option page
 // shows its own metrics. CTAs stay talent-solutions-related
@@ -461,36 +462,46 @@ export function HeroSection({ spec }: { spec: PageSpec }) {
 
                 {/* CTAs — 3 buttons matching the service detail hero */}
                 <Reveal delay={0.28}>
-                  <div className="mt-4 grid gap-2.5">
-                    {/* Primary CTA — full width */}
-                    <Link
-                      href={spec.primaryCta.href}
-                      className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
-                    >
-                      {spec.primaryCta.label}
-                      <ArrowRight
-                        className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                        aria-hidden="true"
+                  {spec.group === "talent" ? (
+                    <div className="mt-4">
+                      <TalentCtaGroup
+                        optionSlug={spec.slug}
+                        groupSlug="talent-solutions"
+                        variant="hero"
                       />
-                    </Link>
-
-                    {/* Two CTAs — single line, equal width */}
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <Link
-                        href={spec.secondaryCta.href}
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
-                      >
-                        Get a Quote
-                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                      </Link>
-                      <Link
-                        href="/contact"
-                        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] font-semibold text-white transition-colors hover:bg-white/10"
-                      >
-                        Schedule Consultation
-                      </Link>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mt-4 grid gap-2.5">
+                      {/* Primary CTA — full width */}
+                      <Link
+                        href={spec.primaryCta.href}
+                        className="group inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
+                      >
+                        {spec.primaryCta.label}
+                        <ArrowRight
+                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                          aria-hidden="true"
+                        />
+                      </Link>
+
+                      {/* Two CTAs — single line, equal width */}
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <Link
+                          href={spec.secondaryCta.href}
+                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-amber-500 font-semibold text-brand-ink shadow-[0_0_24px_-8px] shadow-amber-500/60 transition-colors hover:bg-amber-400"
+                        >
+                          Get Started
+                          <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        </Link>
+                        <Link
+                          href="/contact"
+                          className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] font-semibold text-white transition-colors hover:bg-white/10"
+                        >
+                          Schedule Consultation
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </Reveal>
 
                 {/* Trust reinforcement */}

@@ -154,6 +154,7 @@ interface AppState {
     kind?: RequestKind;
     meta?: Record<string, string>;
   }) => MarketRequest;
+  deleteMarketRequest: (requestId: ID) => void;
   updateMarketRequestStatus: (requestId: ID, status: MarketRequestStatus, note?: string) => void;
   /** Converts an reviewed/active request into a marketplace order (admin action). */
   convertRequestToOrder: (
@@ -612,7 +613,7 @@ export const useAppStore = create<AppState>()(
         defaultSort: "relevance",
         autoApproveServices: false,
         featuredSlots: 8,
-        heroCtaPrimary: "Get a Quote",
+        heroCtaPrimary: "Get Started",
         heroCtaSecondary: "Schedule Consultation",
         cardCtaPrimary: "Request Service",
         cardCtaSecondary: "Contact an Expert",
@@ -775,35 +776,47 @@ export const useAppStore = create<AppState>()(
       },
       addMarketRequest: ({ categoryId, categoryName, title, details, budgetRange, timeline, kind, meta }) => {
         const me = get().users.find((u) => u.id === get().currentUserId);
+        const buyerId = me?.id ?? (meta?.buyerId || "usr-mkt-buyer");
+        const buyerName = me?.name ?? meta?.name ?? "Meera Krishnan";
+        const buyerCompany = me?.company ?? meta?.company ?? "Northwind Retail Group";
+        const reqStatus = (meta?.status as MarketRequestStatus) || "in_progress";
+        const refCode = meta?.reference || newRequestReference();
+
         const request: MarketRequest = {
           id: uid("mr"),
-          buyerId: me?.id ?? "",
-          buyerName: me?.name ?? "Guest",
-          buyerCompany: me?.company ?? "",
+          buyerId,
+          buyerName,
+          buyerCompany,
           categoryId,
           categoryName,
           title: title.trim(),
           details: details.trim(),
           budgetRange,
           timeline,
-          status: "open",
+          status: reqStatus,
           createdAt: nowISO(),
           kind: kind ?? "service",
-          reference: newRequestReference(),
+          reference: refCode,
           meta: meta && Object.keys(meta).length > 0 ? meta : undefined,
           statusHistory: [
             {
-              status: "open",
+              status: reqStatus,
               at: nowISO(),
-              by: me?.name ?? "Guest",
-              note: kind && kind !== "service" ? "Request submitted from Talent Services" : "Request submitted",
+              by: buyerName,
+              note: kind && kind !== "service" ? "Request submitted from Talent Solutions" : "Request submitted",
             },
           ],
           orderId: null,
         };
         set((st) => ({ requests: [request, ...st.requests] }));
-        get().logActivity("created", "Marketplace Request", request.title, `New ${KIND_LABELS[request.kind ?? "service"]} request "${request.title}" (${request.reference}) from ${request.buyerName}.`);
+        get().logActivity("created", "Marketplace Request", request.title, `New ${KIND_LABELS[request.kind ?? "service"] || "Talent"} request "${request.title}" (${request.reference}) from ${request.buyerName}.`);
         return request;
+      },
+      deleteMarketRequest: (requestId) => {
+        const req = get().requests.find((r) => r.id === requestId);
+        set((st) => ({ requests: st.requests.filter((r) => r.id !== requestId) }));
+        if (req)
+          get().logActivity("deleted", "Marketplace Request", req.title, `Request "${req.title}" deleted.`);
       },
       updateMarketRequestStatus: (requestId, status, note) => {
         const actor =

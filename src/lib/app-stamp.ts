@@ -26,9 +26,9 @@ let inflight: Promise<string> | null = null;
 
 async function computeStamp(): Promise<string> {
   const roots = [
-    path.join(process.cwd(), "src"),
-    path.join(process.cwd(), "next.config.ts"),
-    path.join(process.cwd(), "package.json"),
+    path.join(/*turbopackIgnore: true*/ process.cwd(), "src"),
+    path.join(/*turbopackIgnore: true*/ process.cwd(), "next.config.ts"),
+    path.join(/*turbopackIgnore: true*/ process.cwd(), "package.json"),
   ];
   let maxMtime = 0;
   const stack: string[] = [];

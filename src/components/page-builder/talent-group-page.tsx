@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/motion/reveal";
 import { Icon } from "@/components/shared/icon";
+import { TalentCtaGroup } from "@/components/talent/talent-cta-group";
 import type { GroupPageContent } from "@/data/pages/talent-group-page-content";
 
 // ============================================================
@@ -325,18 +326,12 @@ export function TalentGroupPage({ content }: { content: GroupPageContent }) {
                   </div>
 
                   {/* 3 CTAs */}
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild size="sm" className="bg-amber-500 text-brand-ink hover:bg-amber-400">
-                      <Link href="/contact">
-                        Get Started <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </Button>
-                    <Button asChild size="sm" variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
-                      <Link href="/contact">Get a Quote</Link>
-                    </Button>
-                    <Button asChild size="sm" variant="ghost" className="text-slate-300 hover:bg-white/5 hover:text-white">
-                      <Link href="#faq">Schedule Consultation</Link>
-                    </Button>
+                  <div className="mt-4">
+                    <TalentCtaGroup
+                      optionSlug={content.slug}
+                      groupSlug="talent-solutions"
+                      variant="hero"
+                    />
                   </div>
 
                   {/* Trust footnote */}

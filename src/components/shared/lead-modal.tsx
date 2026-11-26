@@ -23,6 +23,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore, useCurrentUser } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { resolveLeadFormProfile } from "@/lib/lead-form-profiles";
 import {
   BuyerRegistrationForm,
   type BuyerRegistrationResult,
@@ -31,7 +32,7 @@ import type { InquiryType } from "@/types";
 
 // ============================================================
 // LEAD MODAL — fully functional conversion form behind the four
-// action-bar CTAs (Get A Quote / Enquiry / Consultation / Contact).
+// action-bar CTAs (Get Started / Enquiry / Consultation / Contact).
 // Visitor-entered data is captured through the app store
 // (addInquiry → persisted locally) and shows up instantly in
 // Admin → Inquiries, complete with the page/service context the
@@ -63,9 +64,9 @@ const LEAD_COPY: Record<
   { title: string; intro: string; submit: string; icon: typeof FileText; badgeClass: string }
 > = {
   quote: {
-    title: "Get A Quote",
+    title: "Get Started",
     intro: "Share a few details and receive a scoped, fixed-outline quote from a senior consultant.",
-    submit: "Request quote",
+    submit: "Get Started",
     icon: FileText,
     badgeClass: "bg-amber-500/15 text-amber-600 ring-amber-500/30 dark:text-amber-400",
   },
@@ -92,18 +93,6 @@ const LEAD_COPY: Record<
   },
 };
 
-const BUDGET_OPTIONS = [
-  "Under $5k",
-  "$5k–$10k",
-  "$10k–$15k",
-  "$15k–$30k",
-  "$30k–$50k",
-  "$50k+",
-  "Not sure yet",
-];
-
-const TIMELINE_OPTIONS = ["Immediate", "1–3 months", "3–6 months", "6–12 months", "Ongoing"];
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 interface FormState {
@@ -114,6 +103,7 @@ interface FormState {
   budgetRange: string;
   timeline: string;
   message: string;
+  customFields: Record<string, string>;
 }
 
 const INITIAL_FORM: FormState = {
@@ -124,9 +114,11 @@ const INITIAL_FORM: FormState = {
   budgetRange: "",
   timeline: "",
   message: "",
+  customFields: {},
 };
 
-type FormErrors = Partial<Record<"name" | "email" | "message", string>>;
+type FormErrors = Partial<Record<"name" | "email" | "message", string>> &
+  Record<string, string | undefined>;
 
 export function LeadModal({ open, onOpenChange, type, context, title }: LeadModalProps) {
   const copy = LEAD_COPY[type];
@@ -134,12 +126,11 @@ export function LeadModal({ open, onOpenChange, type, context, title }: LeadModa
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto bg-card sm:max-w-lg">
-        {/* Keyed by type so switching CTA remounts a fresh form; the whole
-            subtree unmounts on close, discarding visitor-entered state
-            without effect-based resets. */}
+        {/* Keyed by type + context so switching option or CTA remounts a fresh
+            option-tailored form; the whole subtree unmounts on close. */}
         {open && (
           <LeadForm
-            key={type}
+            key={`${type}::${context ?? ""}`}
             type={type}
             context={context}
             displayTitle={title || copy.title}
@@ -182,6 +173,7 @@ function LeadForm({
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
 
+  const profile = resolveLeadFormProfile(context);
   const Icon = copy.icon;
 
   /** registration step succeeded → sign-in happened inside the form;
@@ -205,11 +197,24 @@ function LeadForm({
     }
   };
 
+  const setCustomField = (id: string, value: string) => {
+    setForm((f) => ({
+      ...f,
+      customFields: { ...f.customFields, [id]: value },
+    }));
+    setErrors((e) => ({ ...e, [id]: undefined }));
+  };
+
   const validate = (): boolean => {
     const next: FormErrors = {};
     if (!form.name.trim()) next.name = "Please tell us your full name.";
     if (!form.email.trim()) next.email = "A work email is required so we can reply.";
     else if (!EMAIL_RE.test(form.email.trim())) next.email = "That email address doesn't look valid.";
+    for (const field of profile.fields) {
+      if (field.required && !form.customFields[field.id]?.trim()) {
+        next[field.id] = `Please select ${field.label.toLowerCase()}.`;
+      }
+    }
     if (!form.message.trim() || form.message.trim().length < 10)
       next.message = "Please add a few details (at least 10 characters).";
     setErrors(next);
@@ -220,6 +225,17 @@ function LeadForm({
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
+    const structuredAnswers = profile.fields
+      .map((field) => {
+        const val = form.customFields[field.id];
+        return val ? `${field.label}: ${val}` : null;
+      })
+      .filter(Boolean)
+      .join("\n");
+    const fullRequirements = structuredAnswers
+      ? `[${profile.badge}${context ? ` — ${context}` : ""}]\n${structuredAnswers}\n\nNotes:\n${form.message.trim()}`
+      : form.message.trim();
+
     window.setTimeout(() => {
       const inquiry = addInquiry({
         name: form.name.trim(),
@@ -228,7 +244,7 @@ function LeadForm({
         phone: form.phone.trim(),
         type,
         serviceName: context,
-        requirements: form.message.trim(),
+        requirements: fullRequirements,
         budgetRange: form.budgetRange || "Not specified",
         timeline: form.timeline || "Not specified",
       });
@@ -322,10 +338,17 @@ function LeadForm({
             <Icon className="h-5 w-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <DialogTitle className="text-lg">{displayTitle}</DialogTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <DialogTitle className="text-lg">{displayTitle}</DialogTitle>
+              {profile.key !== "general" && (
+                <span className="rounded-full border border-border bg-muted/60 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {profile.badge}
+                </span>
+              )}
+            </div>
             {context && (
               <p className="truncate text-xs font-medium text-muted-foreground">
-                {context}
+                {context} · {profile.subtitlePrefix}
               </p>
             )}
           </div>
@@ -383,13 +406,42 @@ function LeadForm({
               autoComplete="tel"
             />
           </Field>
-          <Field label="Budget range" htmlFor="lm-budget">
+          {profile.fields.map((field) => (
+            <Field
+              key={field.id}
+              label={field.label}
+              required={field.required}
+              error={errors[field.id]}
+              htmlFor={`lm-${field.id}`}
+            >
+              <Select
+                value={form.customFields[field.id] ?? ""}
+                onValueChange={(v) => setCustomField(field.id, v)}
+              >
+                <SelectTrigger
+                  id={`lm-${field.id}`}
+                  aria-invalid={!!errors[field.id]}
+                  className={cn("w-full", errors[field.id] && "border-destructive")}
+                >
+                  <SelectValue placeholder={field.placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {field.options.map((opt) => (
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          ))}
+          <Field label={profile.budgetLabel} htmlFor="lm-budget">
             <Select value={form.budgetRange} onValueChange={(v) => set("budgetRange", v)}>
               <SelectTrigger id="lm-budget" className="w-full">
                 <SelectValue placeholder="Select a range (optional)" />
               </SelectTrigger>
               <SelectContent>
-                {BUDGET_OPTIONS.map((b) => (
+                {profile.budgetOptions.map((b) => (
                   <SelectItem key={b} value={b}>
                     {b}
                   </SelectItem>
@@ -397,13 +449,13 @@ function LeadForm({
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Timeline" htmlFor="lm-timeline">
+          <Field label={profile.timelineLabel} htmlFor="lm-timeline">
             <Select value={form.timeline} onValueChange={(v) => set("timeline", v)}>
               <SelectTrigger id="lm-timeline" className="w-full">
                 <SelectValue placeholder="When do you want to start?" />
               </SelectTrigger>
               <SelectContent>
-                {TIMELINE_OPTIONS.map((t) => (
+                {profile.timelineOptions.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
                   </SelectItem>
@@ -412,12 +464,12 @@ function LeadForm({
             </Select>
           </Field>
           <div className="sm:col-span-2">
-            <Field label="What do you need?" required error={errors.message} htmlFor="lm-message">
+            <Field label={profile.messageLabel} required error={errors.message} htmlFor="lm-message">
               <Textarea
                 id="lm-message"
                 value={form.message}
                 onChange={(e) => set("message", e.target.value)}
-                placeholder="Describe your goals, current systems, and what success looks like…"
+                placeholder={profile.messagePlaceholder}
                 rows={4}
                 aria-invalid={!!errors.message}
                 className={errors.message ? "border-destructive" : undefined}

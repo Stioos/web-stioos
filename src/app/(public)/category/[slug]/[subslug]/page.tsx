@@ -659,7 +659,7 @@ export default function SubcategoryPage() {
           <div className="flex shrink-0 flex-wrap items-center gap-3">
             <Button asChild className="h-11 rounded-xl bg-amber-500 font-semibold text-brand-ink hover:bg-amber-400">
               <Link href="/contact">
-                Get A Quote
+                Get Started
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>

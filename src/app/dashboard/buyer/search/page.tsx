@@ -3,7 +3,7 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { RequireRole } from "@/components/dashboard/require-role";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { Search, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { getAllPublishedServices } from "@/lib/service-data";
@@ -14,7 +14,9 @@ export default function SearchPage() {
   return (
     <RequireRole role="buyer">
       <DashboardShell role="buyer" title="Search Results">
-        <SearchContent />
+        <Suspense fallback={<div className="p-8 text-slate-400">Loading search...</div>}>
+          <SearchContent />
+        </Suspense>
       </DashboardShell>
     </RequireRole>
   );
