@@ -78,17 +78,11 @@ export interface AdminNavGroup {
 
 export const ADMIN_NAV: AdminNavGroup[] = [
   {
-    label: "Overview",
-    items: [{ label: "Dashboard", href: "/admin", icon: "LayoutDashboard", module: "dashboard", exact: true }],
-  },
-  {
     label: "Marketplace",
     items: [
       { label: "Service Requests", href: "/admin/service-requests", icon: "ClipboardList", module: "marketplace" },
       { label: "Orders", href: "/admin/orders", icon: "Package", module: "orders" },
       { label: "Quotes", href: "/admin/quotes", icon: "FileText", module: "marketplace" },
-      { label: "Invoices", href: "/admin/invoices", icon: "Receipt", module: "marketplace" },
-      { label: "Transactions", href: "/admin/transactions", icon: "ArrowLeftRight", module: "marketplace" },
     ],
   },
   {
@@ -104,8 +98,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "Engagement",
     items: [
-      { label: "Inquiries", href: "/admin/inquiries", icon: "Inbox", module: "inquiries" },
-      { label: "CTA Console", href: "/admin/cta-transactions", icon: "Activity", module: "inquiries" },
       { label: "Users", href: "/admin/users", icon: "Users", module: "users" },
       { label: "Admins", href: "/admin/admins", icon: "ShieldCheck", module: "admins" },
       { label: "Roles", href: "/admin/roles", icon: "KeyRound", module: "roles" },
@@ -115,21 +107,13 @@ export const ADMIN_NAV: AdminNavGroup[] = [
   {
     label: "Content",
     items: [
-      { label: "Homepage", href: "/admin/content", icon: "LayoutTemplate", module: "homepage" },
-      { label: "Pages", href: "/admin/navigation", icon: "FileCode", module: "pages" },
       { label: "Industries", href: "/admin/industries", icon: "Building2", module: "industries" },
-      { label: "Insights", href: "/admin/insights", icon: "Newspaper", module: "insights" },
-      { label: "Resources", href: "/admin/resources", icon: "BookOpen", module: "resources" },
-      { label: "FAQs", href: "/admin/faqs", icon: "HelpCircle", module: "faqs" },
     ],
   },
   {
     label: "System",
     items: [
-      { label: "Branding", href: "/admin/branding", icon: "Palette", module: "branding" },
       { label: "Settings", href: "/admin/settings", icon: "Settings", module: "settings" },
-      { label: "Activity", href: "/admin/activity", icon: "History", module: "activity" },
-      { label: "Notifications", href: "/admin/notifications", icon: "Bell", module: "notifications" },
     ],
   },
 ];

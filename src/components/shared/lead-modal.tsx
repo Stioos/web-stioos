@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore, useCurrentUser } from "@/lib/store";
-import { requestsApi } from "@/lib/api-client";
+import { authApi, publicQuoteRequestsApi, requestsApi } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import {
   BuyerRegistrationForm,
@@ -175,6 +175,7 @@ function LeadForm({
 }) {
   const { toast } = useToast();
   const addInquiry = useAppStore((s) => s.addInquiry);
+  const addMarketRequest = useAppStore((s) => s.addMarketRequest);
   const requireRegistration = useAppStore((s) => s.marketplaceSettings.requireLeadRegistration);
   const currentUser = useCurrentUser();
 
@@ -232,10 +233,22 @@ function LeadForm({
     try {
       let serverReference: string | null = null;
 
+      // The dashboard keeps its demo session in the existing local store.
+      // Establish the matching API session when the account has credentials
+      // in the store, so protected request writes use the same buyer identity.
+      if (currentUser && !authApi.isLoggedIn() && currentUser.password) {
+        try {
+          await authApi.login(currentUser.email, currentUser.password);
+        } catch {
+          // Local-only/demo accounts continue through the existing local path.
+        }
+      }
+
       // Signed-in buyer quote requests use the existing request lifecycle API.
       // The local inquiry is still recorded below so the current dashboard
       // presentation and existing local behavior remain unchanged.
-      if (currentUser) {
+      const serverBacked = Boolean(currentUser && authApi.isLoggedIn());
+      if (serverBacked) {
         const result = await requestsApi.create({
           categoryId: "marketplace-service",
           categoryName: "Marketplace Service",
@@ -254,6 +267,43 @@ function LeadForm({
           },
         }) as { request?: { reference?: string } };
         serverReference = result.request?.reference ?? null;
+      } else {
+        const result = await publicQuoteRequestsApi.create({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          company: form.company.trim(),
+          phone: form.phone.trim(),
+          serviceName: context || displayTitle,
+          budgetRange: form.budgetRange || "Not specified",
+          timeline: form.timeline || "Not specified",
+          details: form.message.trim(),
+        });
+        serverReference = result.request?.reference ?? null;
+      }
+
+      // Keep the existing buyer and admin screens in sync immediately. The
+      // server record remains the source of truth; this mirrors the same
+      // lifecycle shape already used by the local request pipeline so the
+      // new request appears in both views without changing their structure.
+      if (currentUser) {
+        addMarketRequest({
+          categoryId: "marketplace-service",
+          categoryName: "Marketplace Service",
+          title: `${context || displayTitle} — quote request`,
+          details: form.message.trim(),
+          budgetRange: form.budgetRange || "Not specified",
+          timeline: form.timeline || "Not specified",
+          kind: "service",
+          reference: serverReference ?? undefined,
+          meta: {
+            source: "buyer-marketplace-quote",
+            serviceName: context || displayTitle,
+            contactName: form.name.trim(),
+            contactEmail: form.email.trim(),
+            company: form.company.trim(),
+            phone: form.phone.trim(),
+          },
+        });
       }
 
       const inquiry = addInquiry({
@@ -271,9 +321,9 @@ function LeadForm({
       setSubmitting(false);
       toast({
         title: `${displayTitle} — received`,
-        description: currentUser
+        description: serverBacked
           ? "Your request is now in the STIOOS service-request pipeline."
-          : "Our expert team will respond within one business day.",
+          : "Your request is now saved in the STIOOS service-request pipeline.",
       });
     } catch (error) {
       setSubmitting(false);

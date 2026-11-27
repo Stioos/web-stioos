@@ -153,6 +153,7 @@ interface AppState {
     timeline: string;
     kind?: RequestKind;
     meta?: Record<string, string>;
+    reference?: string;
   }) => MarketRequest;
   updateMarketRequestStatus: (requestId: ID, status: MarketRequestStatus, note?: string) => void;
   /** Converts an reviewed/active request into a marketplace order (admin action). */
@@ -773,7 +774,7 @@ export const useAppStore = create<AppState>()(
             `Order "${ord.serviceName}" (${ord.id}) marked ${status.replace("_", " ")} for ${ord.buyerName}.`
           );
       },
-      addMarketRequest: ({ categoryId, categoryName, title, details, budgetRange, timeline, kind, meta }) => {
+      addMarketRequest: ({ categoryId, categoryName, title, details, budgetRange, timeline, kind, meta, reference }) => {
         const me = get().users.find((u) => u.id === get().currentUserId);
         const request: MarketRequest = {
           id: uid("mr"),
@@ -789,7 +790,7 @@ export const useAppStore = create<AppState>()(
           status: "open",
           createdAt: nowISO(),
           kind: kind ?? "service",
-          reference: newRequestReference(),
+          reference: reference ?? newRequestReference(),
           meta: meta && Object.keys(meta).length > 0 ? meta : undefined,
           statusHistory: [
             {

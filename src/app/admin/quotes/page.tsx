@@ -2,18 +2,27 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, Plus } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { PageHeader, StatCard } from "@/components/shared/page-header";
 import {
   QuoteCard,
+  QuoteBuilderDialog,
   QuoteDetailSheet,
   QuoteStatusBadge,
 } from "@/components/dashboard/lifecycle/quote-invoice";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import type { Quote, QuoteStatus } from "@/types";
+import type { MarketRequest, Quote, QuoteStatus } from "@/types";
 
 type QuoteTab = "all" | QuoteStatus;
 
@@ -27,10 +36,19 @@ const TABS: { value: QuoteTab; label: string }[] = [
 ];
 
 export default function AdminQuotesPage() {
+  const router = useRouter();
   const quotes = useAppStore((s) => s.quotes);
   const requests = useAppStore((s) => s.requests);
+  const inquiries = useAppStore((s) => s.inquiries);
   const [tab, setTab] = useState<QuoteTab>("all");
   const [active, setActive] = useState<Quote | null>(null);
+  const [requestPickerOpen, setRequestPickerOpen] = useState(false);
+  const [builderRequest, setBuilderRequest] = useState<MarketRequest | null>(null);
+
+  const quoteRequests = useMemo(
+    () => inquiries.filter((inquiry) => inquiry.type === "quote"),
+    [inquiries]
+  );
 
   const sorted = useMemo(
     () =>
@@ -54,7 +72,19 @@ export default function AdminQuotesPage() {
   }, [sorted]);
 
   const tabCount = (t: QuoteTab) =>
-    t === "all" ? sorted.length : sorted.filter((q) => q.status === t).length;
+    t === "all"
+      ? sorted.length + quoteRequests.length
+      : sorted.filter((q) => q.status === t).length;
+
+  const showIncomingRequests = tab === "all" && quoteRequests.length > 0;
+  const quoteableRequests = useMemo(
+    () => requests.filter(
+      (request) =>
+        (request.status === "open" || request.status === "in_review") &&
+        !request.quoteId
+    ),
+    [requests]
+  );
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
@@ -62,10 +92,8 @@ export default function AdminQuotesPage() {
         title="Quotes"
         description="Every quote issued by the STIOOS team against buyer service requests. Track acceptance, decline reasons, and conversion to orders."
         actions={
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/service-requests">
-              <ExternalLink className="mr-1.5 h-4 w-4" /> Service Requests
-            </Link>
+          <Button variant="outline" size="sm" onClick={() => setRequestPickerOpen(true)}>
+            <Plus className="mr-1.5 h-4 w-4" /> Create Quote
           </Button>
         }
       />
@@ -100,7 +128,7 @@ export default function AdminQuotesPage() {
       </Tabs>
 
       <div className="mt-4">
-        {filtered.length === 0 ? (
+        {filtered.length === 0 && !showIncomingRequests ? (
           <div className="rounded-xl border border-dashed p-12 text-center">
             <p className="text-sm text-muted-foreground">
               No quotes in this view yet.
@@ -122,6 +150,48 @@ export default function AdminQuotesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y">
+                {showIncomingRequests && quoteRequests.map((inquiry) => (
+                  <tr
+                    key={inquiry.id}
+                    className="cursor-pointer bg-amber-500/[0.03] hover:bg-amber-500/[0.08]"
+                    onClick={() => router.push(`/admin/inquiries?focus=${inquiry.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        router.push(`/admin/inquiries?focus=${inquiry.id}`);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`View quote request from ${inquiry.name}`}
+                  >
+                    <td className="px-4 py-3 font-mono text-xs font-semibold text-foreground">
+                      {inquiry.id.toUpperCase()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-foreground">{inquiry.name}</p>
+                      <p className="text-xs text-muted-foreground">{inquiry.company || inquiry.email}</p>
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      <span className="font-medium text-foreground">
+                        {inquiry.serviceName || "Marketplace quote request"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {new Date(inquiry.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">—</td>
+                    <td className="px-4 py-3 text-right font-bold tabular-nums text-muted-foreground">—</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                        Awaiting review
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </td>
+                  </tr>
+                ))}
                 {filtered.map((q) => {
                   const req = requests.find((r) => r.id === q.requestId);
                   return (
@@ -182,6 +252,51 @@ export default function AdminQuotesPage() {
         quote={active}
         open={!!active}
         onOpenChange={(v) => { if (!v) setActive(null); }}
+      />
+
+      <Dialog open={requestPickerOpen} onOpenChange={setRequestPickerOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Create Quote</DialogTitle>
+            <DialogDescription>
+              Select an open service request to prepare its quote.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[55vh] space-y-2 overflow-y-auto">
+            {quoteableRequests.length === 0 ? (
+              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+                No open service requests are available for quoting.
+              </p>
+            ) : (
+              quoteableRequests.map((request) => (
+                <button
+                  key={request.id}
+                  type="button"
+                  className="w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
+                  onClick={() => {
+                    setRequestPickerOpen(false);
+                    setBuilderRequest(request);
+                  }}
+                >
+                  <span className="block text-sm font-semibold text-foreground">
+                    {request.title}
+                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {request.reference} · {request.buyerName} · {request.budgetRange || "Budget not specified"}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <QuoteBuilderDialog
+        open={!!builderRequest}
+        onOpenChange={(open) => { if (!open) setBuilderRequest(null); }}
+        requestId={builderRequest?.id ?? ""}
+        requestTitle={builderRequest?.title ?? ""}
+        buyerName={builderRequest?.buyerName ?? ""}
       />
     </div>
   );

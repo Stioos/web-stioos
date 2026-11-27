@@ -257,6 +257,25 @@ export const requestsApi = {
   },
 };
 
+export const publicQuoteRequestsApi = {
+  create(input: {
+    name: string;
+    email: string;
+    company: string;
+    phone: string;
+    serviceName?: string;
+    budgetRange: string;
+    timeline: string;
+    details: string;
+  }) {
+    return apiFetch<{ request: { reference?: string } }>("/api/quote-requests", {
+      method: "POST",
+      auth: false,
+      body: input,
+    });
+  },
+};
+
 export const adminRequestsApi = {
   list(params?: { status?: string; kind?: string; page?: number; limit?: number }) {
     return apiFetch<{
