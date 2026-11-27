@@ -238,6 +238,7 @@ export const requestsApi = {
 
   create(input: {
     categoryId: string;
+    categoryName?: string;
     title: string;
     details: string;
     budgetRange: string;
@@ -253,6 +254,18 @@ export const requestsApi = {
       method: "PATCH",
       body: { status, note },
     });
+  },
+};
+
+export const adminRequestsApi = {
+  list(params?: { status?: string; kind?: string; page?: number; limit?: number }) {
+    return apiFetch<{
+      requests: unknown[];
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    }>("/api/admin/requests", { params });
   },
 };
 

@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAppStore, useCurrentUser } from "@/lib/store";
+import { requestsApi } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import {
   BuyerRegistrationForm,
@@ -223,11 +224,38 @@ function LeadForm({
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setSubmitting(true);
-    window.setTimeout(() => {
+
+    try {
+      let serverReference: string | null = null;
+
+      // Signed-in buyer quote requests use the existing request lifecycle API.
+      // The local inquiry is still recorded below so the current dashboard
+      // presentation and existing local behavior remain unchanged.
+      if (currentUser) {
+        const result = await requestsApi.create({
+          categoryId: "marketplace-service",
+          categoryName: "Marketplace Service",
+          title: `${context || displayTitle} — quote request`,
+          details: form.message.trim(),
+          budgetRange: form.budgetRange || "Not specified",
+          timeline: form.timeline || "Not specified",
+          kind: "service",
+          meta: {
+            source: "buyer-marketplace-quote",
+            serviceName: context || "",
+            contactName: form.name.trim(),
+            contactEmail: form.email.trim(),
+            company: form.company.trim(),
+            phone: form.phone.trim(),
+          },
+        }) as { request?: { reference?: string } };
+        serverReference = result.request?.reference ?? null;
+      }
+
       const inquiry = addInquiry({
         name: form.name.trim(),
         email: form.email.trim(),
@@ -239,13 +267,22 @@ function LeadForm({
         budgetRange: form.budgetRange || "Not specified",
         timeline: form.timeline || "Not specified",
       });
-      setReference(inquiry.id.toUpperCase());
+      setReference(serverReference ?? inquiry.id.toUpperCase());
       setSubmitting(false);
       toast({
         title: `${displayTitle} — received`,
-        description: "Our expert team will respond within one business day.",
+        description: currentUser
+          ? "Your request is now in the STIOOS service-request pipeline."
+          : "Our expert team will respond within one business day.",
       });
-    }, 700);
+    } catch (error) {
+      setSubmitting(false);
+      toast({
+        title: "Request could not be submitted",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   // ---------- success panel ----------

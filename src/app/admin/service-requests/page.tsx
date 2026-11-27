@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { useAppStore } from "@/lib/store";
+import { adminRequestsApi } from "@/lib/api-client";
 import {
   KIND_LABELS,
   REQUEST_KIND_DEFS,
@@ -115,7 +116,33 @@ function RequestsContent() {
 
 function RequestsHub({ focusId }: { focusId: string | null }) {
   const router = useRouter();
-  const requests = useAppStore((s) => s.requests);
+  const localRequests = useAppStore((s) => s.requests);
+  const [remoteRequests, setRemoteRequests] = useState<MarketRequest[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    adminRequestsApi
+      .list({ limit: 100 })
+      .then((result) => {
+        if (cancelled) return;
+        setRemoteRequests(
+          result.requests.map((value) => normalizeAdminRequest(value))
+        );
+      })
+      .catch(() => {
+        // Keep the existing local/demo pipeline available when the API is not
+        // configured or the current admin session has no API token.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const requests = useMemo(() => {
+    const byId = new Map(localRequests.map((request) => [request.id, request]));
+    for (const request of remoteRequests) byId.set(request.id, request);
+    return Array.from(byId.values());
+  }, [localRequests, remoteRequests]);
 
   const [tab, setTab] = useState<string>("pipeline");
   const [statusFilter, setStatusFilter] = useState<MarketRequestStatus | "all">("all");
@@ -209,6 +236,7 @@ function RequestsHub({ focusId }: { focusId: string | null }) {
           statusFilter={statusFilter}
           onStatusFilterChange={setStatusFilter}
           onView={(r) => setActiveId(r.id)}
+          requests={requests}
         />
       ) : (
         <WebsiteEnquiries />
@@ -217,6 +245,41 @@ function RequestsHub({ focusId }: { focusId: string | null }) {
       <RequestDetailSheet request={active} open={!!active} onOpenChange={(o) => !o && closeSheet()} />
     </div>
   );
+}
+
+function normalizeAdminRequest(value: unknown): MarketRequest {
+  const request = value as Record<string, unknown>;
+  const parseObject = (input: unknown): Record<string, string> => {
+    if (typeof input !== "string") return (input as Record<string, string>) ?? {};
+    try {
+      const parsed = JSON.parse(input);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+  const parseHistory = (input: unknown): MarketRequest["statusHistory"] => {
+    if (typeof input !== "string") return Array.isArray(input) ? input as MarketRequest["statusHistory"] : [];
+    try {
+      const parsed = JSON.parse(input);
+      return Array.isArray(parsed) ? parsed as MarketRequest["statusHistory"] : [];
+    } catch {
+      return [];
+    }
+  };
+  const quote = request.quote as Record<string, unknown> | null | undefined;
+  const order = request.order as Record<string, unknown> | null | undefined;
+  const invoice = request.invoice as Record<string, unknown> | null | undefined;
+
+  return {
+    ...(request as unknown as MarketRequest),
+    meta: parseObject(request.meta),
+    statusHistory: parseHistory(request.statusHistory),
+    quoteId: (quote?.id as string | null | undefined) ?? null,
+    quotedAmount: (quote?.total as number | undefined) ?? (request.quotedAmount as number | undefined),
+    orderId: (order?.id as string | null | undefined) ?? null,
+    invoiceId: (invoice?.id as string | null | undefined) ?? null,
+  };
 }
 
 /** Tab trigger with a live count of website enquiries. */
@@ -244,12 +307,13 @@ function PipelineTab({
   statusFilter,
   onStatusFilterChange,
   onView,
+  requests,
 }: {
   statusFilter: MarketRequestStatus | "all";
   onStatusFilterChange: (s: MarketRequestStatus | "all") => void;
   onView: (r: MarketRequest) => void;
+  requests: MarketRequest[];
 }) {
-  const requests = useAppStore((s) => s.requests);
   const [kindFilter, setKindFilter] = useState<RequestKind | "all">("all");
 
   const rows = useMemo(() => {

@@ -16,11 +16,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-  // For production PostgreSQL, change to:
-  // provider = "postgresql"
-  // url      = env("DATABASE_URL") // postgresql://user:pass@host:5432/stioos
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================
