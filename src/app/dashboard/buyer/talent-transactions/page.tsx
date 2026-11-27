@@ -45,6 +45,7 @@ import { useAppStore, useCurrentUser } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { MarketRequest, MarketRequestStatus } from "@/types";
+import { getLifecycleConfigForTxn } from "@/data/talent-lifecycle";
 
 export interface UnifiedTalentTxn {
   id: string;
@@ -529,7 +530,7 @@ function TalentTransactionInspector({
   onAcceptQuote: () => void;
   onDelete: () => void;
 }) {
-  const currentStep = getLifecycleStepNumber(txn.status);
+  const { steps, currentStep } = getLifecycleConfigForTxn(txn);
 
   // Parse structured details if present
   const details = txn.details || "";
@@ -637,10 +638,10 @@ function TalentTransactionInspector({
           <div className="absolute top-3 left-0 right-0 h-0.5 bg-white/10 -z-0" />
           <div
             className="absolute top-3 left-0 h-0.5 bg-gradient-to-r from-amber-500 to-sky-400 transition-all -z-0"
-            style={{ width: `${((currentStep - 1) / 7) * 100}%` }}
+            style={{ width: `${((currentStep - 1) / Math.max(1, steps.length - 1)) * 100}%` }}
           />
 
-          {TALENT_LIFECYCLE_STEPS.map((s) => {
+          {steps.map((s) => {
             const isCompleted = s.step < currentStep;
             const isCurrent = s.step === currentStep;
             return (

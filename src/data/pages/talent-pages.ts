@@ -18,7 +18,7 @@ export const TALENT_PAGE_SPECS: PageSpec[] = [
     highlight: "talent built to your spec",
     subtitle:
       "We source high-potential candidates, train them on your exact stack and processes, then deliver job-ready professionals who join your team from day one.",
-    primaryCta: { label: "Apply Now", href: "/contact" },
+    primaryCta: { label: "Hire Talent", href: "/contact" },
     secondaryCta: { label: "Talk to a talent expert", href: "/contact" },
     heroStats: [
       { value: "8–12 wks", label: "Ready-to-join" },

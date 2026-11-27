@@ -369,7 +369,7 @@ function LeadForm({
               id="lm-name"
               value={form.name}
               onChange={(e) => set("name", e.target.value)}
-              placeholder="Jane Okafor"
+              placeholder="Enter your full name"
               aria-invalid={!!errors.name}
               className={errors.name ? "border-destructive" : undefined}
               autoComplete="name"
@@ -381,7 +381,7 @@ function LeadForm({
               type="email"
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
-              placeholder="jane@company.com"
+              placeholder="Enter your work email"
               aria-invalid={!!errors.email}
               className={errors.email ? "border-destructive" : undefined}
               autoComplete="email"
@@ -392,7 +392,7 @@ function LeadForm({
               id="lm-company"
               value={form.company}
               onChange={(e) => set("company", e.target.value)}
-              placeholder="Acme Industries"
+              placeholder="Enter your company or organization"
               autoComplete="organization"
             />
           </Field>
@@ -402,7 +402,7 @@ function LeadForm({
               type="tel"
               value={form.phone}
               onChange={(e) => set("phone", e.target.value)}
-              placeholder="+1 (555) 000-0000"
+              placeholder="Enter your phone number"
               autoComplete="tel"
             />
           </Field>
@@ -438,7 +438,7 @@ function LeadForm({
           <Field label={profile.budgetLabel} htmlFor="lm-budget">
             <Select value={form.budgetRange} onValueChange={(v) => set("budgetRange", v)}>
               <SelectTrigger id="lm-budget" className="w-full">
-                <SelectValue placeholder="Select a range (optional)" />
+                <SelectValue placeholder="Select budget range (optional)..." />
               </SelectTrigger>
               <SelectContent>
                 {profile.budgetOptions.map((b) => (
@@ -452,7 +452,7 @@ function LeadForm({
           <Field label={profile.timelineLabel} htmlFor="lm-timeline">
             <Select value={form.timeline} onValueChange={(v) => set("timeline", v)}>
               <SelectTrigger id="lm-timeline" className="w-full">
-                <SelectValue placeholder="When do you want to start?" />
+                <SelectValue placeholder="Select target timeline..." />
               </SelectTrigger>
               <SelectContent>
                 {profile.timelineOptions.map((t) => (

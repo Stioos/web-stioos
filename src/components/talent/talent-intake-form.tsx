@@ -44,66 +44,12 @@ import {
   getTalentFormSpec,
   type TalentAction,
 } from "@/data/talent-form-specs";
+import { isHireTalentOption } from "./talent-cta-group";
 
-export interface CountryDial {
-  code: string;
-  name: string;
-  dial: string;
-  flag: string;
-}
+import { ALL_COUNTRIES, type CountryDial } from "@/data/countries";
 
-export const COUNTRY_CODES: CountryDial[] = [
-  { code: "IN", name: "India", dial: "+91", flag: "🇮🇳" },
-  { code: "US", name: "United States", dial: "+1", flag: "🇺🇸" },
-  { code: "GB", name: "United Kingdom", dial: "+44", flag: "🇬🇧" },
-  { code: "CA", name: "Canada", dial: "+1", flag: "🇨🇦" },
-  { code: "AU", name: "Australia", dial: "+61", flag: "🇦🇺" },
-  { code: "AE", name: "United Arab Emirates", dial: "+971", flag: "🇦🇪" },
-  { code: "SG", name: "Singapore", dial: "+65", flag: "🇸🇬" },
-  { code: "DE", name: "Germany", dial: "+49", flag: "🇩🇪" },
-  { code: "FR", name: "France", dial: "+33", flag: "🇫🇷" },
-  { code: "JP", name: "Japan", dial: "+81", flag: "🇯🇵" },
-  { code: "SA", name: "Saudi Arabia", dial: "+966", flag: "🇸🇦" },
-  { code: "QA", name: "Qatar", dial: "+974", flag: "🇶🇦" },
-  { code: "NL", name: "Netherlands", dial: "+31", flag: "🇳🇱" },
-  { code: "CH", name: "Switzerland", dial: "+41", flag: "🇨🇭" },
-  { code: "IE", name: "Ireland", dial: "+353", flag: "🇮🇪" },
-  { code: "NZ", name: "New Zealand", dial: "+64", flag: "🇳🇿" },
-  { code: "ZA", name: "South Africa", dial: "+27", flag: "🇿🇦" },
-  { code: "BR", name: "Brazil", dial: "+55", flag: "🇧🇷" },
-  { code: "MX", name: "Mexico", dial: "+52", flag: "🇲🇽" },
-  { code: "ES", name: "Spain", dial: "+34", flag: "🇪🇸" },
-  { code: "IT", name: "Italy", dial: "+39", flag: "🇮🇹" },
-  { code: "SE", name: "Sweden", dial: "+46", flag: "🇸🇪" },
-  { code: "NO", name: "Norway", dial: "+47", flag: "🇳🇴" },
-  { code: "DK", name: "Denmark", dial: "+45", flag: "🇩🇰" },
-  { code: "PL", name: "Poland", dial: "+48", flag: "🇵🇱" },
-  { code: "KR", name: "South Korea", dial: "+82", flag: "🇰🇷" },
-  { code: "MY", name: "Malaysia", dial: "+60", flag: "🇲🇾" },
-  { code: "ID", name: "Indonesia", dial: "+62", flag: "🇮🇩" },
-  { code: "PH", name: "Philippines", dial: "+63", flag: "🇵🇭" },
-  { code: "VN", name: "Vietnam", dial: "+84", flag: "🇻🇳" },
-  { code: "TH", name: "Thailand", dial: "+66", flag: "🇹🇭" },
-  { code: "BD", name: "Bangladesh", dial: "+880", flag: "🇧🇩" },
-  { code: "PK", name: "Pakistan", dial: "+92", flag: "🇵🇰" },
-  { code: "LK", name: "Sri Lanka", dial: "+94", flag: "🇱🇰" },
-  { code: "NP", name: "Nepal", dial: "+977", flag: "🇳🇵" },
-  { code: "EG", name: "Egypt", dial: "+20", flag: "🇪🇬" },
-  { code: "NG", name: "Nigeria", dial: "+234", flag: "🇳🇬" },
-  { code: "KE", name: "Kenya", dial: "+254", flag: "🇰🇪" },
-  { code: "KW", name: "Kuwait", dial: "+965", flag: "🇰🇼" },
-  { code: "OM", name: "Oman", dial: "+968", flag: "🇴🇲" },
-  { code: "BH", name: "Bahrain", dial: "+973", flag: "🇧🇭" },
-  { code: "IL", name: "Israel", dial: "+972", flag: "🇮🇱" },
-  { code: "TR", name: "Turkey", dial: "+90", flag: "🇹🇷" },
-  { code: "AR", name: "Argentina", dial: "+54", flag: "🇦🇷" },
-  { code: "CL", name: "Chile", dial: "+56", flag: "🇨🇱" },
-  { code: "CO", name: "Colombia", dial: "+57", flag: "🇨🇴" },
-  { code: "CN", name: "China", dial: "+86", flag: "🇨🇳" },
-  { code: "HK", name: "Hong Kong", dial: "+852", flag: "🇭🇰" },
-  { code: "TW", name: "Taiwan", dial: "+886", flag: "🇹🇼" },
-  { code: "OT", name: "Other", dial: "+", flag: "🌐" },
-];
+export { type CountryDial };
+export const COUNTRY_CODES: CountryDial[] = ALL_COUNTRIES;
 
 interface TalentIntakeFormProps {
   optionSlug: string;
@@ -127,6 +73,11 @@ export function TalentIntakeForm({
   const addInquiry = useAppStore((s) => s.addInquiry);
   const addMarketRequest = useAppStore((s) => s.addMarketRequest);
   const spec = getTalentFormSpec(optionSlug);
+  const isHireTalentTarget =
+    isHireTalentOption(optionSlug, spec.groupSlug) ||
+    optionSlug === "train-to-hire" ||
+    optionSlug.includes("train-to-hire") ||
+    spec.groupSlug === "train-to-hire";
 
   const [action, setAction] = useState<TalentAction>(initialAction);
 
@@ -136,58 +87,44 @@ export function TalentIntakeForm({
   }, [initialAction]);
 
   // Form State
-  const [name, setName] = useState(currentUser?.name || "");
-  const [email, setEmail] = useState(currentUser?.email || "");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [countryCode, setCountryCode] = useState("IN");
-  const [phone, setPhone] = useState(
-    currentUser?.phone ? currentUser.phone.replace(/^\+\d+\s*/, "") : ""
-  );
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [companyOrSchool, setCompanyOrSchool] = useState(currentUser?.company || "");
+  const [companyOrSchool, setCompanyOrSchool] = useState("");
   const [cityLocation, setCityLocation] = useState("");
 
   const activeCountry =
     COUNTRY_CODES.find((c) => c.code === countryCode) || COUNTRY_CODES[0];
 
-  // Apply-specific fields
-  const [selectedTrack, setSelectedTrack] = useState(spec.apply.tracks[0] || "");
-  const [experienceLevel, setExperienceLevel] = useState(
-    spec.apply.experienceOptions?.[0] || ""
-  );
-  const [learningFormat, setLearningFormat] = useState(
-    spec.apply.specialtyOptions?.[0] || ""
-  );
+  // Apply-specific fields (start with empty so dropdown shows "Select..." as default)
+  const [selectedTrack, setSelectedTrack] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+  const [learningFormat, setLearningFormat] = useState("");
   const [portfolioUrl, setPortfolioUrl] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
-  const [availableStartDate, setAvailableStartDate] = useState("Immediate (Within 7 days)");
+  const [availableStartDate, setAvailableStartDate] = useState("");
   const [statement, setStatement] = useState("");
 
   // GetStarted-specific fields
-  const [scopeOption, setScopeOption] = useState(spec.getStarted.scopeOptions[0] || "");
-  const [selectedStack, setSelectedStack] = useState(spec.getStarted.stackOptions[0] || "");
-  const [companySize, setCompanySize] = useState("Growth (20-100 employees)");
-  const [targetTimeline, setTargetTimeline] = useState(
-    spec.getStarted.timelineOptions?.[0] || "Immediate"
-  );
-  const [budgetRange, setBudgetRange] = useState(
-    spec.getStarted.budgetOptions?.[0] || "Standard Placement Fee"
-  );
+  const [scopeOption, setScopeOption] = useState("");
+  const [selectedStack, setSelectedStack] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [targetTimeline, setTargetTimeline] = useState("");
+  const [budgetRange, setBudgetRange] = useState("");
   const [projectRequirements, setProjectRequirements] = useState("");
 
   // Consultation-specific fields
-  const [consultationFocus, setConsultationFocus] = useState(
-    spec.consultation.focusOptions[0] || ""
-  );
-  const [attendeeRole, setAttendeeRole] = useState(
-    spec.consultation.attendeeOptions[0] || ""
-  );
+  const [consultationFocus, setConsultationFocus] = useState("");
+  const [attendeeRole, setAttendeeRole] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
-  const [preferredTimeSlot, setPreferredTimeSlot] = useState("Morning (9:00 AM - 12:00 PM)");
+  const [preferredTimeSlot, setPreferredTimeSlot] = useState("");
   const [preferredTimezone, setPreferredTimezone] = useState("IST (UTC+5:30)");
-  const [meetingPlatform, setMeetingPlatform] = useState("Google Meet");
+  const [meetingPlatform, setMeetingPlatform] = useState("");
   const [discussionQuestions, setDiscussionQuestions] = useState("");
 
   // Errors & UI state
@@ -196,20 +133,6 @@ export function TalentIntakeForm({
   const [reference, setReference] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Auto-sync initial select defaults when spec or action changes
-  useEffect(() => {
-    if (action === "apply") {
-      if (!selectedTrack) setSelectedTrack(spec.apply.tracks[0] || "");
-      if (!experienceLevel && spec.apply.experienceOptions)
-        setExperienceLevel(spec.apply.experienceOptions[0]);
-    } else if (action === "get-started") {
-      if (!scopeOption) setScopeOption(spec.getStarted.scopeOptions[0] || "");
-      if (!selectedStack) setSelectedStack(spec.getStarted.stackOptions[0] || "");
-    } else if (action === "consultation") {
-      if (!consultationFocus) setConsultationFocus(spec.consultation.focusOptions[0] || "");
-      if (!attendeeRole) setAttendeeRole(spec.consultation.attendeeOptions[0] || "");
-    }
-  }, [action, spec]);
 
   // Validation
   const validate = (): boolean => {
@@ -304,6 +227,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
 
       // 1. Add to Market Requests so it appears immediately under "Your Talent Transactions" in Buyer Portal
       addMarketRequest({
+        buyerId: currentUser?.id || "usr-001",
         categoryId: "cat-talent",
         categoryName: "Talent Solutions",
         title: requestTitle,
@@ -311,16 +235,18 @@ Key Topics: ${discussionQuestions || "N/A"}`;
         budgetRange: action === "get-started" ? budgetRange : action === "apply" ? "Candidate Track" : "Complimentary Consultation",
         timeline: action === "get-started" ? targetTimeline : (availableStartDate || preferredDate || "Immediate"),
         kind: action === "apply" ? "talent-application" : action === "get-started" ? "end-to-end-staffing" : "talent-consultation",
+        status: action === "apply" ? "applied" : "open",
         meta: {
-          buyerId: currentUser?.id || "usr-mkt-buyer",
+          buyerId: currentUser?.id || "usr-001",
           optionSlug,
+          groupSlug: spec.groupSlug,
           action,
           reference: refCode,
           email: email.trim(),
           phone: fullPhone,
           company: companyOrSchool.trim(),
           name: name.trim(),
-          status: "in_progress",
+          status: action === "apply" ? "applied" : "open",
           track: selectedTrack,
           scope: scopeOption,
           focus: consultationFocus,
@@ -338,7 +264,15 @@ Key Topics: ${discussionQuestions || "N/A"}`;
         requirements: details,
         budgetRange: action === "get-started" ? budgetRange : undefined,
         timeline: action === "get-started" ? targetTimeline : preferredDate,
-      });
+        status: action === "apply" ? "applied" : "open",
+        meta: {
+          buyerId: currentUser?.id || "usr-001",
+          optionSlug,
+          groupSlug: spec.groupSlug,
+          action,
+          reference: refCode,
+        },
+      } as any);
 
       setReference(refCode);
       setSubmitting(false);
@@ -440,13 +374,25 @@ Key Topics: ${discussionQuestions || "N/A"}`;
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            asChild
+            size="lg"
+            style={{ backgroundColor: "#0284c7", color: "#ffffff" }}
+            className="bg-sky-600 px-6 py-2.5 font-bold text-white shadow-lg shadow-sky-600/25 hover:bg-sky-500"
+          >
+            <Link href={`/dashboard/buyer/talent-solutions?id=${reference.toLowerCase()}`}>
+              View in Buyer Portal →
+            </Link>
+          </Button>
+
           {onClose ? (
             <Button
               type="button"
               onClick={onClose}
               size="lg"
-              style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-              className="bg-amber-500 px-8 py-2.5 font-bold text-black shadow-lg shadow-amber-500/25 hover:bg-amber-400"
+              variant="outline"
+              style={{ backgroundColor: "#f8fafc", color: "#000000", borderColor: "#cbd5e1" }}
+              className="border px-6 py-2.5 font-semibold text-black hover:bg-slate-100"
             >
               Close & Return to {spec.optionTitle}
             </Button>
@@ -454,8 +400,9 @@ Key Topics: ${discussionQuestions || "N/A"}`;
             <Button
               asChild
               size="lg"
-              style={{ backgroundColor: "#f59e0b", color: "#000000" }}
-              className="bg-amber-500 px-8 py-2.5 font-bold text-black shadow-lg shadow-amber-500/25 hover:bg-amber-400"
+              variant="outline"
+              style={{ backgroundColor: "#f8fafc", color: "#000000", borderColor: "#cbd5e1" }}
+              className="border px-6 py-2.5 font-semibold text-black hover:bg-slate-100"
             >
               <Link href="/talent-solutions">Return to Talent Solutions</Link>
             </Button>
@@ -554,10 +501,12 @@ Key Topics: ${discussionQuestions || "N/A"}`;
               </div>
               <div className="text-sm font-bold text-black sm:text-base" style={{ color: "#000000" }}>
                 {action === "apply"
-                  ? "Apply Now — Candidate Application"
+                  ? isHireTalentTarget
+                    ? `Hire Talent — ${spec.optionTitle}`
+                    : `Apply Now — ${spec.optionTitle}`
                   : action === "get-started"
-                  ? "Get Started — Enterprise Engagement"
-                  : "Schedule Consultation — Discovery Session"}
+                  ? `Get Started — ${spec.optionTitle}`
+                  : `Schedule Consultation — ${spec.optionTitle}`}
               </div>
             </div>
           </div>
@@ -596,7 +545,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   setName(e.target.value);
                   if (errors.name) setErrors((prev) => ({ ...prev, name: "" }));
                 }}
-                placeholder="Jane Doe"
+                placeholder="Enter your full name"
                 className={`pl-9 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 ${
                   errors.name ? "border-rose-500" : ""
                 }`}
@@ -621,7 +570,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   setEmail(e.target.value);
                   if (errors.email) setErrors((prev) => ({ ...prev, email: "" }));
                 }}
-                placeholder={action === "get-started" ? "name@company.com" : "you@example.com"}
+                placeholder={action === "get-started" ? "Enter your work email" : "Enter your email address"}
                 className={`pl-9 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 ${
                   errors.email ? "border-rose-500" : ""
                 }`}
@@ -634,52 +583,76 @@ Key Topics: ${discussionQuestions || "N/A"}`;
             <Label htmlFor="talent-phone" className="text-xs font-semibold text-black" style={labelStyle}>
               Phone Number <span className="text-amber-500">*</span>
             </Label>
-            <div className="mt-1.5 flex gap-2">
+            <div
+              style={inputStyle}
+              className={`mt-1.5 flex h-10 w-full items-center rounded-xl border bg-white shadow-2xs transition-all focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20 ${
+                errors.phone ? "border-rose-500" : "border-slate-300"
+              }`}
+            >
               <Select value={countryCode} onValueChange={setCountryCode}>
                 <SelectTrigger
                   id="talent-country-code"
-                  style={inputStyle}
-                  className="w-[120px] shrink-0 bg-white border-slate-300 text-black px-2.5 focus:border-amber-500 shadow-2xs"
+                  className="h-full border-0 bg-transparent py-0 pl-3 pr-2 shadow-none focus:ring-0 text-black hover:bg-slate-50 rounded-l-xl shrink-0"
                 >
-                  <span className="flex items-center gap-1.5 truncate">
-                    <span className="text-base leading-none">{activeCountry.flag}</span>
-                    <span className="text-xs font-semibold text-black">{activeCountry.dial}</span>
+                  <span className="flex items-center gap-1.5">
+                    <img
+                      src={`https://flagcdn.com/w40/${activeCountry.code.toLowerCase()}.png`}
+                      alt={activeCountry.name}
+                      className="h-3.5 w-5 shrink-0 rounded-xs object-cover border border-slate-200"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                    <span className="text-xs font-semibold text-slate-800">{activeCountry.dial}</span>
                   </span>
                 </SelectTrigger>
                 <SelectContent
+                  data-theme="light"
                   style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }}
-                  className="max-h-[260px] bg-white border-slate-300 text-black shadow-xl"
+                  className="max-h-[300px] w-[280px] sm:w-[320px] !bg-white border-slate-300 !text-black shadow-xl z-50"
                 >
                   {COUNTRY_CODES.map((c) => (
                     <SelectItem
                       key={c.code}
                       value={c.code}
-                      className="text-xs text-black focus:bg-amber-50 focus:text-black cursor-pointer"
+                      style={{ color: "#000000", backgroundColor: "#ffffff" }}
+                      className="text-xs !text-black hover:!bg-amber-50 focus:!bg-amber-100 focus:!text-black cursor-pointer py-2 px-2.5"
                     >
-                      <span className="mr-2 text-sm">{c.flag}</span>
-                      <span>{c.name}</span>
-                      <span className="ml-1 text-slate-500">({c.dial})</span>
+                      <div className="flex items-center gap-2.5 w-full">
+                        <img
+                          src={`https://flagcdn.com/w40/${c.code.toLowerCase()}.png`}
+                          alt={c.name}
+                          className="h-3.5 w-5 shrink-0 rounded-xs object-cover border border-slate-200"
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                        <span className="font-medium text-slate-900 truncate">{c.name}</span>
+                        <span className="ml-auto pl-2 text-slate-500 font-mono text-[11px] shrink-0">
+                          {c.code} ({c.dial})
+                        </span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <div className="relative flex-1">
-                <Phone className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  id="talent-phone"
-                  type="tel"
-                  value={phone}
-                  style={inputStyle}
-                  onChange={(e) => {
-                    setPhone(e.target.value);
-                    if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
-                  }}
-                  placeholder="98765 43210"
-                  className={`pl-9 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 ${
-                    errors.phone ? "border-rose-500" : ""
-                  }`}
-                />
-              </div>
+
+              {/* Vertical divider */}
+              <div className="h-5 w-px bg-slate-200 shrink-0" aria-hidden="true" />
+
+              {/* Phone input */}
+              <input
+                id="talent-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (errors.phone) setErrors((prev) => ({ ...prev, phone: "" }));
+                }}
+                placeholder="Enter your phone number"
+                className="h-full flex-1 border-0 bg-transparent px-3 text-xs sm:text-sm text-black placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              />
             </div>
             {errors.phone && <p className="mt-1 text-xs text-rose-500">{errors.phone}</p>}
           </div>
@@ -706,7 +679,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                     setErrors((prev) => ({ ...prev, companyOrSchool: "" }));
                 }}
                 placeholder={
-                  action === "get-started" ? "Acme Technologies Inc." : "Stanford / Working Developer"
+                  action === "get-started" ? "Enter your company or organization" : "Enter your company, university, or current status"
                 }
                 className={`pl-9 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 ${
                   errors.companyOrSchool ? "border-rose-500" : ""
@@ -734,7 +707,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   setPassword(e.target.value);
                   if (errors.password) setErrors((prev) => ({ ...prev, password: "" }));
                 }}
-                placeholder="Create password (min. 8 characters)"
+                placeholder="Enter your password"
                 className={`pl-9 pr-10 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 ${
                   errors.password ? "border-rose-500" : ""
                 }`}
@@ -767,7 +740,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   setConfirmPassword(e.target.value);
                   if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: "" }));
                 }}
-                placeholder="Re-enter your password"
+                placeholder="Enter your confirm password"
                 className={`pl-9 pr-10 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 ${
                   errors.confirmPassword ? "border-rose-500" : ""
                 }`}
@@ -795,7 +768,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
           <div style={cardStyle} className="space-y-4 rounded-xl border p-4 text-black">
             <div className="flex items-center gap-2 border-b border-slate-200 pb-2.5 text-xs font-bold uppercase tracking-wider text-black" style={{ color: "#000000", borderColor: "#e2e8f0" }}>
               <GraduationCap className="h-4 w-4 text-amber-600" />
-              {spec.optionTitle} — Candidate Application Criteria
+              {spec.optionTitle} — {isHireTalentTarget ? "Hire Talent & Cohort Criteria" : "Candidate Application Criteria"}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -803,9 +776,12 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 <Label className="text-xs font-semibold text-black" style={labelStyle}>
                   {spec.apply.trackLabel} <span className="text-amber-500">*</span>
                 </Label>
-                <Select value={selectedTrack} onValueChange={setSelectedTrack}>
-                  <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue placeholder="Select track..." />
+                <Select value={selectedTrack} onValueChange={(val) => {
+                  setSelectedTrack(val);
+                  if (errors.selectedTrack) setErrors((prev) => ({ ...prev, selectedTrack: "" }));
+                }}>
+                  <SelectTrigger style={inputStyle} className={`mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500 ${errors.selectedTrack ? "border-rose-500" : ""}`}>
+                    <SelectValue placeholder="Select technical track..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {spec.apply.tracks.map((t) => (
@@ -815,6 +791,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.selectedTrack && <p className="mt-1 text-xs text-rose-500">{errors.selectedTrack}</p>}
               </div>
 
               {spec.apply.experienceOptions && (
@@ -824,7 +801,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   </Label>
                   <Select value={experienceLevel} onValueChange={setExperienceLevel}>
                     <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                      <SelectValue placeholder="Select..." />
+                      <SelectValue placeholder="Select experience level..." />
                     </SelectTrigger>
                     <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                       {spec.apply.experienceOptions.map((opt) => (
@@ -844,7 +821,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   </Label>
                   <Select value={learningFormat} onValueChange={setLearningFormat}>
                     <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                      <SelectValue placeholder="Select..." />
+                      <SelectValue placeholder="Select preferred format..." />
                     </SelectTrigger>
                     <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                       {spec.apply.specialtyOptions.map((opt) => (
@@ -864,7 +841,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                       value={cityLocation}
                       style={inputStyle}
                       onChange={(e) => setCityLocation(e.target.value)}
-                      placeholder="Bangalore, London, New York, etc."
+                      placeholder="Enter your city or location"
                       className="pl-9 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500"
                     />
                   </div>
@@ -879,7 +856,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   value={portfolioUrl}
                   style={inputStyle}
                   onChange={(e) => setPortfolioUrl(e.target.value)}
-                  placeholder="https://github.com/your-handle"
+                  placeholder="Enter your GitHub, portfolio, or code link"
                   className="mt-1.5 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500"
                 />
               </div>
@@ -890,7 +867,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   value={linkedinUrl}
                   style={inputStyle}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
-                  placeholder="https://linkedin.com/in/username"
+                  placeholder="Enter your LinkedIn profile URL"
                   className="mt-1.5 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500"
                 />
               </div>
@@ -901,7 +878,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 </Label>
                 <Select value={availableStartDate} onValueChange={setAvailableStartDate}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select available start date..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     <SelectItem value="Immediate (Within 7 days)" className="text-black focus:bg-amber-50 focus:text-black">Immediate (Within 7 days)</SelectItem>
@@ -922,7 +899,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   value={statement}
                   style={inputStyle}
                   onChange={(e) => setStatement(e.target.value)}
-                  placeholder={spec.apply.statementPlaceholder}
+                  placeholder={spec.apply.statementPlaceholder || "Enter your goals and technical statement"}
                   className="mt-1.5 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 text-xs sm:text-sm"
                 />
               </div>
@@ -947,7 +924,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 </Label>
                 <Select value={scopeOption} onValueChange={setScopeOption}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select capacity / scope..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {spec.getStarted.scopeOptions.map((opt) => (
@@ -965,7 +942,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 </Label>
                 <Select value={selectedStack} onValueChange={setSelectedStack}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select required tech stack..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {spec.getStarted.stackOptions.map((opt) => (
@@ -981,7 +958,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 <Label className="text-xs font-semibold text-black" style={labelStyle}>Target Delivery Timeline</Label>
                 <Select value={targetTimeline} onValueChange={setTargetTimeline}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select target delivery timeline..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {(
@@ -1004,7 +981,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 <Label className="text-xs font-semibold text-black" style={labelStyle}>Estimated Budget / Pricing Model</Label>
                 <Select value={budgetRange} onValueChange={setBudgetRange}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select estimated budget / pricing model..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {(
@@ -1034,7 +1011,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   value={projectRequirements}
                   style={inputStyle}
                   onChange={(e) => setProjectRequirements(e.target.value)}
-                  placeholder={spec.getStarted.notesPlaceholder}
+                  placeholder={spec.getStarted.notesPlaceholder || "Enter your project requirements and scope notes"}
                   className="mt-1.5 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 text-xs sm:text-sm"
                 />
               </div>
@@ -1059,7 +1036,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 </Label>
                 <Select value={consultationFocus} onValueChange={setConsultationFocus}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select consultation focus..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {spec.consultation.focusOptions.map((f) => (
@@ -1077,7 +1054,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 </Label>
                 <Select value={attendeeRole} onValueChange={setAttendeeRole}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select your role..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-300 text-black shadow-xl">
                     {spec.consultation.attendeeOptions.map((a) => (
@@ -1102,6 +1079,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                     setPreferredDate(e.target.value);
                     if (errors.preferredDate) setErrors((prev) => ({ ...prev, preferredDate: "" }));
                   }}
+                  placeholder="Enter your preferred date"
                   className={`mt-1.5 bg-white border-slate-300 text-black focus:bg-white focus:border-amber-500 ${
                     errors.preferredDate ? "border-rose-500" : ""
                   }`}
@@ -1115,7 +1093,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 <Label className="text-xs font-semibold text-black" style={labelStyle}>Preferred Time Window</Label>
                 <Select value={preferredTimeSlot} onValueChange={setPreferredTimeSlot}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select preferred time window..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-200 text-black shadow-xl">
                     <SelectItem value="Morning (9:00 AM - 12:00 PM)" className="text-black focus:bg-amber-50 focus:text-black">
@@ -1135,7 +1113,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                 <Label className="text-xs font-semibold text-black" style={labelStyle}>Meeting Platform</Label>
                 <Select value={meetingPlatform} onValueChange={setMeetingPlatform}>
                   <SelectTrigger style={inputStyle} className="mt-1.5 bg-white border-slate-300 text-black focus:border-amber-500">
-                    <SelectValue />
+                    <SelectValue placeholder="Select meeting platform..." />
                   </SelectTrigger>
                   <SelectContent style={{ backgroundColor: "#ffffff", color: "#000000", borderColor: "#cbd5e1" }} className="bg-white border-slate-200 text-black shadow-xl">
                     <SelectItem value="Google Meet" className="text-black focus:bg-amber-50 focus:text-black">Google Meet (Video)</SelectItem>
@@ -1155,7 +1133,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   value={discussionQuestions}
                   style={inputStyle}
                   onChange={(e) => setDiscussionQuestions(e.target.value)}
-                  placeholder={spec.consultation.notesPlaceholder}
+                  placeholder={spec.consultation.notesPlaceholder || "Enter your key questions or specific requirements to cover"}
                   className="mt-1.5 bg-white border-slate-300 text-black placeholder:text-slate-400 focus:bg-white focus:border-amber-500 text-xs sm:text-sm"
                 />
               </div>
@@ -1182,7 +1160,9 @@ Key Topics: ${discussionQuestions || "N/A"}`;
               <span className="flex items-center justify-center gap-2">
                 {action === "apply" ? (
                   <>
-                    Submit Application for {spec.optionTitle}
+                    {isHireTalentTarget
+                      ? `Hire Talent for ${spec.optionTitle}`
+                      : `Submit Application for ${spec.optionTitle}`}
                     <ArrowRight className="h-4 w-4" />
                   </>
                 ) : action === "get-started" ? (
@@ -1192,7 +1172,7 @@ Key Topics: ${discussionQuestions || "N/A"}`;
                   </>
                 ) : (
                   <>
-                    Confirm Consultation Booking
+                    Confirm Consultation for {spec.optionTitle}
                     <Calendar className="h-4 w-4" />
                   </>
                 )}
