@@ -36,6 +36,7 @@ export function StatCard({
   trendUp,
   tone = "blue",
   onClick,
+  compact = false,
 }: {
   label: string;
   value: string | number;
@@ -44,6 +45,7 @@ export function StatCard({
   trendUp?: boolean;
   tone?: "blue" | "green" | "amber" | "violet" | "red";
   onClick?: () => void;
+  compact?: boolean;
 }) {
   const tones: Record<string, string> = {
     blue: "bg-blue-600/10 text-blue-600 dark:text-blue-400",
@@ -57,16 +59,17 @@ export function StatCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "group flex w-full items-center gap-4 rounded-lg border bg-card p-4 text-left transition-all",
+        "group flex w-full items-center rounded-lg border bg-card text-left transition-all",
+        compact ? "gap-1.5 p-1.5" : "gap-4 p-4",
         onClick && "cursor-pointer hover:border-primary/40 hover:shadow-md"
       )}
     >
-      <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", tones[tone])}>
-        <Icon name={icon} className="h-5 w-5" />
+      <div className={cn("flex shrink-0 items-center justify-center rounded-lg", compact ? "h-6 w-6" : "h-10 w-10", tones[tone])}>
+        <Icon name={icon} className={compact ? "h-4 w-4" : "h-5 w-5"} />
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-        <p className="mt-0.5 text-2xl font-bold tracking-tight text-foreground">{value}</p>
+        <p className={cn("mt-0.5 font-bold tracking-tight text-foreground", compact ? "text-base" : "text-2xl")}>{value}</p>
       </div>
       {trend && (
         <span

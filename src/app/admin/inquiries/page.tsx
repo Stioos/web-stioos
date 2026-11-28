@@ -42,6 +42,7 @@ import { useAppStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import type { Inquiry, InquiryStatus, InquiryType } from "@/types";
+import { MarketplaceSectionLinks } from "@/components/admin/marketplace-section-links";
 
 const TAB_TYPES: Record<string, InquiryType | undefined> = {
   all: undefined,
@@ -59,23 +60,31 @@ const STATUS_CHIPS: { status: InquiryStatus | "all"; label: string }[] = [
   { status: "closed", label: "Closed" },
 ];
 
-const CHIP_ACTIVE: Record<string, string> = {
+const CHIP_ACTIVE: Record<InquiryStatus | "all", string> = {
   all: "bg-foreground text-background ring-foreground",
   new: "bg-blue-600 text-white ring-blue-600",
-  in_progress: "bg-blue-600 text-white ring-blue-600",
-  contacted: "bg-violet-600 text-white ring-violet-600",
+  in_progress: "bg-violet-600 text-white ring-violet-600",
+  contacted: "bg-amber-600 text-white ring-amber-600",
   closed: "bg-slate-500 text-white ring-slate-500",
 };
 
 function InquiriesContent() {
   const searchParams = useSearchParams();
   const focusId = searchParams.get("focus");
+  const typeParam = searchParams.get("type");
+  const initialTab = typeParam && TAB_TYPES[typeParam] ? typeParam : "all";
   // Keyed by the focus param so ?focus={id} opens the sheet on mount and
   // re-navigation re-triggers it — without setState-in-effect patterns.
-  return <InquiryQueue key={focusId ?? "none"} focusId={focusId} />;
+  return <InquiryQueue key={`${initialTab}-${focusId ?? "none"}`} focusId={focusId} initialTab={initialTab} />;
 }
 
-function InquiryQueue({ focusId }: { focusId: string | null }) {
+function InquiryQueue({
+  focusId,
+  initialTab,
+}: {
+  focusId: string | null;
+  initialTab: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -85,16 +94,22 @@ function InquiryQueue({ focusId }: { focusId: string | null }) {
 
   const confirm = useConfirmDialog();
 
-  const [tab, setTab] = useState<string>("all");
+  const [tab, setTab] = useState<string>(initialTab);
   const [statusFilter, setStatusFilter] = useState<InquiryStatus | "all">("all");
   const [activeId, setActiveId] = useState<string | null>(focusId);
 
   const closeSheet = () => {
     setActiveId(null);
-    if (focusId) router.replace("/admin/inquiries", { scroll: false });
+    if (focusId) {
+      router.replace(
+        initialTab === "all" ? "/admin/inquiries" : `/admin/inquiries?type=${initialTab}`,
+        { scroll: false }
+      );
+    }
   };
 
   const typeFilter = TAB_TYPES[tab];
+  const consultationOnly = initialTab === "consultations";
   const rows = useMemo(() => {
     return inquiries
       .filter((q) => (typeFilter ? q.type === typeFilter : true))
@@ -204,7 +219,7 @@ function InquiryQueue({ focusId }: { focusId: string | null }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuLabel className="text-xs text-muted-foreground">Inquiry actions</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => setActiveId(r.id)}>
+        <DropdownMenuItem onClick={() => router.push(`/admin/inquiries/${r.id}${consultationOnly ? "?type=consultations" : ""}`)}>
           <Eye className="h-4 w-4" /> View details
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -233,68 +248,39 @@ function InquiryQueue({ focusId }: { focusId: string | null }) {
 
   return (
     <div>
-      <PageHeader
-        title="Inquiries"
-        description="Triage quote requests, service enquiries, consultation bookings, and contact inquiries from one queue."
-      />
-
-      {/* Stat cards */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="New" value={countBy("new")} icon="Inbox" tone="blue" onClick={() => setStatusFilter("new")} />
-        <StatCard label="In Progress" value={countBy("in_progress")} icon="RefreshCw" tone="violet" onClick={() => setStatusFilter("in_progress")} />
-        <StatCard label="Contacted" value={countBy("contacted")} icon="PhoneCall" tone="amber" onClick={() => setStatusFilter("contacted")} />
-        <StatCard label="Closed" value={countBy("closed")} icon="CheckCircle2" tone="green" onClick={() => setStatusFilter("closed")} />
+      <div className="mb-6 grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <StatCard compact label="New" value={countBy("new")} icon="Inbox" tone="blue" onClick={() => setStatusFilter("new")} />
+          <StatCard compact label="In Progress" value={countBy("in_progress")} icon="RefreshCw" tone="violet" onClick={() => setStatusFilter("in_progress")} />
+          <StatCard compact label="Contacted" value={countBy("contacted")} icon="PhoneCall" tone="amber" onClick={() => setStatusFilter("contacted")} />
+          <StatCard compact label="Closed" value={countBy("closed")} icon="CheckCircle2" tone="green" onClick={() => setStatusFilter("closed")} />
+        </div>
+        <MarketplaceSectionLinks current={consultationOnly ? "consultations" : "requests"} />
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => { setTab(v); setStatusFilter("all"); }} className="space-y-4">
-        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
-          {[
-            { id: "all", label: "All" },
-            { id: "quotes", label: "Quotes" },
-            { id: "service_requests", label: "Service Requests" },
-            { id: "consultations", label: "Consultations" },
-            { id: "contact", label: "Contact" },
-          ].map((t) => (
-            <TabsTrigger
-              key={t.id}
-              value={t.id}
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              {t.label}
-              <span className="ml-1.5 rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold data-[state=active]:bg-primary-foreground/20">
-                {inquiries.filter((q) => (TAB_TYPES[t.id] ? q.type === TAB_TYPES[t.id] : true)).length}
-              </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      {!consultationOnly && (
+        <Tabs value={tab} onValueChange={(v) => { setTab(v); setStatusFilter("all"); }} className="space-y-4">
+          <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
+            {[
+              { id: "all", label: "All" },
+              { id: "quotes", label: "Quotes" },
+              { id: "service_requests", label: "Service Requests" },
+              { id: "consultations", label: "Consultations" },
+              { id: "contact", label: "Contact" },
+            ].map((t) => (
+              <TabsTrigger key={t.id} value={t.id} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                {t.label}
+                <span className="ml-1.5 rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold data-[state=active]:bg-primary-foreground/20">
+                  {inquiries.filter((q) => (TAB_TYPES[t.id] ? q.type === TAB_TYPES[t.id] : true)).length}
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      )}
 
       {/* Stat chips per tab — double as status filters */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {STATUS_CHIPS.map((chip) => {
-          const count = chip.status === "all" ? scoped.length : countBy(chip.status);
-          const isActive = statusFilter === chip.status;
-          return (
-            <button
-              key={chip.status}
-              type="button"
-              onClick={() => setStatusFilter(chip.status)}
-              aria-pressed={isActive}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors",
-                isActive
-                  ? CHIP_ACTIVE[chip.status]
-                  : "bg-card text-muted-foreground ring-border hover:text-foreground"
-              )}
-            >
-              {chip.label}
-              <span className={cn("rounded-full px-1.5 text-[10px] font-bold", isActive ? "bg-white/20 dark:bg-black/20" : "bg-muted")}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      {!consultationOnly && <StatusChips scoped={scoped} statusFilter={statusFilter} countBy={countBy} onChange={setStatusFilter} />}
 
       <DataTable
         data={rows}
@@ -302,8 +288,10 @@ function InquiryQueue({ focusId }: { focusId: string | null }) {
         searchKeys={["name", "email", "company", "serviceName"]}
         searchPlaceholder="Search name, email, company, service…"
         pageSize={8}
+        stickyPageHeader={consultationOnly}
+        toolbar={consultationOnly ? <StatusChips scoped={scoped} statusFilter={statusFilter} countBy={countBy} onChange={setStatusFilter} /> : undefined}
         rowActions={rowActions}
-        onRowClick={(r) => setActiveId(r.id)}
+        onRowClick={(r) => router.push(`/admin/inquiries/${r.id}${consultationOnly ? "?type=consultations" : ""}`)}
         emptyState={
           <div className="flex flex-col items-center justify-center gap-1 text-center">
             <Inbox className="mb-2 h-8 w-8 text-muted-foreground/50" />
@@ -319,6 +307,33 @@ function InquiryQueue({ focusId }: { focusId: string | null }) {
 
       <InquiryDetailSheet inquiry={active} open={!!active} onOpenChange={(o) => !o && closeSheet()} />
       <ConfirmDialog state={confirm.state} onClose={confirm.close} />
+    </div>
+  );
+}
+
+function StatusChips({
+  scoped,
+  statusFilter,
+  countBy,
+  onChange,
+}: {
+  scoped: Inquiry[];
+  statusFilter: InquiryStatus | "all";
+  countBy: (status: InquiryStatus) => number;
+  onChange: (status: InquiryStatus | "all") => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {STATUS_CHIPS.map((chip) => {
+        const count = chip.status === "all" ? scoped.length : countBy(chip.status);
+        const isActive = statusFilter === chip.status;
+        return (
+          <button key={chip.status} type="button" onClick={() => onChange(chip.status)} aria-pressed={isActive} className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors", isActive ? CHIP_ACTIVE[chip.status] : "bg-card text-muted-foreground ring-border hover:text-foreground")}>
+            {chip.label}
+            <span className={cn("rounded-full px-1.5 text-[10px] font-bold", isActive ? "bg-white/20 dark:bg-black/20" : "bg-muted")}>{count}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

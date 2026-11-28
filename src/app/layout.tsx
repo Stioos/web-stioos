@@ -114,8 +114,10 @@ function showBar() {
           }}
         />
         <script
-          id="hydration-guard"
-          dangerouslySetInnerHTML={{ __html: hydrationGuard }}
+          id="stale-overlay-cleanup"
+          dangerouslySetInnerHTML={{
+            __html: "document.getElementById('stioos-recovery-bar')?.remove();",
+          }}
         />
         <ThemeProvider
           attribute="data-theme"

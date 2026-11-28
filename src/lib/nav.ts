@@ -82,7 +82,6 @@ export const ADMIN_NAV: AdminNavGroup[] = [
     items: [
       { label: "Service Requests", href: "/admin/service-requests", icon: "ClipboardList", module: "marketplace" },
       { label: "Orders", href: "/admin/orders", icon: "Package", module: "orders" },
-      { label: "Quotes", href: "/admin/quotes", icon: "FileText", module: "marketplace" },
     ],
   },
   {

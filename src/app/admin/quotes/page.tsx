@@ -1,28 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRight, Plus } from "lucide-react";
+import { ChevronRight, Plus, Search } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { PageHeader, StatCard } from "@/components/shared/page-header";
 import {
-  QuoteCard,
-  QuoteBuilderDialog,
   QuoteDetailSheet,
   QuoteStatusBadge,
 } from "@/components/dashboard/lifecycle/quote-invoice";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import type { Quote, QuoteStatus } from "@/types";
+import { MarketplaceSectionLinks } from "@/components/admin/marketplace-section-links";
 import { cn } from "@/lib/utils";
-import type { MarketRequest, Quote, QuoteStatus } from "@/types";
 
 type QuoteTab = "all" | QuoteStatus;
 
@@ -35,6 +27,15 @@ const TABS: { value: QuoteTab; label: string }[] = [
   { value: "draft", label: "Drafts" },
 ];
 
+const ACTIVE_TAB_COLORS: Record<QuoteTab, string> = {
+  all: "bg-foreground text-background ring-foreground",
+  sent: "bg-violet-600 text-white ring-violet-600",
+  accepted: "bg-emerald-600 text-white ring-emerald-600",
+  declined: "bg-rose-600 text-white ring-rose-600",
+  expired: "bg-amber-600 text-white ring-amber-600",
+  draft: "bg-slate-600 text-white ring-slate-600",
+};
+
 export default function AdminQuotesPage() {
   const router = useRouter();
   const quotes = useAppStore((s) => s.quotes);
@@ -42,8 +43,30 @@ export default function AdminQuotesPage() {
   const inquiries = useAppStore((s) => s.inquiries);
   const [tab, setTab] = useState<QuoteTab>("all");
   const [active, setActive] = useState<Quote | null>(null);
-  const [requestPickerOpen, setRequestPickerOpen] = useState(false);
-  const [builderRequest, setBuilderRequest] = useState<MarketRequest | null>(null);
+  const [search, setSearch] = useState("");
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [toolbarHeight, setToolbarHeight] = useState(0);
+  const [toolbarStuck, setToolbarStuck] = useState(false);
+
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar) return;
+
+    const observer = new ResizeObserver(() => setToolbarHeight(toolbar.getBoundingClientRect().height));
+    observer.observe(toolbar);
+    const scrollArea = toolbar.closest("main");
+    const updateStuck = () => {
+      if (!scrollArea) return;
+      const stickyTop = scrollArea.getBoundingClientRect().top + parseFloat(getComputedStyle(scrollArea).paddingTop);
+      setToolbarStuck(toolbar.getBoundingClientRect().top <= stickyTop + 1);
+    };
+    scrollArea?.addEventListener("scroll", updateStuck, { passive: true });
+    updateStuck();
+    return () => {
+      observer.disconnect();
+      scrollArea?.removeEventListener("scroll", updateStuck);
+    };
+  }, []);
 
   const quoteRequests = useMemo(
     () => inquiries.filter((inquiry) => inquiry.type === "quote"),
@@ -56,9 +79,24 @@ export default function AdminQuotesPage() {
     [quotes]
   );
   const filtered = useMemo(() => {
-    if (tab === "all") return sorted;
-    return sorted.filter((q) => q.status === tab);
-  }, [sorted, tab]);
+    const query = search.trim().toLowerCase();
+    return sorted.filter((q) => {
+      const matchesTab = tab === "all" || q.status === tab;
+      const req = requests.find((r) => r.id === q.requestId);
+      const matchesSearch = !query || [q.reference, q.buyerName, q.buyerCompany, req?.reference, req?.title]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+      return matchesTab && matchesSearch;
+    });
+  }, [requests, search, sorted, tab]);
+
+  const visibleQuoteRequests = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return quoteRequests;
+    return quoteRequests.filter((inquiry) => [inquiry.id, inquiry.name, inquiry.email, inquiry.company, inquiry.serviceName]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(query)));
+  }, [quoteRequests, search]);
 
   const stats = useMemo(() => {
     const total = sorted.length;
@@ -76,58 +114,55 @@ export default function AdminQuotesPage() {
       ? sorted.length + quoteRequests.length
       : sorted.filter((q) => q.status === t).length;
 
-  const showIncomingRequests = tab === "all" && quoteRequests.length > 0;
-  const quoteableRequests = useMemo(
-    () => requests.filter(
-      (request) =>
-        (request.status === "open" || request.status === "in_review") &&
-        !request.quoteId
-    ),
-    [requests]
-  );
-
+  const showIncomingRequests = tab === "all" && visibleQuoteRequests.length > 0;
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
-      <PageHeader
-        title="Quotes"
-        description="Every quote issued by the STIOOS team against buyer service requests. Track acceptance, decline reasons, and conversion to orders."
-        actions={
-          <Button variant="outline" size="sm" onClick={() => setRequestPickerOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" /> Create Quote
+    <div className="w-full px-0 py-2 lg:py-3">
+      <div className="mb-3 grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <StatCard compact label="Total Quotes" value={stats.total} icon="FileText" tone="violet" />
+          <StatCard compact label="Awaiting Buyer" value={stats.sent} icon="Clock" tone="amber" />
+          <StatCard compact label="Accepted" value={stats.accepted} icon="CheckCircle2" tone="green" />
+          <StatCard compact label="Pipeline Value" value={`$${(stats.acceptedValue / 1000).toFixed(1)}k`} icon="TrendingUp" tone="blue" />
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <MarketplaceSectionLinks current="quotes" />
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/quotes/create"><Plus className="mr-1.5 h-4 w-4" /> Create Quote</Link>
           </Button>
-        }
-      />
-
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total Quotes" value={stats.total} icon="FileText" tone="violet" />
-        <StatCard label="Awaiting Buyer" value={stats.sent} icon="Clock" tone="amber" />
-        <StatCard label="Accepted" value={stats.accepted} icon="CheckCircle2" tone="green" />
-        <StatCard
-          label="Pipeline Value"
-          value={`$${(stats.acceptedValue / 1000).toFixed(1)}k`}
-          icon="TrendingUp"
-          tone="blue"
-        />
+        </div>
       </div>
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as QuoteTab)}>
-        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
-          {TABS.map((t) => (
-            <TabsTrigger
-              key={t.value}
-              value={t.value}
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              {t.label}
-              <span className="ml-1.5 rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold">
-                {tabCount(t.value)}
-              </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+      <div ref={toolbarRef} className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 bg-background py-2 pb-5">
+        {toolbarStuck && <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-full h-4 bg-background sm:h-6" />}
+        <div className="relative w-full max-w-sm">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search reference, buyer, request..." className="pl-9" />
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2" role="group" aria-label="Filter quotes by status">
+          {TABS.map((t) => {
+            const isActive = tab === t.value;
+            return (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setTab(t.value)}
+                aria-pressed={isActive}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors",
+                  isActive ? ACTIVE_TAB_COLORS[t.value] : "bg-card text-muted-foreground ring-border hover:text-foreground"
+                )}
+              >
+                {t.label}
+                <span className={cn("rounded-full px-1.5 text-[10px] font-bold", isActive ? "bg-white/20 dark:bg-black/20" : "bg-muted")}>
+                  {tabCount(t.value)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      <div className="mt-4">
+      <div>
         {filtered.length === 0 && !showIncomingRequests ? (
           <div className="rounded-xl border border-dashed p-12 text-center">
             <p className="text-sm text-muted-foreground">
@@ -135,30 +170,30 @@ export default function AdminQuotesPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+          <div className="rounded-xl border">
+            <table className="w-full border-separate border-spacing-0 text-sm">
+              <thead className="text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-4 py-2">Reference</th>
-                  <th className="px-4 py-2">Buyer</th>
-                  <th className="px-4 py-2">Request</th>
-                  <th className="px-4 py-2">Issued</th>
-                  <th className="px-4 py-2">Valid Until</th>
-                  <th className="px-4 py-2 text-right">Total</th>
-                  <th className="px-4 py-2">Status</th>
-                  <th className="px-4 py-2"></th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}>Reference</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}>Buyer</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}>Request</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}>Issued</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}>Valid Until</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2 text-right" style={{ top: toolbarHeight }}>Total</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}>Status</th>
+                  <th className="sticky z-20 bg-muted px-4 py-2" style={{ top: toolbarHeight }}></th>
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {showIncomingRequests && quoteRequests.map((inquiry) => (
+                {showIncomingRequests && visibleQuoteRequests.map((inquiry) => (
                   <tr
                     key={inquiry.id}
                     className="cursor-pointer bg-amber-500/[0.03] hover:bg-amber-500/[0.08]"
-                    onClick={() => router.push(`/admin/inquiries?focus=${inquiry.id}`)}
+                    onClick={() => router.push(`/admin/inquiries/${inquiry.id}`)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        router.push(`/admin/inquiries?focus=${inquiry.id}`);
+                        router.push(`/admin/inquiries/${inquiry.id}`);
                       }
                     }}
                     tabIndex={0}
@@ -254,50 +289,6 @@ export default function AdminQuotesPage() {
         onOpenChange={(v) => { if (!v) setActive(null); }}
       />
 
-      <Dialog open={requestPickerOpen} onOpenChange={setRequestPickerOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Create Quote</DialogTitle>
-            <DialogDescription>
-              Select an open service request to prepare its quote.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[55vh] space-y-2 overflow-y-auto">
-            {quoteableRequests.length === 0 ? (
-              <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                No open service requests are available for quoting.
-              </p>
-            ) : (
-              quoteableRequests.map((request) => (
-                <button
-                  key={request.id}
-                  type="button"
-                  className="w-full rounded-lg border p-3 text-left transition-colors hover:bg-muted/50"
-                  onClick={() => {
-                    setRequestPickerOpen(false);
-                    setBuilderRequest(request);
-                  }}
-                >
-                  <span className="block text-sm font-semibold text-foreground">
-                    {request.title}
-                  </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {request.reference} · {request.buyerName} · {request.budgetRange || "Budget not specified"}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <QuoteBuilderDialog
-        open={!!builderRequest}
-        onOpenChange={(open) => { if (!open) setBuilderRequest(null); }}
-        requestId={builderRequest?.id ?? ""}
-        requestTitle={builderRequest?.title ?? ""}
-        buyerName={builderRequest?.buyerName ?? ""}
-      />
     </div>
   );
 }

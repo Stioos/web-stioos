@@ -11,7 +11,7 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
-import { PageHeader } from "@/components/shared/page-header";
+import { StatCard } from "@/components/shared/page-header";
 import { DataTable, type Column } from "@/components/shared/data-table";
 import { Icon } from "@/components/shared/icon";
 import {
@@ -28,13 +28,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAppStore } from "@/lib/store";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -90,14 +83,6 @@ export default function AdminOrdersPage() {
       .filter((o) => (statusFilter === "all" ? true : o.status === statusFilter))
       .sort((a, b) => Date.parse(b.placedAt) - Date.parse(a.placedAt));
   }, [orders, statusFilter]);
-
-  const scoped = useMemo(
-    () =>
-      orders.filter((o) =>
-        statusFilter === "all" ? true : o.status === statusFilter
-      ),
-    [orders, statusFilter]
-  );
 
   const countBy = (status: MarketOrderStatus) =>
     orders.filter((o) => o.status === status).length;
@@ -270,59 +255,12 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div>
-      <PageHeader
-        title="Orders"
-        description="Every marketplace order fulfilled by the STIOOS delivery teams. Track progress, update statuses, and monitor revenue."
-        actions={
-          <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm">
-            <PackageCheck className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{orders.length}</span>
-            <span className="text-muted-foreground">orders</span>
-          </div>
-        }
-      />
-
-      {/* Stat chips — double as status filters; revenue is a read-only stat */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {STATUS_CHIPS.map((chip) => {
-          const count =
-            chip.value === "all" ? scoped.length : countBy(chip.value);
-          const isActive = statusFilter === chip.value;
-          return (
-            <button
-              key={chip.value}
-              type="button"
-              onClick={() => setStatusFilter(chip.value)}
-              aria-pressed={isActive}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors",
-                isActive
-                  ? CHIP_ACTIVE[chip.value]
-                  : "bg-card text-muted-foreground ring-border hover:text-foreground"
-              )}
-            >
-              {chip.label}
-              <span
-                className={cn(
-                  "rounded-full px-1.5 text-[10px] font-bold",
-                  isActive ? "bg-white/20 dark:bg-black/20" : "bg-muted"
-                )}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white ring-1 ring-inset ring-emerald-600"
-          title="Sum of all non-cancelled orders"
-        >
-          Revenue
-          <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold">
-            {formatMoney(revenue)}
-          </span>
-        </span>
+    <div className="w-full px-0 py-2 lg:py-3">
+      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <StatCard compact label="Total Orders" value={orders.length} icon="PackageCheck" tone="violet" />
+        <StatCard compact label="Pending" value={countBy("pending")} icon="Clock" tone="amber" />
+        <StatCard compact label="Completed" value={countBy("completed")} icon="CheckCircle2" tone="green" />
+        <StatCard compact label="Revenue" value={formatMoney(revenue)} icon="TrendingUp" tone="blue" />
       </div>
 
       <DataTable
@@ -331,23 +269,30 @@ export default function AdminOrdersPage() {
         searchKeys={["serviceName", "buyerName", "buyerCompany"]}
         searchPlaceholder="Search service, buyer, company…"
         pageSize={8}
+        stickyPageHeader
         toolbar={
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => setStatusFilter(v as MarketOrderStatus | "all")}
-          >
-            <SelectTrigger aria-label="Filter orders by status" className="h-9 w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              {ORDER_STATUSES.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center justify-end gap-2" role="group" aria-label="Filter orders by status">
+            {STATUS_CHIPS.map((chip) => {
+              const isActive = statusFilter === chip.value;
+              return (
+                <button
+                  key={chip.value}
+                  type="button"
+                  onClick={() => setStatusFilter(chip.value)}
+                  aria-pressed={isActive}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors",
+                    isActive ? CHIP_ACTIVE[chip.value] : "bg-card text-muted-foreground ring-border hover:text-foreground"
+                  )}
+                >
+                  {chip.value === "all" ? "All" : chip.label}
+                  <span className={cn("rounded-full px-1.5 text-[10px] font-bold", isActive ? "bg-white/20 dark:bg-black/20" : "bg-muted")}>
+                    {chip.value === "all" ? orders.length : countBy(chip.value)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         }
         rowActions={rowActions}
         emptyState={

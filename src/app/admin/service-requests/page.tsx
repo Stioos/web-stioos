@@ -24,6 +24,7 @@ import {
   REQUEST_STATUS_LABELS,
 } from "@/lib/request-kinds";
 import { QuoteBuilderDialog } from "@/components/dashboard/lifecycle/quote-invoice";
+import { MarketplaceSectionLinks } from "@/components/admin/marketplace-section-links";
 import type {
   Inquiry,
   InquiryStatus,
@@ -96,7 +97,7 @@ const INQUIRY_STATUS_OPTIONS: { value: InquiryStatus; label: string }[] = [
 ];
 
 /** Website enquiry types surfaced in the second tab. */
-const WEBSITE_TYPES: InquiryType[] = ["service_request", "quote", "consultation"];
+const WEBSITE_TYPES: InquiryType[] = ["service_request"];
 
 const formatStamp = (iso: string) => format(new Date(iso), "MMM d, yyyy 'at' HH:mm");
 
@@ -144,7 +145,6 @@ function RequestsHub({ focusId }: { focusId: string | null }) {
     return Array.from(byId.values());
   }, [localRequests, remoteRequests]);
 
-  const [tab, setTab] = useState<string>("pipeline");
   const [statusFilter, setStatusFilter] = useState<MarketRequestStatus | "all">("all");
   const [activeId, setActiveId] = useState<string | null>(focusId);
 
@@ -160,89 +160,53 @@ function RequestsHub({ focusId }: { focusId: string | null }) {
 
   return (
     <div>
-      <PageHeader
-        title="Service Requests"
-        description="Every buyer enquiry in one pipeline — review, progress, and convert requests into tracked orders."
-        actions={
-          <div className="flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm">
-            <Inbox className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold text-foreground">{requests.length}</span>
-            <span className="text-muted-foreground">requests</span>
-          </div>
-        }
-      />
-
-      {/* Stat row — full lifecycle */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          label="New / Open"
-          value={countBy("open") + countBy("in_review")}
-          icon="Inbox"
-          tone="amber"
-          onClick={() => {
-            setTab("pipeline");
-            setStatusFilter("open");
-          }}
-        />
-        <StatCard
-          label="Quoted"
-          value={countBy("quoted")}
-          icon="FileText"
-          tone="violet"
-          onClick={() => {
-            setTab("pipeline");
-            setStatusFilter("quoted");
-          }}
-        />
-        <StatCard
-          label="Approved + Ordered"
-          value={countBy("approved") + countBy("ordered")}
-          icon="BadgeCheck"
-          tone="blue"
-          onClick={() => {
-            setTab("pipeline");
-            setStatusFilter("approved");
-          }}
-        />
-        <StatCard
-          label="Paid + Delivered"
-          value={countBy("paid") + countBy("delivered")}
-          icon="Truck"
-          tone="green"
-          onClick={() => {
-            setTab("pipeline");
-            setStatusFilter("paid");
-          }}
-        />
+      <div className="mb-6 grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <StatCard
+            label="New / Open"
+            value={countBy("open") + countBy("in_review")}
+            icon="Inbox"
+            tone="amber"
+            compact
+            onClick={() => setStatusFilter("open")}
+          />
+          <StatCard
+            label="Quoted"
+            value={countBy("quoted")}
+            icon="FileText"
+            tone="violet"
+            compact
+            onClick={() => setStatusFilter("quoted")}
+          />
+          <StatCard
+            label="Approved + Ordered"
+            value={countBy("approved") + countBy("ordered")}
+            icon="BadgeCheck"
+            tone="blue"
+            compact
+            onClick={() => setStatusFilter("approved")}
+          />
+          <StatCard
+            label="Paid + Delivered"
+            value={countBy("paid") + countBy("delivered")}
+            icon="Truck"
+            tone="green"
+            compact
+            onClick={() => setStatusFilter("paid")}
+          />
+        </div>
+        <MarketplaceSectionLinks current="requests" />
       </div>
 
-      <Tabs value={tab} onValueChange={setTab} className="space-y-4">
-        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 bg-transparent p-0">
-          <TabsTrigger
-            value="pipeline"
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            Pipeline
-            <span className="ml-1.5 rounded bg-foreground/10 px-1.5 py-0.5 text-[10px] font-semibold data-[state=active]:bg-primary-foreground/20">
-              {requests.length}
-            </span>
-          </TabsTrigger>
-          <WebsiteEnquiriesCount />
-        </TabsList>
-      </Tabs>
-
-      {tab === "pipeline" ? (
-        <PipelineTab
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          onView={(r) => setActiveId(r.id)}
-          requests={requests}
-        />
-      ) : (
-        <WebsiteEnquiries />
-      )}
+      <PipelineTab
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onView={(r) => router.push(`/admin/service-requests/${r.id}`)}
+        requests={requests}
+      />
 
       <RequestDetailSheet request={active} open={!!active} onOpenChange={(o) => !o && closeSheet()} />
+
     </div>
   );
 }
@@ -406,6 +370,7 @@ function PipelineTab({
       searchKeys={["title", "buyerName", "buyerCompany", "reference", "categoryName"]}
       searchPlaceholder="Search title, buyer, reference…"
       pageSize={8}
+      stickyHeader
       onRowClick={onView}
       rowActions={(r) => (
         <Button variant="outline" size="sm" className="h-8" onClick={() => onView(r)}>
@@ -1140,7 +1105,7 @@ function WebsiteEnquiries() {
           <div className="flex flex-col items-center justify-center gap-1 text-center">
             <p className="font-medium text-foreground">No website enquiries</p>
             <p className="text-sm text-muted-foreground">
-              Quote requests, service enquiries, and consultation bookings from the public site will appear here.
+              Service enquiries from the public site will appear here.
             </p>
           </div>
         }

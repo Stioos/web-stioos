@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,8 @@ interface DataTableProps<T extends { id: string }> {
   emptyState?: React.ReactNode;
   className?: string;
   dense?: boolean;
+  stickyHeader?: boolean;
+  stickyPageHeader?: boolean;
 }
 
 const HIDE: Record<string, string> = {
@@ -67,14 +69,39 @@ export function DataTable<T extends { id: string }>({
   emptyState,
   className,
   dense = false,
+  stickyHeader = false,
+  stickyPageHeader = false,
 }: DataTableProps<T>) {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [internalSelected, setInternalSelected] = useState<string[]>([]);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const [controlsHeight, setControlsHeight] = useState(0);
+  const [controlsStuck, setControlsStuck] = useState(false);
   const sel = selected ?? internalSelected;
   const setSel = onSelectedChange ?? setInternalSelected;
+
+  useEffect(() => {
+    if (!stickyPageHeader) return;
+    const controls = controlsRef.current;
+    const scrollArea = controls?.closest("main");
+    if (!controls || !scrollArea) return;
+
+    const observer = new ResizeObserver(() => setControlsHeight(controls.getBoundingClientRect().height));
+    observer.observe(controls);
+    const updateStuck = () => {
+      const stickyTop = scrollArea.getBoundingClientRect().top + parseFloat(getComputedStyle(scrollArea).paddingTop);
+      setControlsStuck(controls.getBoundingClientRect().top <= stickyTop + 1);
+    };
+    scrollArea.addEventListener("scroll", updateStuck, { passive: true });
+    updateStuck();
+    return () => {
+      observer.disconnect();
+      scrollArea.removeEventListener("scroll", updateStuck);
+    };
+  }, [stickyPageHeader]);
 
   const filtered = useMemo(() => {
     let rows = [...data];
@@ -129,10 +156,13 @@ export function DataTable<T extends { id: string }>({
     onSelectedChange(sel.includes(id) ? sel.filter((s) => s !== id) : [...sel, id]);
   };
 
+  const TableElement = stickyPageHeader ? "table" : Table;
+
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn(stickyPageHeader ? "space-y-0" : "space-y-3", className)}>
       {(searchKeys || toolbar) && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div ref={controlsRef} className={cn("flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between", stickyPageHeader && "sticky top-0 z-30 bg-background py-2 pb-5")}>
+          {stickyPageHeader && controlsStuck && <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-full h-4 bg-background sm:h-6" />}
           <div className="flex flex-1 items-center gap-2">
             {searchKeys && (
               <div className="relative w-full max-w-xs">
@@ -171,12 +201,12 @@ export function DataTable<T extends { id: string }>({
         </div>
       )}
 
-      <div className="table-scroll overflow-x-auto rounded-lg border bg-card">
-        <Table>
+      <div className={cn("table-scroll rounded-lg border bg-card", stickyPageHeader ? "overflow-x-auto md:overflow-visible" : "overflow-x-auto")}>
+        <TableElement className={stickyPageHeader ? "w-full border-separate border-spacing-0 caption-bottom text-sm" : undefined}>
           <TableHeader>
-            <TableRow className="bg-muted/60 hover:bg-muted/60">
+            <TableRow className={cn("bg-muted/60 hover:bg-muted/60", stickyHeader && !stickyPageHeader && "sticky top-0 z-10 bg-muted/95 shadow-sm")}>
               {selectable && (
-                <TableHead className="w-10 pl-4">
+                <TableHead className={cn("w-10 pl-4", stickyPageHeader && "sticky z-20 bg-muted")} style={stickyPageHeader ? { top: controlsHeight } : undefined}>
                   <Checkbox
                     checked={pageRows.length > 0 && allOnPageSelected}
                     onCheckedChange={toggleAll}
@@ -189,9 +219,11 @@ export function DataTable<T extends { id: string }>({
                   key={col.key}
                   className={cn(
                     "text-xs font-semibold uppercase tracking-wide text-muted-foreground",
+                    stickyPageHeader ? "sticky z-20 bg-muted" : stickyHeader && "sticky top-0 z-20 bg-muted/95 shadow-sm",
                     col.hideBelow && HIDE[col.hideBelow],
                     col.className
                   )}
+                  style={stickyPageHeader ? { top: controlsHeight } : undefined}
                 >
                   {col.sortable ? (
                     <button
@@ -207,7 +239,7 @@ export function DataTable<T extends { id: string }>({
                   )}
                 </TableHead>
               ))}
-              {rowActions && <TableHead className="w-14 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</TableHead>}
+              {rowActions && <TableHead className={cn("w-14 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground", stickyPageHeader ? "sticky z-20 bg-muted" : stickyHeader && "sticky top-0 z-20 bg-muted/95 shadow-sm")} style={stickyPageHeader ? { top: controlsHeight } : undefined}>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -268,10 +300,10 @@ export function DataTable<T extends { id: string }>({
                 </TableRow>
               ))}
           </TableBody>
-        </Table>
+        </TableElement>
       </div>
 
-      <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+      <div className={cn("flex flex-col items-center justify-between gap-3 sm:flex-row", stickyPageHeader && "mt-3")}>
         <p className="text-sm text-muted-foreground">
           Showing{" "}
           <span className="font-medium text-foreground">

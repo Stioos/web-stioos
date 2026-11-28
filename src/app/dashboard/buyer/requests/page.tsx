@@ -22,6 +22,7 @@ import {
 } from "@/components/dashboard/lifecycle/lifecycle-shared";
 import {
   DeclineQuoteDialog,
+  ApproveQuoteDialog,
   PaymentDialog,
   QuoteCard,
   formatMoney as formatLifecycleMoney,
@@ -109,7 +110,6 @@ function RequestsContent() {
   const invoices = useAppStore((s) => s.invoices);
   const orders = useAppStore((s) => s.orders);
   const transactions = useAppStore((s) => s.transactions);
-  const acceptQuote = useAppStore((s) => s.acceptQuote);
   const acceptDelivery = useAppStore((s) => s.acceptDelivery);
   const { toast } = useToast();
 
@@ -117,6 +117,7 @@ function RequestsContent() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newRequestOpen, setNewRequestOpen] = useState(false);
   const [declineOpen, setDeclineOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
 
   const myRequests = useMemo(() => {
@@ -147,15 +148,11 @@ function RequestsContent() {
     return filtered[0] ?? null;
   }, [selectedId, myRequests, filtered]);
 
-  const handleAcceptQuote = () => {
-    if (!selected?.quoteId) return;
-    const res = acceptQuote(selected.quoteId);
-    if (res.ok) {
-      toast({
-        title: "Quote accepted",
-        description: "The STIOOS team will create your order and issue an invoice.",
-      });
-    }
+  const handleQuoteApproved = () => {
+    toast({
+      title: "Quote approved",
+      description: "The STIOOS team will create your order and issue an invoice.",
+    });
   };
 
   const handleAcceptDelivery = () => {
@@ -298,7 +295,7 @@ function RequestsContent() {
                 order={linkedOrder}
                 invoice={linkedInvoice}
                 txn={linkedTxn}
-                onAcceptQuote={handleAcceptQuote}
+                onAcceptQuote={() => setApproveOpen(true)}
                 onAcceptDelivery={handleAcceptDelivery}
                 onDecline={() => setDeclineOpen(true)}
                 onPay={() => setPayOpen(true)}
@@ -335,6 +332,14 @@ function RequestsContent() {
       />
 
       {/* Decline Quote Dialog */}
+      {linkedQuote && (
+        <ApproveQuoteDialog
+          open={approveOpen}
+          onOpenChange={setApproveOpen}
+          quote={linkedQuote}
+          onApproved={handleQuoteApproved}
+        />
+      )}
       {linkedQuote && (
         <DeclineQuoteDialog
           open={declineOpen}
@@ -447,7 +452,7 @@ function RequestInspector({
           {request.status === "quoted" && quote && (
             <>
               <Button size="sm" onClick={onAcceptQuote} className="bg-emerald-600 hover:bg-emerald-700">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Accept Quote
+                <CheckCircle2 className="h-3.5 w-3.5" /> Approve Quote
               </Button>
               <Button size="sm" variant="outline" onClick={onDecline}>
                 <XCircle className="h-3.5 w-3.5 text-rose-500" /> Decline

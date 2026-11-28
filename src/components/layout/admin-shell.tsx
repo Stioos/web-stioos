@@ -35,12 +35,19 @@ function SidebarNav({ onNavigate, collapsed = false }: { onNavigate?: () => void
     [isSuper, role]
   );
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+  const isActive = (href: string, exact?: boolean) => {
+    if (href === "/admin/service-requests") {
+      return ["/admin/service-requests", "/admin/quotes", "/admin/inquiries"].some(
+        (section) => pathname === section || pathname.startsWith(section + "/")
+      );
+    }
+
+    return exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+  };
 
   return (
     <div className="flex h-full flex-col">
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-5" aria-label="Admin navigation">
+      <nav className="no-scrollbar flex-1 space-y-5 overflow-y-auto px-3 py-5" aria-label="Admin navigation">
         {groups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
@@ -289,6 +296,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [consultationHeader, setConsultationHeader] = useState(false);
+
+  useEffect(() => {
+    const updateHeader = () => {
+      setConsultationHeader(
+        window.location.pathname.startsWith("/admin/inquiries") &&
+          new URLSearchParams(window.location.search).get("type") === "consultations"
+      );
+    };
+    updateHeader();
+    window.addEventListener("popstate", updateHeader);
+    return () => window.removeEventListener("popstate", updateHeader);
+  }, [pathname]);
 
   // Auto-login demo admin if none is logged in — this ensures the
   // dashboard always opens without requiring manual login. The user
@@ -381,10 +401,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <Menu className="h-5 w-5" />
             </button>
             <div className="hidden items-center gap-2 text-sm text-muted-foreground md:flex">
-              <span className="font-medium text-foreground">Admin Platform</span>
-              <span>/</span>
-              <span className="max-w-[240px] truncate">
-                {pathname.replace("/admin", "").replace(/^\//, "").replace(/-/g, " ") || "Dashboard"}
+              <span className="font-medium text-foreground">
+                {pathname.startsWith("/admin/service-requests")
+                  ? pathname !== "/admin/service-requests" && pathname !== "/admin/service-requests/create-order" ? "Service Request Details" : "service requests"
+                  : consultationHeader
+                  ? "Consultation Details"
+                  : pathname.replace("/admin", "").replace(/^\//, "").replace(/-/g, " ") || "Dashboard"}
               </span>
             </div>
           </div>
@@ -449,8 +471,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content — fills viewport (no footer so everything fits on laptop/desktop) */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
+        <main className="no-scrollbar flex-1 overflow-y-auto bg-background p-4 pb-0 sm:p-6 sm:pb-0">
+          <div className="mx-auto min-h-full w-full max-w-7xl">{children}</div>
         </main>
       </div>
 

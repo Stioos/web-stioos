@@ -793,6 +793,92 @@ export function DeclineQuoteDialog({
   );
 }
 
+export function ApproveQuoteDialog({
+  open,
+  onOpenChange,
+  quote,
+  onApproved,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  quote: Quote | null;
+  onApproved?: () => void;
+}) {
+  const acceptQuote = useAppStore((s) => s.acceptQuote);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!quote) return null;
+
+  const handleApprove = () => {
+    setError(null);
+    const res = acceptQuote(quote.id);
+    if (!res.ok) {
+      setError(res.error ?? "Unable to approve quote.");
+      return;
+    }
+    onOpenChange(false);
+    onApproved?.();
+  };
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) setError(null);
+        onOpenChange(v);
+      }}
+    >
+      <DialogContent className="max-w-md gap-0 p-0">
+        <DialogHeader className="border-b border-slate-200 p-5 dark:border-slate-800">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            Approve Quote {quote.reference}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            Review the quoted amount before approving this service or consultation request.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 p-5">
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-slate-500">Quote total</span>
+              <span className="text-lg font-bold text-emerald-600 dark:text-emerald-300">
+                {formatMoney(quote.total)}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-slate-500">
+              Valid until {formatDate(quote.validUntil)}
+            </p>
+          </div>
+          {quote.notes && (
+            <div className="rounded-lg bg-slate-100 p-3 text-xs text-slate-600 dark:bg-slate-800/50 dark:text-slate-400">
+              <span className="font-semibold">Notes: </span>{quote.notes}
+            </div>
+          )}
+          <p className="text-xs text-slate-500">
+            Approving changes this request to Approved. The STIOOS team can then create the order and invoice.
+          </p>
+          {error && (
+            <p className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-700 dark:text-rose-300">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <DialogFooter className="border-t border-slate-200 p-4 dark:border-slate-800">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleApprove} className="bg-emerald-600 hover:bg-emerald-700">
+            <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve Quote
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ============================================================
 // QUOTE / INVOICE DETAIL SHEET (shared drawer)
 // ============================================================

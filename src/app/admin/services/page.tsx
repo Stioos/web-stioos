@@ -28,6 +28,7 @@ import { AccentTile } from "@/components/shared/icon";
 import { EntityStatusBadge } from "@/components/shared/status-badge";
 import { ConfirmDialog, useConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState } from "@/components/shared/empty-state";
+import { MarketplaceSectionLinks } from "@/components/admin/marketplace-section-links";
 
 export default function AdminServicesPage() {
   return (
@@ -289,11 +290,14 @@ function ServicesInner() {
         title="Services"
         description="Manage the marketplace catalog — create, publish, feature, and archive services."
         actions={
-          <Button asChild size="sm">
-            <Link href="/admin/services/new">
-              <Plus className="h-4 w-4" /> Add Service
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <MarketplaceSectionLinks current="services" />
+            <Button asChild size="sm">
+              <Link href="/admin/services/new">
+                <Plus className="h-4 w-4" /> Add Service
+              </Link>
+            </Button>
+          </div>
         }
       />
 

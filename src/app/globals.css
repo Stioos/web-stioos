@@ -124,6 +124,11 @@ html[data-theme="dark"] {
 }
 
 @layer base {
+  /* Prevent the retired hydration recovery bar from covering page content in stale tabs. */
+  #stioos-recovery-bar {
+    display: none !important;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

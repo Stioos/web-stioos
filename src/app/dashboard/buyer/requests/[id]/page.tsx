@@ -30,6 +30,7 @@ import {
 } from "@/components/dashboard/lifecycle/lifecycle-shared";
 import {
   DeclineQuoteDialog,
+  ApproveQuoteDialog,
   InvoiceCard,
   PaymentDialog,
   QuoteCard,
@@ -64,11 +65,11 @@ function RequestDetailContent() {
   const orders = useAppStore((s) => s.orders);
   const transactions = useAppStore((s) => s.transactions);
 
-  const acceptQuote = useAppStore((s) => s.acceptQuote);
   const acceptDelivery = useAppStore((s) => s.acceptDelivery);
   const { toast } = useToast();
 
   const [declineOpen, setDeclineOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
   const [tab, setTab] = useState<"timeline" | "quote" | "invoice" | "transaction">("timeline");
 
@@ -104,15 +105,11 @@ function RequestDetailContent() {
   const txn = transactions.find((t) => t.invoiceId === invoice?.id) ?? null;
   const next = nextBuyerActionLabel(request.status);
 
-  const handleAcceptQuote = () => {
-    if (!quote) return;
-    const res = acceptQuote(quote.id);
-    if (res.ok) {
-      toast({
-        title: "Quote accepted",
-        description: "The STIOOS team will create your order and issue an invoice.",
-      });
-    }
+  const handleQuoteApproved = () => {
+    toast({
+      title: "Quote approved",
+      description: "The STIOOS team will create your order and issue an invoice.",
+    });
   };
 
   const handleAcceptDelivery = () => {
@@ -288,10 +285,10 @@ function RequestDetailContent() {
                   quote.status === "sent" ? (
                     <>
                       <Button
-                        onClick={handleAcceptQuote}
+                        onClick={() => setApproveOpen(true)}
                         className="bg-emerald-600 hover:bg-emerald-700"
                       >
-                        <CheckCircle2 className="mr-1.5 h-4 w-4" /> Accept Quote
+                        <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve Quote
                       </Button>
                       <Button
                         variant="outline"
@@ -372,10 +369,10 @@ function RequestDetailContent() {
                 {request.status === "quoted" && quote && (
                   <div className="space-y-2">
                     <Button
-                      onClick={handleAcceptQuote}
+                      onClick={() => setApproveOpen(true)}
                       className="w-full bg-emerald-600 hover:bg-emerald-700"
                     >
-                      <CheckCircle2 className="mr-1.5 h-4 w-4" /> Accept Quote
+                      <CheckCircle2 className="mr-1.5 h-4 w-4" /> Approve Quote
                     </Button>
                     <Button
                       variant="outline"
@@ -459,6 +456,14 @@ function RequestDetailContent() {
       </div>
 
       {/* Dialogs */}
+      {quote && (
+        <ApproveQuoteDialog
+          open={approveOpen}
+          onOpenChange={setApproveOpen}
+          quote={quote}
+          onApproved={handleQuoteApproved}
+        />
+      )}
       {quote && (
         <DeclineQuoteDialog
           open={declineOpen}

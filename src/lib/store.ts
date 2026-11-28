@@ -173,6 +173,7 @@ interface AppState {
     items: Array<{ description: string; quantity: number; unitPrice: number }>;
     taxRate: number;
     validityDays: number;
+    discount?: number;
     notes?: string;
   }) => { ok: boolean; quote?: Quote; error?: string };
   /** Buyer accepts an issued quote → request.status = "approved", quote.status = "accepted". */
@@ -901,7 +902,7 @@ export const useAppStore = create<AppState>()(
       },
 
       // ================= QUOTE / INVOICE / TRANSACTION (lifecycle billing) =================
-      issueQuote: ({ requestId, items, taxRate, validityDays, notes }) => {
+      issueQuote: ({ requestId, items, taxRate, validityDays, discount = 0, notes }) => {
         const req = get().requests.find((r) => r.id === requestId);
         if (!req) return { ok: false, error: "Request not found." };
         if (!items.length) return { ok: false, error: "Add at least one line item." };
@@ -915,7 +916,7 @@ export const useAppStore = create<AppState>()(
         }));
         const subtotal = quoteItems.reduce((s, i) => s + i.amount, 0);
         const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100;
-        const total = Math.round((subtotal + taxAmount) * 100) / 100;
+        const total = Math.round((subtotal + taxAmount - discount) * 100) / 100;
         const issuedAt = nowISO();
         const validUntil = new Date(
           Date.now() + (validityDays || 14) * 86_400_000
@@ -935,7 +936,7 @@ export const useAppStore = create<AppState>()(
           subtotal,
           taxRate: Number(taxRate) || 0,
           taxAmount,
-          discount: 0,
+          discount,
           total,
           validityDays: validityDays || 14,
           validUntil,
